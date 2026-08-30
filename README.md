@@ -40,3 +40,4 @@ For example:
  * `lib/src/transform`: Port of the `prosemirror-transform` repository.
  * etc
 
+<img width="952" height="764" alt="Screenshot 2026-08-30 at 12 00 22 PM" src="https://github.com/user-attachments/assets/12636b79-f00d-4e78-a99a-038bcc7b0bb3" />
