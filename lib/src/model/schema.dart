@@ -1,8 +1,8 @@
-import '../dependencies/orderedmap/ordered_map.dart';
-import 'content.dart';
-import 'fragment.dart';
-import 'mark.dart';
-import 'node.dart';
+import 'package:prosemirror/src/dependencies/orderedmap/ordered_map.dart';
+import 'package:prosemirror/src/model/content.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/node.dart';
 
 /// An object holding the attributes of a node.
 typedef Attrs = Map<String, Object?>;

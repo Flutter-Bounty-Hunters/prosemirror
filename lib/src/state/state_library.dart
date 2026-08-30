@@ -1,7 +1,7 @@
 /// The public API of the `prosemirror-state` port.
 library;
 
-export 'selection.dart'
+export 'package:prosemirror/src/state/selection.dart'
     show
         Selection,
         SelectionRange,
@@ -9,6 +9,9 @@ export 'selection.dart'
         NodeSelection,
         AllSelection,
         SelectionBookmark;
-export 'transaction.dart' show Transaction, Command;
-export 'state.dart' show EditorState, EditorStateConfig, Configuration;
-export 'plugin.dart' show Plugin, PluginKey, PluginSpec, StateField, PluginView;
+export 'package:prosemirror/src/state/transaction.dart'
+    show Transaction, Command;
+export 'package:prosemirror/src/state/state.dart'
+    show EditorState, EditorStateConfig, Configuration;
+export 'package:prosemirror/src/state/plugin.dart'
+    show Plugin, PluginKey, PluginSpec, StateField, PluginView;

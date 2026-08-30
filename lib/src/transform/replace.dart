@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:prosemirror/src/model/model.dart';
 
-import 'step.dart';
-import 'replace_step.dart';
-import 'structure.dart';
-import 'transform.dart';
+import 'package:prosemirror/src/transform/step.dart';
+import 'package:prosemirror/src/transform/replace_step.dart';
+import 'package:prosemirror/src/transform/structure.dart';
+import 'package:prosemirror/src/transform/transform.dart';
 
 /// 'Fit' a slice into a given position in the document, producing a
 /// [Step] that inserts it. Will return null if there's no meaningful

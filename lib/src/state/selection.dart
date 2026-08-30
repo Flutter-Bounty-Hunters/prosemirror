@@ -1,7 +1,7 @@
 import 'package:prosemirror/src/model/model.dart';
 import 'package:prosemirror/src/transform/transform_library.dart';
 
-import 'transaction.dart';
+import 'package:prosemirror/src/state/transaction.dart';
 
 /// Registry of selection classes by their JSON ID, used by
 /// [Selection.fromJSON] to disambiguate serialized selections.

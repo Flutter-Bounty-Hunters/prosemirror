@@ -1,10 +1,10 @@
-import 'compare_deep.dart';
-import 'content.dart';
-import 'fragment.dart';
-import 'mark.dart';
-import 'replace.dart';
-import 'resolved_pos.dart';
-import 'schema.dart';
+import 'package:prosemirror/src/model/compare_deep.dart';
+import 'package:prosemirror/src/model/content.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/resolved_pos.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 const Attrs _emptyAttrs = <String, Object?>{};
 

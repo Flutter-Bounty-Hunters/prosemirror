@@ -1,8 +1,8 @@
 import 'package:prosemirror/src/model/model.dart';
 
-import 'plugin.dart';
-import 'selection.dart';
-import 'transaction.dart';
+import 'package:prosemirror/src/state/plugin.dart';
+import 'package:prosemirror/src/state/selection.dart';
+import 'package:prosemirror/src/state/transaction.dart';
 
 class _FieldDesc {
   _FieldDesc(this.name, StateField desc) : init = desc.init, apply = desc.apply;

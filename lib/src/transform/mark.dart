@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:prosemirror/src/model/model.dart';
 
-import 'step.dart';
-import 'transform.dart';
-import 'mark_step.dart';
-import 'replace_step.dart';
+import 'package:prosemirror/src/transform/step.dart';
+import 'package:prosemirror/src/transform/transform.dart';
+import 'package:prosemirror/src/transform/mark_step.dart';
+import 'package:prosemirror/src/transform/replace_step.dart';
 
 void addMark(Transform tr, int from, int to, Mark mark) {
   final removed = <Step>[];

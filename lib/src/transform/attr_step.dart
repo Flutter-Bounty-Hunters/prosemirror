@@ -1,7 +1,7 @@
 import 'package:prosemirror/src/model/model.dart';
 
-import 'step.dart';
-import 'map.dart';
+import 'package:prosemirror/src/transform/step.dart';
+import 'package:prosemirror/src/transform/map.dart';
 
 /// Update an attribute in a specific node.
 class AttrStep extends Step {

@@ -1,12 +1,12 @@
 import 'package:prosemirror/src/model/model.dart';
 
-import 'map.dart';
-import 'step.dart';
-import 'mark.dart' as mark_methods;
-import 'replace.dart' as replace_methods;
-import 'structure.dart' as structure_methods;
-import 'attr_step.dart';
-import 'mark_step.dart';
+import 'package:prosemirror/src/transform/map.dart';
+import 'package:prosemirror/src/transform/step.dart';
+import 'package:prosemirror/src/transform/mark.dart' as mark_methods;
+import 'package:prosemirror/src/transform/replace.dart' as replace_methods;
+import 'package:prosemirror/src/transform/structure.dart' as structure_methods;
+import 'package:prosemirror/src/transform/attr_step.dart';
+import 'package:prosemirror/src/transform/mark_step.dart';
 
 /// @internal
 class TransformError extends Error {

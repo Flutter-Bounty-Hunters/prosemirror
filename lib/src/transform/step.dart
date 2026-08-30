@@ -1,9 +1,9 @@
 import 'package:prosemirror/src/model/model.dart';
 
-import 'map.dart';
-import 'attr_step.dart';
-import 'mark_step.dart';
-import 'replace_step.dart';
+import 'package:prosemirror/src/transform/map.dart';
+import 'package:prosemirror/src/transform/attr_step.dart';
+import 'package:prosemirror/src/transform/mark_step.dart';
+import 'package:prosemirror/src/transform/replace_step.dart';
 
 /// The factory signature used to deserialize a [Step] from JSON.
 typedef StepJsonFactory = Step Function(Schema schema, Object? json);

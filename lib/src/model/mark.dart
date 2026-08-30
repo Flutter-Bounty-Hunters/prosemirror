@@ -1,5 +1,5 @@
-import 'compare_deep.dart';
-import 'schema.dart';
+import 'package:prosemirror/src/model/compare_deep.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 /// A mark is a piece of information that can be attached to a node, such as it
 /// being emphasized, in code font, or a link. It has a type and optionally a

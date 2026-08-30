@@ -1,6 +1,6 @@
-import 'diff.dart' as diff;
-import 'node.dart';
-import 'schema.dart';
+import 'package:prosemirror/src/model/diff.dart' as diff;
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 /// Callback signature used by [Fragment.nodesBetween] and [Node.nodesBetween].
 ///
