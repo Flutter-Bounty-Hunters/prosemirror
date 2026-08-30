@@ -1,5 +1,5 @@
-import 'fragment.dart';
-import 'schema.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 /// An outgoing edge of a [ContentMatch] state in the content automaton.
 class MatchEdge {

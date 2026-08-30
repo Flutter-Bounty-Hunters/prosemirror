@@ -1,5 +1,5 @@
-import 'mark.dart';
-import 'node.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/node.dart';
 
 /// You can resolve a position to get more information about it. Objects of this
 /// class represent such a resolved position, providing various pieces of

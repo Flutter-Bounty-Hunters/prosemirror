@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:prosemirror/src/model/model.dart';
 
-import 'step.dart';
-import 'map.dart';
+import 'package:prosemirror/src/transform/step.dart';
+import 'package:prosemirror/src/transform/map.dart';
 
 Fragment _mapFragment(
   Fragment fragment,

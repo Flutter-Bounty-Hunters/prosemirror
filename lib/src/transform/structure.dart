@@ -1,8 +1,8 @@
 import 'package:prosemirror/src/model/model.dart';
 
-import 'transform.dart';
-import 'replace_step.dart';
-import 'mark.dart';
+import 'package:prosemirror/src/transform/transform.dart';
+import 'package:prosemirror/src/transform/replace_step.dart';
+import 'package:prosemirror/src/transform/mark.dart';
 
 /// A wrapper description used by [findWrapping], [wrap], [canSplit] and
 /// [split].

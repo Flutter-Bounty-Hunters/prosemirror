@@ -1,5 +1,5 @@
-import 'state.dart';
-import 'transaction.dart';
+import 'package:prosemirror/src/state/state.dart';
+import 'package:prosemirror/src/state/transaction.dart';
 
 /// This is the type passed to the [Plugin] constructor. It provides a
 /// definition for a plugin.

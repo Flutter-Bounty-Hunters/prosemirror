@@ -1,4 +1,4 @@
-import 'fragment.dart';
+import 'package:prosemirror/src/model/fragment.dart';
 
 /// Find the first position at which fragments [a] and [b] differ, or `null`
 /// if they are the same. Faithful port of `diff.ts`.

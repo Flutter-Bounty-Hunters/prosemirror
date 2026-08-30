@@ -1,7 +1,7 @@
-import 'fragment.dart';
-import 'node.dart';
-import 'resolved_pos.dart';
-import 'schema.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/resolved_pos.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 /// Error type raised by [Node.replace] when given an invalid replacement.
 class ReplaceError implements Exception {

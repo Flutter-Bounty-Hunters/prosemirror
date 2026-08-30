@@ -1,9 +1,9 @@
 import 'package:prosemirror/src/model/model.dart';
 import 'package:prosemirror/src/transform/transform_library.dart';
 
-import 'plugin.dart';
-import 'selection.dart';
-import 'state.dart';
+import 'package:prosemirror/src/state/plugin.dart';
+import 'package:prosemirror/src/state/selection.dart';
+import 'package:prosemirror/src/state/state.dart';
 
 /// Commands are functions that take a state and an optional transaction
 /// dispatch function and:
