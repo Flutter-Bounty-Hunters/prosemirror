@@ -59,6 +59,7 @@ class Fragment {
           (to - start) < child.content.size ? to - start : child.content.size,
           callback,
           nodeStart + start,
+          child,
         );
       }
       pos = end;
@@ -359,6 +360,9 @@ class Fragment {
     }
     if (nodes is List<Node>) {
       return fromArray(nodes);
+    }
+    if (nodes is List) {
+      return fromArray(nodes.cast<Node>());
     }
     if (nodes is Node) {
       return Fragment([nodes], nodes.nodeSize);

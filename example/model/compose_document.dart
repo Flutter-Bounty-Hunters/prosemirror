@@ -23,9 +23,9 @@ void main() {
 
   // Step 4 — Insert three bullet points.
   final bulletList = schema.node("bullet_list", null, [
-    _createBulletNode("First bullet point"),
-    _createBulletNode("Second bullet point"),
-    _createBulletNode("Third bullet point"),
+    _createListItemNode("First bullet point"),
+    _createListItemNode("Second bullet point"),
+    _createListItemNode("Third bullet point"),
   ]);
   document = _appendNodes(document, [bulletList]);
   _printDocument("4. Inserted three bullet points", document);
@@ -52,7 +52,7 @@ Node _appendNodes(Node document, List<Node> blocks) {
 }
 
 /// Builds one bullet: a `list_item` wrapping a paragraph of [text].
-Node _createBulletNode(String text) {
+Node _createListItemNode(String text) {
   return schema.node("list_item", null, [
     schema.node("paragraph", null, [schema.text(text)]),
   ]);
