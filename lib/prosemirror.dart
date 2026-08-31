@@ -136,6 +136,21 @@ export 'package:prosemirror/src/collab/collab.dart'
         receiveTransaction,
         sendableSteps;
 
+// prosemirror-inputrules
+export 'package:prosemirror/src/inputrules/inputrules.dart'
+    show InputRule, inputRules, undoInputRule, runInputRules;
+export 'package:prosemirror/src/inputrules/rulebuilders.dart'
+    show wrappingInputRule, textblockTypeInputRule;
+export 'package:prosemirror/src/inputrules/rules.dart'
+    show
+        emDash,
+        ellipsis,
+        openDoubleQuote,
+        closeDoubleQuote,
+        openSingleQuote,
+        closeSingleQuote,
+        smartQuotes;
+
 // prosemirror-changeset
 export 'package:prosemirror/src/changeset/change.dart'
     show Change, Span, ChangeJSON;
