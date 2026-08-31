@@ -1,6 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:prosemirror/src/model/model.dart';
+import 'package:prosemirror/src/model/content.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 import 'package:prosemirror/src/transform/step.dart';
 import 'package:prosemirror/src/transform/transform.dart';

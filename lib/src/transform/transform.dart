@@ -1,4 +1,10 @@
-import 'package:prosemirror/src/model/model.dart';
+import 'package:prosemirror/src/model/content.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/resolved_pos.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 import 'package:prosemirror/src/transform/map.dart';
 import 'package:prosemirror/src/transform/step.dart';
@@ -240,7 +246,7 @@ class Transform {
   Transform split(
     int pos, [
     int depth = 1,
-    List<({NodeType type, Attrs? attrs})>? typesAfter,
+    List<({NodeType type, Attrs? attrs})?>? typesAfter,
   ]) {
     structure_methods.split(this, pos, depth, typesAfter);
     return this;

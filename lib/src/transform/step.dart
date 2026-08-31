@@ -1,4 +1,6 @@
-import 'package:prosemirror/src/model/model.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 import 'package:prosemirror/src/transform/map.dart';
 import 'package:prosemirror/src/transform/attr_step.dart';

@@ -1,4 +1,10 @@
-import 'package:prosemirror/src/model/model.dart';
+import 'package:prosemirror/src/model/content.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/resolved_pos.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 import 'package:prosemirror/src/transform/transform.dart';
 import 'package:prosemirror/src/transform/replace_step.dart';
@@ -327,12 +333,15 @@ bool canSplit(
   Node doc,
   int pos, [
   int depth = 1,
-  List<NodeTypeWithAttributes>? typesAfter,
+  List<NodeTypeWithAttributes?>? typesAfter,
 ]) {
   final $pos = doc.resolve(pos);
   final base = $pos.depth - depth;
-  final innerType = (typesAfter != null && typesAfter.isNotEmpty)
-      ? typesAfter[typesAfter.length - 1].type
+  final innerType =
+      (typesAfter != null &&
+          typesAfter.isNotEmpty &&
+          typesAfter[typesAfter.length - 1] != null)
+      ? typesAfter[typesAfter.length - 1]!.type
       : $pos.parent.type;
   if (base < 0 ||
       $pos.parent.type.spec.isolating ||
@@ -375,7 +384,7 @@ bool canSplit(
 }
 
 NodeTypeWithAttributes? _typeAt(
-  List<NodeTypeWithAttributes>? typesAfter,
+  List<NodeTypeWithAttributes?>? typesAfter,
   int index,
 ) {
   if (typesAfter == null || index < 0 || index >= typesAfter.length) {
@@ -388,7 +397,7 @@ void split(
   Transform tr,
   int pos, [
   int depth = 1,
-  List<NodeTypeWithAttributes>? typesAfter,
+  List<NodeTypeWithAttributes?>? typesAfter,
 ]) {
   final $pos = tr.doc.resolve(pos);
   var before = Fragment.empty;

@@ -1,5 +1,9 @@
-import 'package:prosemirror/src/model/model.dart';
-import 'package:prosemirror/src/transform/transform_library.dart';
+import 'package:prosemirror/src/model/fragment.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/resolved_pos.dart';
+import 'package:prosemirror/src/transform/map.dart';
+import 'package:prosemirror/src/transform/replace_step.dart';
 
 import 'package:prosemirror/src/state/transaction.dart';
 

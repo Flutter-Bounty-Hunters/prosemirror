@@ -1,4 +1,6 @@
-import 'package:prosemirror/src/model/model.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/schema.dart';
 
 import 'package:prosemirror/src/state/plugin.dart';
 import 'package:prosemirror/src/state/selection.dart';

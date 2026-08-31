@@ -1,12 +1,15 @@
-import 'package:prosemirror/src/model/model.dart';
-import 'package:prosemirror/src/transform/transform_library.dart';
+import 'package:prosemirror/src/model/mark.dart';
+import 'package:prosemirror/src/model/node.dart';
+import 'package:prosemirror/src/model/replace.dart';
+import 'package:prosemirror/src/model/schema.dart';
+import 'package:prosemirror/src/transform/transform.dart' show Transform;
+import 'package:prosemirror/src/transform/step.dart' show Step;
 
 import 'package:prosemirror/src/state/plugin.dart';
 import 'package:prosemirror/src/state/selection.dart';
 import 'package:prosemirror/src/state/state.dart';
 
-/// Commands are functions that take a state and an optional transaction
-/// dispatch function and:
+/// Commands take a state and an optional transaction dispatch function and:
 ///
 ///  - determine whether they apply to this state
 ///  - if not, return false
@@ -15,11 +18,39 @@ import 'package:prosemirror/src/state/state.dart';
 ///  - return true
 ///
 /// In some cases, the editor view is passed as a third argument.
-typedef Command = bool Function(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]);
+abstract interface class Command {
+  /// Executes this command against [state].
+  ///
+  /// When [dispatch] is omitted, this only reports whether the command applies.
+  bool execute(
+    EditorState state, [
+    void Function(Transaction tr)? dispatch,
+    Object? view,
+  ]);
+}
+
+/// A [Command] backed by a Dart function.
+final class FunctionCommand implements Command {
+  /// Creates a command backed by [executeCommand].
+  const FunctionCommand(this.executeCommand);
+
+  /// The function that executes this command.
+  final bool Function(
+    EditorState state, [
+    void Function(Transaction tr)? dispatch,
+    Object? view,
+  ])
+  executeCommand;
+
+  @override
+  bool execute(
+    EditorState state, [
+    void Function(Transaction tr)? dispatch,
+    Object? view,
+  ]) {
+    return executeCommand(state, dispatch, view);
+  }
+}
 
 const int _updatedSel = 1;
 const int _updatedMarks = 2;

@@ -52,7 +52,7 @@ class TestState {
   }
 
   void command(Command cmd) {
-    cmd(state, (tr) => apply(tr));
+    cmd.execute(state, (tr) => apply(tr));
   }
 
   void type(String text) {
