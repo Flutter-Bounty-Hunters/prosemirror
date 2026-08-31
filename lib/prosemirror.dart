@@ -168,6 +168,30 @@ export 'package:prosemirror/src/markdown/markdown.dart'
         markdownSchemaMarks,
         markdownSchemaNodes;
 
+// prosemirror-search
+export 'package:prosemirror/src/search/search.dart'
+    show
+        SearchHighlights,
+        SearchHighlight,
+        SearchQuery,
+        SearchRange,
+        SearchReplacement,
+        SearchResult,
+        SearchResultFilter,
+        SearchState,
+        findNext,
+        findNextNoWrap,
+        findPrev,
+        findPrevNoWrap,
+        getMatchHighlights,
+        getSearchState,
+        replaceAll,
+        replaceCurrent,
+        replaceNext,
+        replaceNextNoWrap,
+        search,
+        setSearchState;
+
 // prosemirror-inputrules
 export 'package:prosemirror/src/inputrules/inputrules.dart'
     show InputRule, inputRules, undoInputRule, runInputRules;
