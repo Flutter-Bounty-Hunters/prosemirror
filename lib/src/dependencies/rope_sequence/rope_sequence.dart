@@ -32,8 +32,19 @@ abstract class RopeSequence<T> {
     if (value is RopeSequence<T>) {
       return value;
     }
-    if (value is List<T> && value.isNotEmpty) {
-      return _Leaf<T>(value);
+    if (value is List<T>) {
+      return value.isEmpty ? empty as RopeSequence<T> : _Leaf<T>(value);
+    }
+    if (value is List) {
+      // A non-empty list whose element type is not statically `T`. This happens
+      // when a caller appends, say, a `List<int>` onto the shared `Never`-typed
+      // [empty] rope, or passes a loosely typed `List<dynamic>`. Copy it into a
+      // `List<T>` so the elements are preserved: when they genuinely are `T`
+      // this succeeds, and when they are not it throws a clear error instead of
+      // silently discarding the list.
+      return value.isEmpty
+          ? empty as RopeSequence<T>
+          : _Leaf<T>(List<T>.from(value));
     }
     return empty as RopeSequence<T>;
   }

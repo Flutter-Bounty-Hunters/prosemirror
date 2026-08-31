@@ -12,6 +12,16 @@ void main() {
     test("a deque-built rope of 10000 elements passes all checks", () {
       _check(_dequeBuild(_size), _size, "dequed");
     });
+
+    test("preserves the elements of a loosely typed list instead of dropping them", () {
+      // A list whose static element type is not the rope's element type (here a
+      // `List<dynamic>` rather than a `List<int>`) must still be appended in
+      // full, rather than being silently discarded.
+      final rope = RopeSequence.from(<int>[1, 2]).append(<dynamic>[3, 4]);
+
+      expect(rope.length, 4);
+      expect(rope.map((element, index) => element), [1, 2, 3, 4]);
+    });
   });
 
   group("RopeSequence > slice >", () {

@@ -104,3 +104,16 @@ export 'package:prosemirror/src/commands/commands.dart'
         splitBlockKeepMarks,
         toggleMark,
         wrapIn;
+
+// prosemirror-collab
+export 'package:prosemirror/collab/collab.dart'
+    show
+        CollabConfig,
+        ReceiveTransactionOptions,
+        RebaseableStep,
+        SendableSteps,
+        collab,
+        getVersion,
+        rebaseSteps,
+        receiveTransaction,
+        sendableSteps;
