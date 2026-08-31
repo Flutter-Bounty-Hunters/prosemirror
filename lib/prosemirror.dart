@@ -14,6 +14,24 @@ export 'package:prosemirror/src/model/replace.dart';
 export 'package:prosemirror/src/model/resolved_pos.dart';
 export 'package:prosemirror/src/model/schema.dart';
 
+// prosemirror-schema-basic
+export 'package:prosemirror/src/schema_basic/schema_basic.dart'
+    show basicSchema, basicSchemaNodes, basicSchemaMarks;
+
+// prosemirror-schema-list
+export 'package:prosemirror/src/schema_list/schema_list.dart'
+    show
+        orderedList,
+        bulletList,
+        listItem,
+        addListNodes,
+        wrapInList,
+        wrapRangeInList,
+        splitListItem,
+        splitListItemKeepMarks,
+        liftListItem,
+        sinkListItem;
+
 // prosemirror-transform
 export 'package:prosemirror/src/transform/transform.dart'
     show Transform, TransformError;
