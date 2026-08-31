@@ -3,6 +3,16 @@ library;
 export 'package:prosemirror/src/dependencies/orderedmap/ordered_map.dart';
 export 'package:prosemirror/src/dependencies/rope_sequence/rope_sequence.dart';
 
+// w3c-keyname
+export 'package:prosemirror/src/dependencies/w3c_keyname/w3c_keyname.dart'
+    show base, keyName, KeyEvent;
+export 'package:prosemirror/src/dependencies/w3c_keyname/platform.dart'
+    show isMacPlatform, isWindowsPlatform;
+
+// prosemirror-keymap
+export 'package:prosemirror/src/keymap/keymap.dart'
+    show keymap, keydownHandler, KeymapView, KeydownHandler;
+
 // prosemirror-model
 export 'package:prosemirror/src/model/compare_deep.dart';
 export 'package:prosemirror/src/model/content.dart';
