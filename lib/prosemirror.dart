@@ -106,7 +106,7 @@ export 'package:prosemirror/src/commands/commands.dart'
         wrapIn;
 
 // prosemirror-collab
-export 'package:prosemirror/collab/collab.dart'
+export 'package:prosemirror/src/collab/collab.dart'
     show
         CollabConfig,
         ReceiveTransactionOptions,
