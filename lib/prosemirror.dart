@@ -117,3 +117,12 @@ export 'package:prosemirror/src/collab/collab.dart'
         rebaseSteps,
         receiveTransaction,
         sendableSteps;
+
+// prosemirror-changeset
+export 'package:prosemirror/src/changeset/change.dart'
+    show Change, Span, ChangeJSON;
+export 'package:prosemirror/src/changeset/changeset.dart'
+    show ChangeSet, ChangeSetConfig;
+export 'package:prosemirror/src/changeset/diff.dart'
+    show computeDiff, TokenEncoder, DefaultEncoder;
+export 'package:prosemirror/src/changeset/simplify.dart' show simplifyChanges;
