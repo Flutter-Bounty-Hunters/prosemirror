@@ -146,6 +146,28 @@ export 'package:prosemirror/src/collab/collab.dart'
         receiveTransaction,
         sendableSteps;
 
+// prosemirror-markdown
+export 'package:prosemirror/src/markdown/markdown.dart'
+    show
+        ListDelimiter,
+        MarkdownParser,
+        MarkdownSerializer,
+        MarkdownSerializerOptions,
+        MarkdownSerializerState,
+        MarkdownToken,
+        MarkdownTokenizer,
+        MarkSerializerSpec,
+        MarkString,
+        NodeSerializer,
+        ParseAttrs,
+        ParseSpec,
+        defaultMarkdownParser,
+        defaultMarkdownSerializer,
+        defaultMarkdownParseSpecs,
+        markdownSchema,
+        markdownSchemaMarks,
+        markdownSchemaNodes;
+
 // prosemirror-inputrules
 export 'package:prosemirror/src/inputrules/inputrules.dart'
     show InputRule, inputRules, undoInputRule, runInputRules;
