@@ -1,6 +1,7 @@
 library;
 
 export 'package:prosemirror/src/dependencies/orderedmap/ordered_map.dart';
+export 'package:prosemirror/src/dependencies/rope_sequence/rope_sequence.dart';
 
 // prosemirror-model
 export 'package:prosemirror/src/model/compare_deep.dart';
