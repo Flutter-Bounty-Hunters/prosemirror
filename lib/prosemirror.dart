@@ -54,6 +54,21 @@ export 'package:prosemirror/src/state/state.dart'
 export 'package:prosemirror/src/state/plugin.dart'
     show Plugin, PluginKey, PluginSpec, StateField, PluginView;
 
+// prosemirror-history
+export 'package:prosemirror/src/history/history.dart'
+    show
+        history,
+        closeHistory,
+        undo,
+        redo,
+        undoNoScroll,
+        redoNoScroll,
+        undoDepth,
+        redoDepth,
+        isHistoryTransaction,
+        HistoryOptions,
+        HistoryState;
+
 // prosemirror-commands
 export 'package:prosemirror/src/commands/commands.dart'
     show
