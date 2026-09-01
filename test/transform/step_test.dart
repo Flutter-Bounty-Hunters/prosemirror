@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Step > merge >", () {
@@ -83,35 +83,15 @@ void main() {
   });
 }
 
-void _expectMerges(
-  int from1,
-  int to1,
-  String? value1,
-  int from2,
-  int to2,
-  String? value2,
-) {
+void _expectMerges(int from1, int to1, String? value1, int from2, int to2, String? value2) {
   final step1 = _mkStep(from1, to1, value1);
   final step2 = _mkStep(from2, to2, value2);
   final merged = step1.merge(step2);
   expect(merged, isNotNull);
-  expect(
-    eq(
-      merged!.apply(_testDoc).doc,
-      step2.apply(step1.apply(_testDoc).doc!).doc,
-    ),
-    isTrue,
-  );
+  expect(eq(merged!.apply(_testDoc).doc, step2.apply(step1.apply(_testDoc).doc!).doc), isTrue);
 }
 
-void _expectNoMerge(
-  int from1,
-  int to1,
-  String? value1,
-  int from2,
-  int to2,
-  String? value2,
-) {
+void _expectNoMerge(int from1, int to1, String? value1, int from2, int to2, String? value2) {
   final step1 = _mkStep(from1, to1, value1);
   final step2 = _mkStep(from2, to2, value2);
   expect(step1.merge(step2), isNull);
@@ -123,14 +103,8 @@ Step _mkStep(int from, int to, String? value) {
   } else if (value == "-em") {
     return RemoveMarkStep(from, to, schema.marks["em"]!.create());
   } else {
-    return ReplaceStep(
-      from,
-      to,
-      value == null
-          ? Slice.empty
-          : Slice(Fragment.from(schema.text(value)), 0, 0),
-    );
+    return ReplaceStep(from, to, value == null ? Slice.empty : Slice(Fragment.from(schema.text(value)), 0, 0));
   }
 }
 
-final Node _testDoc = doc(p("foobar"));
+final Node _testDoc = document(p("foobar"));

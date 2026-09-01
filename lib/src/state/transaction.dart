@@ -22,11 +22,7 @@ abstract interface class Command {
   /// Executes this command against [state].
   ///
   /// When [dispatch] is omitted, this only reports whether the command applies.
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]);
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]);
 }
 
 /// A [Command] backed by a Dart function.
@@ -35,19 +31,10 @@ final class FunctionCommand implements Command {
   const FunctionCommand(this.executeCommand);
 
   /// The function that executes this command.
-  final bool Function(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ])
-  executeCommand;
+  final bool Function(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) executeCommand;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     return executeCommand(state, dispatch, view);
   }
 }
@@ -105,9 +92,7 @@ class Transaction extends Transform {
   /// selection that the editor gets when the transaction is applied.
   Transaction setSelection(Selection selection) {
     if (selection.$from.doc != doc) {
-      throw RangeError(
-        "Selection passed to setSelection must point at the current document",
-      );
+      throw RangeError("Selection passed to setSelection must point at the current document");
     }
     _curSelection = selection;
     _curSelectionFor = steps.length;
@@ -182,9 +167,7 @@ class Transaction extends Transform {
     if (inheritMarks) {
       resultNode = node.mark(
         storedMarks ??
-            (selection.empty
-                ? selection.$from.marks()
-                : (selection.$from.marksAcross(selection.$to) ?? Mark.none)),
+            (selection.empty ? selection.$from.marks() : (selection.$from.marksAcross(selection.$to) ?? Mark.none)),
       );
     }
     selection.replaceWith(this, resultNode);

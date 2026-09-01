@@ -49,8 +49,7 @@ class ResolvedPos {
   /// level.
   int indexAfter([int? depth]) {
     final resolved = resolveDepth(depth);
-    return index(resolved) +
-        (resolved == this.depth && textOffset == 0 ? 0 : 1);
+    return index(resolved) + (resolved == this.depth && textOffset == 0 ? 0 : 1);
   }
 
   /// The (absolute) position at the start of the node at the given level.
@@ -82,10 +81,7 @@ class ResolvedPos {
     if (resolved == 0) {
       throw RangeError("There is no position after the top-level node");
     }
-    return resolved == this.depth + 1
-        ? pos
-        : (path[resolved * 3 - 1] as int) +
-              (path[resolved * 3] as Node).nodeSize;
+    return resolved == this.depth + 1 ? pos : (path[resolved * 3 - 1] as int) + (path[resolved * 3] as Node).nodeSize;
   }
 
   /// When this position points into a text node, the distance between the
@@ -149,8 +145,7 @@ class ResolvedPos {
 
     var marks = main!.marks;
     for (var markIndex = 0; markIndex < marks.length; markIndex++) {
-      if (marks[markIndex].type.spec.inclusive == false &&
-          (other == null || !marks[markIndex].isInSet(other.marks))) {
+      if (marks[markIndex].type.spec.inclusive == false && (other == null || !marks[markIndex].isInSet(other.marks))) {
         marks = marks[markIndex].removeFromSet(marks);
         markIndex--;
       }
@@ -170,8 +165,7 @@ class ResolvedPos {
     var marks = after.marks;
     final next = $end.parent.maybeChild($end.index());
     for (var markIndex = 0; markIndex < marks.length; markIndex++) {
-      if (marks[markIndex].type.spec.inclusive == false &&
-          (next == null || !marks[markIndex].isInSet(next.marks))) {
+      if (marks[markIndex].type.spec.inclusive == false && (next == null || !marks[markIndex].isInSet(next.marks))) {
         marks = marks[markIndex].removeFromSet(marks);
         markIndex--;
       }
@@ -198,13 +192,11 @@ class ResolvedPos {
       return other.blockRange(this);
     }
     for (
-      var currentDepth =
-          depth - (parent.inlineContent || pos == other.pos ? 1 : 0);
+      var currentDepth = depth - (parent.inlineContent || pos == other.pos ? 1 : 0);
       currentDepth >= 0;
       currentDepth--
     ) {
-      if (other.pos <= end(currentDepth) &&
-          (predicate == null || predicate(node(currentDepth)))) {
+      if (other.pos <= end(currentDepth) && (predicate == null || predicate(node(currentDepth)))) {
         return NodeRange(this, other, currentDepth);
       }
     }
@@ -231,8 +223,7 @@ class ResolvedPos {
   String toString() {
     var result = "";
     for (var level = 1; level <= depth; level++) {
-      result +=
-          "${result.isNotEmpty ? "/" : ""}${node(level).type.name}_${index(level - 1)}";
+      result += "${result.isNotEmpty ? "/" : ""}${node(level).type.name}_${index(level - 1)}";
     }
     return "$result:$parentOffset";
   }

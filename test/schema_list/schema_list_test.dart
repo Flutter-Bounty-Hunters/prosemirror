@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("wrapInList >", () {
@@ -9,57 +9,42 @@ void main() {
     final wrapOrdered = wrapInList(schema.nodes["ordered_list"]!);
 
     test("can wrap a paragraph", () {
-      _apply(doc(p("<a>foo")), wrap, doc(ul(li(p("foo")))));
+      _apply(document(p("<a>foo")), wrap, document(ul(li(p("foo")))));
     });
 
     test("can wrap a nested paragraph", () {
-      _apply(
-        doc(blockquote(p("<a>foo"))),
-        wrapOrdered,
-        doc(blockquote(ol(li(p("foo"))))),
-      );
+      _apply(document(blockquote(p("<a>foo"))), wrapOrdered, document(blockquote(ol(li(p("foo"))))));
     });
 
     test("can wrap multiple paragraphs", () {
-      _apply(
-        doc(p("foo"), p("ba<a>r"), p("ba<b>z")),
-        wrap,
-        doc(p("foo"), ul(li(p("bar")), li(p("baz")))),
-      );
+      _apply(document(p("foo"), p("ba<a>r"), p("ba<b>z")), wrap, document(p("foo"), ul(li(p("bar")), li(p("baz")))));
     });
 
     test("doesn't wrap the first paragraph in a list item", () {
-      _apply(doc(ul(li(p("<a>foo")))), wrap, null);
+      _apply(document(ul(li(p("<a>foo")))), wrap, null);
     });
 
     test("doesn't wrap the first para in a different type of list item", () {
-      _apply(doc(ol(li(p("<a>foo")))), wrapOrdered, null);
+      _apply(document(ol(li(p("<a>foo")))), wrapOrdered, null);
     });
 
     test("does wrap the second paragraph in a list item", () {
+      _apply(document(ul(li(p("foo"), p("<a>bar")))), wrap, document(ul(li(p("foo"), ul(li(p("bar")))))));
+    });
+
+    test("joins with the list item above when wrapping its first paragraph", () {
       _apply(
-        doc(ul(li(p("foo"), p("<a>bar")))),
-        wrap,
-        doc(ul(li(p("foo"), ul(li(p("bar")))))),
+        document(ul(li(p("foo")), li(p("<a>bar")), li(p("baz")))),
+        wrapOrdered,
+        document(ul(li(p("foo"), ol(li(p("bar")))), li(p("baz")))),
       );
     });
 
-    test(
-      "joins with the list item above when wrapping its first paragraph",
-      () {
-        _apply(
-          doc(ul(li(p("foo")), li(p("<a>bar")), li(p("baz")))),
-          wrapOrdered,
-          doc(ul(li(p("foo"), ol(li(p("bar")))), li(p("baz")))),
-        );
-      },
-    );
-
     test("only splits items where valid", () {
       _apply(
-        doc(p("<a>one"), ol(li("two")), p("three<b>")),
+        document(p("<a>one"), ol(li("two")), p("three<b>")),
         wrapOrdered,
-        doc(ol(li(p("one"), ol(li("two"))), li(p("three")))),
+        document(ol(li(p("one"), ol(li("two"))), li(p("three")))),
       );
     });
   });
@@ -68,58 +53,46 @@ void main() {
     final split = splitListItem(schema.nodes["list_item"]!);
 
     test("has no effect outside of a list", () {
-      _apply(doc(p("foo<a>bar")), split, null);
+      _apply(document(p("foo<a>bar")), split, null);
     });
 
     test("has no effect on the top level", () {
-      _apply(doc("<a>", p("foobar")), split, null);
+      _apply(document("<a>", p("foobar")), split, null);
     });
 
     test("can split a list item", () {
-      _apply(
-        doc(ul(li(p("foo<a>bar")))),
-        split,
-        doc(ul(li(p("foo")), li(p("bar")))),
-      );
+      _apply(document(ul(li(p("foo<a>bar")))), split, document(ul(li(p("foo")), li(p("bar")))));
     });
 
     test("can split a list item at the end", () {
-      _apply(
-        doc(ul(li(p("foobar<a>")))),
-        split,
-        doc(ul(li(p("foobar")), li(p()))),
-      );
+      _apply(document(ul(li(p("foobar<a>")))), split, document(ul(li(p("foobar")), li(p()))));
     });
 
     test("deletes selected content", () {
-      _apply(
-        doc(ul(li(p("foo<a>ba<b>r")))),
-        split,
-        doc(ul(li(p("foo")), li(p("r")))),
-      );
+      _apply(document(ul(li(p("foo<a>ba<b>r")))), split, document(ul(li(p("foo")), li(p("r")))));
     });
 
     test("splits when lifting from a nested list", () {
       _apply(
-        doc(ul(li(p("a"), ul(li(p("b")), li(p("<a>"))))), p("x")),
+        document(ul(li(p("a"), ul(li(p("b")), li(p("<a>"))))), p("x")),
         split,
-        doc(ul(li(p("a"), ul(li(p("b")))), li(p("<a>"))), p("x")),
+        document(ul(li(p("a"), ul(li(p("b")))), li(p("<a>"))), p("x")),
       );
     });
 
     test("can lift from a continued nested list item", () {
       _apply(
-        doc(ul(li(p("a"), ul(li(p("b")), li(p("ok"), p("<a>"))))), p("x")),
+        document(ul(li(p("a"), ul(li(p("b")), li(p("ok"), p("<a>"))))), p("x")),
         split,
-        doc(ul(li(p("a"), ul(li(p("b")), li(p("ok")))), li(p("<a>"))), p("x")),
+        document(ul(li(p("a"), ul(li(p("b")), li(p("ok")))), li(p("<a>"))), p("x")),
       );
     });
 
     test("correctly lifts an entirely empty sublist", () {
       _apply(
-        doc(ul(li(p("one"), ul(li(p("<a>"))), p("two")))),
+        document(ul(li(p("one"), ul(li(p("<a>"))), p("two")))),
         split,
-        doc(ul(li(p("one")), li(p("<a>")), li(p("two")))),
+        document(ul(li(p("one")), li(p("<a>")), li(p("two")))),
       );
     });
   });
@@ -129,95 +102,69 @@ void main() {
 
     test("can lift from a nested list", () {
       _apply(
-        doc(ul(li(p("hello"), ul(li(p("o<a><b>ne")), li(p("two")))))),
+        document(ul(li(p("hello"), ul(li(p("o<a><b>ne")), li(p("two")))))),
         lift,
-        doc(ul(li(p("hello")), li(p("one"), ul(li(p("two")))))),
+        document(ul(li(p("hello")), li(p("one"), ul(li(p("two")))))),
       );
     });
 
     test("can lift two items from a nested list", () {
       _apply(
-        doc(ul(li(p("hello"), ul(li(p("o<a>ne")), li(p("two<b>")))))),
+        document(ul(li(p("hello"), ul(li(p("o<a>ne")), li(p("two<b>")))))),
         lift,
-        doc(ul(li(p("hello")), li(p("one")), li(p("two")))),
+        document(ul(li(p("hello")), li(p("one")), li(p("two")))),
       );
     });
 
     test("can lift two items from a nested three-item list", () {
       _apply(
-        doc(
-          ul(
-            li(
-              p("hello"),
-              ul(li(p("o<a>ne")), li(p("two<b>")), li(p("three"))),
-            ),
-          ),
-        ),
+        document(ul(li(p("hello"), ul(li(p("o<a>ne")), li(p("two<b>")), li(p("three")))))),
         lift,
-        doc(ul(li(p("hello")), li(p("one")), li(p("two"), ul(li(p("three")))))),
+        document(ul(li(p("hello")), li(p("one")), li(p("two"), ul(li(p("three")))))),
       );
     });
 
     test("can lift an item out of a list", () {
-      _apply(
-        doc(p("a"), ul(li(p("b<a>"))), p("c")),
-        lift,
-        doc(p("a"), p("b"), p("c")),
-      );
+      _apply(document(p("a"), ul(li(p("b<a>"))), p("c")), lift, document(p("a"), p("b"), p("c")));
     });
 
     test("can lift two items out of a list", () {
       _apply(
-        doc(p("a"), ul(li(p("b<a>")), li(p("c<b>"))), p("d")),
+        document(p("a"), ul(li(p("b<a>")), li(p("c<b>"))), p("d")),
         lift,
-        doc(p("a"), p("b"), p("c"), p("d")),
+        document(p("a"), p("b"), p("c"), p("d")),
       );
     });
 
     test("can lift three items from the middle of a list", () {
       _apply(
-        doc(
-          ul(li(p("a")), li(p("b<a>")), li(p("c")), li(p("d<b>")), li(p("e"))),
-        ),
+        document(ul(li(p("a")), li(p("b<a>")), li(p("c")), li(p("d<b>")), li(p("e")))),
         lift,
-        doc(ul(li(p("a"))), p("b"), p("c"), p("d"), ul(li(p("e")))),
+        document(ul(li(p("a"))), p("b"), p("c"), p("d"), ul(li(p("e")))),
       );
     });
 
     test("can lift the first item from a list", () {
-      _apply(
-        doc(ul(li(p("a<a>")), li(p("b")), li(p("c")))),
-        lift,
-        doc(p("a"), ul(li(p("b")), li(p("c")))),
-      );
+      _apply(document(ul(li(p("a<a>")), li(p("b")), li(p("c")))), lift, document(p("a"), ul(li(p("b")), li(p("c")))));
     });
 
     test("can lift the last item from a list", () {
-      _apply(
-        doc(ul(li(p("a")), li(p("b")), li(p("c<a>")))),
-        lift,
-        doc(ul(li(p("a")), li(p("b"))), p("c")),
-      );
+      _apply(document(ul(li(p("a")), li(p("b")), li(p("c<a>")))), lift, document(ul(li(p("a")), li(p("b"))), p("c")));
     });
 
     test("joins adjacent lists when lifting an item with subitems", () {
       _apply(
-        doc(
-          ol(
-            li(p("a"), ol(li(p("<a>b<b>"), ol(li(p("c")))), li(p("d")))),
-            li(p("e")),
-          ),
-        ),
+        document(ol(li(p("a"), ol(li(p("<a>b<b>"), ol(li(p("c")))), li(p("d")))), li(p("e")))),
         lift,
-        doc(ol(li(p("a")), li(p("b"), ol(li(p("c")), li(p("d")))), li(p("e")))),
+        document(ol(li(p("a")), li(p("b"), ol(li(p("c")), li(p("d")))), li(p("e")))),
       );
     });
 
     test("only joins adjacent lists when lifting if their types match", () {
       _apply(
-        doc(ol(li(p("a"), ul(li(p("<a>b<b>"), ol(li(p("c")))), li(p("d")))))),
+        document(ol(li(p("a"), ul(li(p("<a>b<b>"), ol(li(p("c")))), li(p("d")))))),
         lift,
-        doc(ol(li(p("a")), li(p("b"), ol(li(p("c"))), ul(li(p("d")))))),
+        document(ol(li(p("a")), li(p("b"), ol(li(p("c"))), ul(li(p("d")))))),
       );
     });
   });
@@ -227,40 +174,28 @@ void main() {
 
     test("can wrap a simple item in a list", () {
       _apply(
-        doc(ul(li(p("one")), li(p("t<a><b>wo")), li(p("three")))),
+        document(ul(li(p("one")), li(p("t<a><b>wo")), li(p("three")))),
         sink,
-        doc(ul(li(p("one"), ul(li(p("two")))), li(p("three")))),
+        document(ul(li(p("one"), ul(li(p("two")))), li(p("three")))),
       );
     });
 
     test("won't wrap the first item in a sublist", () {
-      _apply(
-        doc(ul(li(p("o<a><b>ne")), li(p("two")), li(p("three")))),
-        sink,
-        null,
-      );
+      _apply(document(ul(li(p("o<a><b>ne")), li(p("two")), li(p("three")))), sink, null);
     });
 
     test("will move an item's content into the item above", () {
       _apply(
-        doc(
-          ul(
-            li(p("one")),
-            li(p("..."), ul(li(p("two")))),
-            li(p("t<a><b>hree")),
-          ),
-        ),
+        document(ul(li(p("one")), li(p("..."), ul(li(p("two")))), li(p("t<a><b>hree")))),
         sink,
-        doc(ul(li(p("one")), li(p("..."), ul(li(p("two")), li(p("three")))))),
+        document(ul(li(p("one")), li(p("..."), ul(li(p("two")), li(p("three")))))),
       );
     });
   });
 }
 
 void _apply(Node document, Command command, Node? result) {
-  var state = EditorState.create(
-    EditorStateConfig(doc: document, selection: _selFor(document)),
-  );
+  var state = EditorState.create(EditorStateConfig(doc: document, selection: _selFor(document)));
   command.execute(state, (tr) => state = state.apply(tr));
 
   expect(state.doc.eq(result ?? document), isTrue);

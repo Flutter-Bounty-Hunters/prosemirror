@@ -6,13 +6,12 @@
 /// writing state/selection tests concise).
 ///
 /// The position `tag` mechanism (`node.tag["a"]`) and the model builders are
-/// reused from the existing model test support at
-/// `test/model/support/builders.dart`.
+/// reused from the central `package:prosemirror/test_builder.dart`.
 library;
 
 import 'package:prosemirror/prosemirror.dart';
 
-import '../../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 /// Builds a default selection for a document produced by the test builders.
 ///
@@ -40,9 +39,7 @@ class TestState {
     if (selection == null && doc != null) {
       selection = selFor(doc);
     }
-    state = EditorState.create(
-      EditorStateConfig(selection: selection, doc: doc, schema: schema),
-    );
+    state = EditorState.create(EditorStateConfig(selection: selection, doc: doc, schema: schema));
   }
 
   late EditorState state;

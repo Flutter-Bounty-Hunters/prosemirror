@@ -167,10 +167,7 @@ class Transform {
   }
 
   /// Wrap the given [range](NodeRange) in the given set of wrappers.
-  Transform wrap(
-    NodeRange range,
-    List<({NodeType type, Attrs? attrs})> wrappers,
-  ) {
+  Transform wrap(NodeRange range, List<({NodeType type, Attrs? attrs})> wrappers) {
     structure_methods.wrap(this, range, wrappers);
     return this;
   }
@@ -184,12 +181,7 @@ class Transform {
 
   /// Change the type, attributes, and/or marks of the node at `pos`.
   /// When `type` isn't given, the existing node type is preserved.
-  Transform setNodeMarkup(
-    int pos, [
-    NodeType? type,
-    Attrs? attrs,
-    List<Mark>? marks,
-  ]) {
+  Transform setNodeMarkup(int pos, [NodeType? type, Attrs? attrs, List<Mark>? marks]) {
     structure_methods.setNodeMarkup(this, pos, type, attrs, marks);
     return this;
   }
@@ -243,11 +235,7 @@ class Transform {
 
   /// Split the node at the given position, and optionally, if `depth`
   /// is greater than one, any number of nodes above that.
-  Transform split(
-    int pos, [
-    int depth = 1,
-    List<({NodeType type, Attrs? attrs})?>? typesAfter,
-  ]) {
+  Transform split(int pos, [int depth = 1, List<({NodeType type, Attrs? attrs})?>? typesAfter]) {
     structure_methods.split(this, pos, depth, typesAfter);
     return this;
   }
@@ -269,11 +257,7 @@ class Transform {
 
   /// Removes all marks and nodes from the content of the node at `pos`
   /// that don't match the given new parent node type.
-  Transform clearIncompatible(
-    int pos,
-    NodeType parentType, [
-    ContentMatch? match,
-  ]) {
+  Transform clearIncompatible(int pos, NodeType parentType, [ContentMatch? match]) {
     mark_methods.clearIncompatible(this, pos, parentType, match);
     return this;
   }

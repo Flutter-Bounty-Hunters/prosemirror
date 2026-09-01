@@ -20,11 +20,7 @@ class Span<Data> {
   }
 
   /// @internal
-  static List<Span<Data>> slice<Data>(
-    List<Span<Data>> spans,
-    int from,
-    int to,
-  ) {
+  static List<Span<Data>> slice<Data>(List<Span<Data>> spans, int from, int to) {
     if (from == to) {
       return Span.none<Data>();
     }
@@ -85,14 +81,7 @@ class Span<Data> {
 /// A replaced range with metadata associated with it.
 class Change<Data> {
   /// @internal
-  Change(
-    this.fromA,
-    this.toA,
-    this.fromB,
-    this.toB,
-    this.deleted,
-    this.inserted,
-  );
+  Change(this.fromA, this.toA, this.fromB, this.toB, this.deleted, this.inserted);
 
   /// The start of the range deleted/replaced in the old document.
   final int fromA;
@@ -122,10 +111,7 @@ class Change<Data> {
 
   /// @internal
   Change<Data> slice(int startA, int endA, int startB, int endB) {
-    if (startA == 0 &&
-        startB == 0 &&
-        endA == toA - fromA &&
-        endB == toB - fromB) {
+    if (startA == 0 && startB == 0 && endA == toA - fromA && endB == toB - fromB) {
       return this;
     }
     return Change<Data>(
@@ -163,8 +149,7 @@ class Change<Data> {
     for (;;) {
       if (currentX == null && currentY == null) {
         return result;
-      } else if (currentX != null &&
-          (currentY == null || currentX.toB < currentY.fromA)) {
+      } else if (currentX != null && (currentY == null || currentX.toB < currentY.fromA)) {
         // currentX entirely in front of currentY
         final offset = indexY != 0 ? y[indexY - 1].toB - y[indexY - 1].toA : 0;
         result.add(
@@ -180,8 +165,7 @@ class Change<Data> {
                 ),
         );
         currentX = indexX++ == x.length ? null : _elementAt(x, indexX);
-      } else if (currentY != null &&
-          (currentX == null || currentY.toA < currentX.fromB)) {
+      } else if (currentY != null && (currentX == null || currentY.toA < currentX.fromB)) {
         // currentY entirely in front of currentX
         final offset = indexX != 0 ? x[indexX - 1].toB - x[indexX - 1].toA : 0;
         result.add(
@@ -208,14 +192,12 @@ class Change<Data> {
         final nonNullY = currentY!;
         var fromA = math.min(
           nonNullX.fromA,
-          nonNullY.fromA -
-              (indexX != 0 ? x[indexX - 1].toB - x[indexX - 1].toA : 0),
+          nonNullY.fromA - (indexX != 0 ? x[indexX - 1].toB - x[indexX - 1].toA : 0),
         );
         var toA = fromA;
         var fromB = math.min(
           nonNullY.fromB,
-          nonNullX.fromB +
-              (indexY != 0 ? y[indexY - 1].toB - y[indexY - 1].toA : 0),
+          nonNullX.fromB + (indexY != 0 ? y[indexY - 1].toB - y[indexY - 1].toA : 0),
         );
         var toB = fromB;
         var pos = math.min(nonNullX.fromB, nonNullY.fromA);
@@ -253,11 +235,7 @@ class Change<Data> {
           if (inX && !inY) {
             inserted = Span.join(
               inserted,
-              Span.slice(
-                currentX.inserted,
-                pos - currentX.fromB,
-                next - currentX.fromB,
-              ),
+              Span.slice(currentX.inserted, pos - currentX.fromB, next - currentX.fromB),
               combine,
             );
             toB += next - pos;
@@ -270,11 +248,7 @@ class Change<Data> {
           if (inY && !inX) {
             deleted = Span.join(
               deleted,
-              Span.slice(
-                currentY.deleted,
-                pos - currentY.fromA,
-                next - currentY.fromA,
-              ),
+              Span.slice(currentY.deleted, pos - currentY.fromA, next - currentY.fromA),
               combine,
             );
             toA += next - pos;
@@ -323,12 +297,10 @@ class Change<Data> {
       "fromB": fromB,
       "toB": toB,
       "deleted": [
-        for (final span in deleted)
-          <String, Object?>{"length": span.length, "data": span.data},
+        for (final span in deleted) <String, Object?>{"length": span.length, "data": span.data},
       ],
       "inserted": [
-        for (final span in inserted)
-          <String, Object?>{"length": span.length, "data": span.data},
+        for (final span in inserted) <String, Object?>{"length": span.length, "data": span.data},
       ],
     };
   }

@@ -3,9 +3,7 @@ import 'package:prosemirror/prosemirror.dart';
 /// An ordered list [node spec](NodeSpec). Has a single attribute, `order`,
 /// which determines the number at which the list starts counting, and defaults
 /// to 1.
-final NodeSpec orderedList = NodeSpec(
-  attrs: {"order": AttributeSpec(defaultValue: 1, validate: "number")},
-);
+final NodeSpec orderedList = NodeSpec(attrs: {"order": AttributeSpec(defaultValue: 1, validate: "number")});
 
 /// A bullet list node spec.
 final NodeSpec bulletList = NodeSpec();
@@ -22,11 +20,7 @@ final NodeSpec listItem = NodeSpec(defining: true);
 /// should have a shape like `"paragraph block*"` or
 /// `"paragraph (ordered_list | bullet_list)*"`. `listGroup` can be given to
 /// assign a group name to the list node types, for example `"block"`.
-OrderedMap<NodeSpec> addListNodes(
-  OrderedMap<NodeSpec> nodes,
-  String itemContent, [
-  String? listGroup,
-]) {
+OrderedMap<NodeSpec> addListNodes(OrderedMap<NodeSpec> nodes, String itemContent, [String? listGroup]) {
   return nodes.append({
     "ordered_list": NodeSpec(
       attrs: {"order": AttributeSpec(defaultValue: 1, validate: "number")},
@@ -64,19 +58,12 @@ Command wrapInList(NodeType listType, [Attrs? attrs]) {
 /// when this is possible, `false` otherwise. When `tr` is non-null, the
 /// wrapping is added to that transaction. When it is `null`, the function only
 /// queries whether the wrapping is possible.
-bool wrapRangeInList(
-  Transaction? tr,
-  NodeRange range,
-  NodeType listType, [
-  Attrs? attrs,
-]) {
+bool wrapRangeInList(Transaction? tr, NodeRange range, NodeType listType, [Attrs? attrs]) {
   var doJoin = false;
   var outerRange = range;
   final document = range.$from.doc;
   // This is at the top of an existing list item
-  if (range.depth >= 2 &&
-      range.$from.node(range.depth - 1).type.compatibleContent(listType) &&
-      range.startIndex == 0) {
+  if (range.depth >= 2 && range.$from.node(range.depth - 1).type.compatibleContent(listType) && range.startIndex == 0) {
     // Don't do anything if this is the top of the list
     if (range.$from.index(range.depth - 1) == 0) {
       return false;
@@ -84,11 +71,7 @@ bool wrapRangeInList(
     final $insert = document.resolve(range.start - 2);
     outerRange = NodeRange($insert, $insert, range.depth);
     if (range.endIndex < range.parent.childCount) {
-      range = NodeRange(
-        range.$from,
-        document.resolve(range.$to.end(range.depth)),
-        range.depth,
-      );
+      range = NodeRange(range.$from, document.resolve(range.$to.end(range.depth)), range.depth);
     }
     doJoin = true;
   }
@@ -111,9 +94,7 @@ void _doWrapInList(
 ) {
   var content = Fragment.empty;
   for (var index = wrappers.length - 1; index >= 0; index--) {
-    content = Fragment.from(
-      wrappers[index].type.create(wrappers[index].attrs, content),
-    );
+    content = Fragment.from(wrappers[index].type.create(wrappers[index].attrs, content));
   }
 
   tr.step(
@@ -157,23 +138,18 @@ Command splitListItem(NodeType itemType, [Attrs? itemAttrs]) {
     final $from = selection.$from;
     final $to = selection.$to;
     final node = selection is NodeSelection ? selection.node : null;
-    if ((node != null && node.isBlock) ||
-        $from.depth < 2 ||
-        !$from.sameParent($to)) {
+    if ((node != null && node.isBlock) || $from.depth < 2 || !$from.sameParent($to)) {
       return false;
     }
     final grandParent = $from.node(-1);
     if (grandParent.type != itemType) {
       return false;
     }
-    if ($from.parent.content.size == 0 &&
-        $from.node(-1).childCount == $from.indexAfter(-1)) {
+    if ($from.parent.content.size == 0 && $from.node(-1).childCount == $from.indexAfter(-1)) {
       // In an empty block. If this is a nested list, the wrapping list item
       // should be split. Otherwise, bail out and let next command handle
       // lifting.
-      if ($from.depth == 3 ||
-          $from.node(-3).type != itemType ||
-          $from.index(-2) != $from.node(-2).childCount - 1) {
+      if ($from.depth == 3 || $from.node(-3).type != itemType || $from.index(-2) != $from.node(-2).childCount - 1) {
         return false;
       }
       if (dispatch != null) {
@@ -185,11 +161,7 @@ Command splitListItem(NodeType itemType, [Attrs? itemAttrs]) {
             : 3;
         // Build a fragment containing empty versions of the structure from the
         // outer list item to the parent node of the cursor.
-        for (
-          var depth = $from.depth - depthBefore;
-          depth >= $from.depth - 3;
-          depth--
-        ) {
+        for (var depth = $from.depth - depthBefore; depth >= $from.depth - 3; depth--) {
           wrap = Fragment.from($from.node(depth).copy(wrap));
         }
         final depthAfter = $from.indexAfter(-1) < $from.node(-2).childCount
@@ -201,18 +173,9 @@ Command splitListItem(NodeType itemType, [Attrs? itemAttrs]) {
         wrap = wrap.append(Fragment.from(itemType.createAndFill()));
         final start = $from.before($from.depth - (depthBefore - 1));
         final tr = state.tr;
-        tr.replace(
-          start,
-          $from.after(-depthAfter),
-          Slice(wrap, 4 - depthBefore, 0),
-        );
+        tr.replace(start, $from.after(-depthAfter), Slice(wrap, 4 - depthBefore, 0));
         var selectionPos = -1;
-        tr.doc.nodesBetween(start, tr.doc.content.size, (
-          descendant,
-          pos,
-          parent,
-          index,
-        ) {
+        tr.doc.nodesBetween(start, tr.doc.content.size, (descendant, pos, parent, index) {
           if (selectionPos > -1) {
             return false;
           }
@@ -228,9 +191,7 @@ Command splitListItem(NodeType itemType, [Attrs? itemAttrs]) {
       }
       return true;
     }
-    final nextType = $to.pos == $from.end()
-        ? grandParent.contentMatchAt(0).defaultType
-        : null;
+    final nextType = $to.pos == $from.end() ? grandParent.contentMatchAt(0).defaultType : null;
     final tr = state.tr;
     tr.delete($from.pos, $to.pos);
     final types = nextType != null
@@ -261,10 +222,7 @@ Command splitListItemKeepMarks(NodeType itemType, [Attrs? itemAttrs]) {
           ? null
           : (tr) {
               final marks =
-                  state.storedMarks ??
-                  (state.selection.$to.parentOffset != 0
-                      ? state.selection.$from.marks()
-                      : null);
+                  state.storedMarks ?? (state.selection.$to.parentOffset != 0 ? state.selection.$from.marks() : null);
               if (marks != null) {
                 tr.ensureMarks(marks);
               }
@@ -280,10 +238,7 @@ Command liftListItem(NodeType itemType) {
   return FunctionCommand((state, [dispatch, view]) {
     final $from = state.selection.$from;
     final $to = state.selection.$to;
-    final range = $from.blockRange(
-      $to,
-      (node) => node.childCount > 0 && node.firstChild!.type == itemType,
-    );
+    final range = $from.blockRange($to, (node) => node.childCount > 0 && node.firstChild!.type == itemType);
     if (range == null) {
       return false;
     }
@@ -300,12 +255,7 @@ Command liftListItem(NodeType itemType) {
   });
 }
 
-bool _liftToOuterList(
-  EditorState state,
-  void Function(Transaction) dispatch,
-  NodeType itemType,
-  NodeRange range,
-) {
+bool _liftToOuterList(EditorState state, void Function(Transaction) dispatch, NodeType itemType, NodeRange range) {
   final tr = state.tr;
   final end = range.end;
   final endOfList = range.$to.end(range.depth);
@@ -323,11 +273,7 @@ bool _liftToOuterList(
         true,
       ),
     );
-    range = NodeRange(
-      tr.doc.resolve(range.$from.pos),
-      tr.doc.resolve(endOfList),
-      range.depth,
-    );
+    range = NodeRange(tr.doc.resolve(range.$from.pos), tr.doc.resolve(endOfList), range.depth);
   }
   final target = liftTarget(range);
   if (target == null) {
@@ -335,19 +281,14 @@ bool _liftToOuterList(
   }
   tr.lift(range, target);
   final $after = tr.doc.resolve(tr.mapping.map(end, -1) - 1);
-  if (canJoin(tr.doc, $after.pos) &&
-      $after.nodeBefore!.type == $after.nodeAfter!.type) {
+  if (canJoin(tr.doc, $after.pos) && $after.nodeBefore!.type == $after.nodeAfter!.type) {
     tr.join($after.pos);
   }
   dispatch(tr.scrollIntoView());
   return true;
 }
 
-bool _liftOutOfList(
-  EditorState state,
-  void Function(Transaction) dispatch,
-  NodeRange range,
-) {
+bool _liftOutOfList(EditorState state, void Function(Transaction) dispatch, NodeRange range) {
   final tr = state.tr;
   final list = range.parent;
   // Merge the list items into a single big item.
@@ -384,10 +325,9 @@ bool _liftOutOfList(
       start + 1,
       end - 1,
       Slice(
-        (atStart ? Fragment.empty : Fragment.from(list.copy(Fragment.empty)))
-            .append(
-              atEnd ? Fragment.empty : Fragment.from(list.copy(Fragment.empty)),
-            ),
+        (atStart ? Fragment.empty : Fragment.from(list.copy(Fragment.empty))).append(
+          atEnd ? Fragment.empty : Fragment.from(list.copy(Fragment.empty)),
+        ),
         atStart ? 0 : 1,
         atEnd ? 0 : 1,
       ),
@@ -404,10 +344,7 @@ Command sinkListItem(NodeType itemType) {
   return FunctionCommand((state, [dispatch, view]) {
     final $from = state.selection.$from;
     final $to = state.selection.$to;
-    final range = $from.blockRange(
-      $to,
-      (node) => node.childCount > 0 && node.firstChild!.type == itemType,
-    );
+    final range = $from.blockRange($to, (node) => node.childCount > 0 && node.firstChild!.type == itemType);
     if (range == null) {
       return false;
     }
@@ -422,31 +359,17 @@ Command sinkListItem(NodeType itemType) {
     }
 
     if (dispatch != null) {
-      final nestedBefore =
-          nodeBefore.lastChild != null &&
-          nodeBefore.lastChild!.type == parent.type;
+      final nestedBefore = nodeBefore.lastChild != null && nodeBefore.lastChild!.type == parent.type;
       final inner = Fragment.from(nestedBefore ? itemType.create() : null);
       final slice = Slice(
-        Fragment.from(
-          itemType.create(null, Fragment.from(parent.type.create(null, inner))),
-        ),
+        Fragment.from(itemType.create(null, Fragment.from(parent.type.create(null, inner)))),
         nestedBefore ? 3 : 1,
         0,
       );
       final before = range.start;
       final after = range.end;
       final tr = state.tr;
-      tr.step(
-        ReplaceAroundStep(
-          before - (nestedBefore ? 3 : 1),
-          after,
-          before,
-          after,
-          slice,
-          1,
-          true,
-        ),
-      );
+      tr.step(ReplaceAroundStep(before - (nestedBefore ? 3 : 1), after, before, after, slice, 1, true));
       dispatch(tr.scrollIntoView());
     }
     return true;

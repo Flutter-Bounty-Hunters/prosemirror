@@ -4,11 +4,7 @@ import 'package:prosemirror/src/inputrules/inputrules.dart';
 final InputRule emDash = InputRule(RegExp(r'--$'), "—", inCodeMark: false);
 
 /// Converts three dots to an ellipsis character.
-final InputRule ellipsis = InputRule(
-  RegExp(r'\.\.\.$'),
-  "…",
-  inCodeMark: false,
-);
+final InputRule ellipsis = InputRule(RegExp(r'\.\.\.$'), "…", inCodeMark: false);
 
 /// "Smart" opening double quotes.
 final InputRule openDoubleQuote = InputRule(
@@ -18,11 +14,7 @@ final InputRule openDoubleQuote = InputRule(
 );
 
 /// "Smart" closing double quotes.
-final InputRule closeDoubleQuote = InputRule(
-  RegExp(r'"$'),
-  "”",
-  inCodeMark: false,
-);
+final InputRule closeDoubleQuote = InputRule(RegExp(r'"$'), "”", inCodeMark: false);
 
 /// "Smart" opening single quotes.
 final InputRule openSingleQuote = InputRule(
@@ -32,16 +24,7 @@ final InputRule openSingleQuote = InputRule(
 );
 
 /// "Smart" closing single quotes.
-final InputRule closeSingleQuote = InputRule(
-  RegExp(r"'$"),
-  "’",
-  inCodeMark: false,
-);
+final InputRule closeSingleQuote = InputRule(RegExp(r"'$"), "’", inCodeMark: false);
 
 /// Smart-quote related input rules.
-final List<InputRule> smartQuotes = <InputRule>[
-  openDoubleQuote,
-  closeDoubleQuote,
-  openSingleQuote,
-  closeSingleQuote,
-];
+final List<InputRule> smartQuotes = <InputRule>[openDoubleQuote, closeDoubleQuote, openSingleQuote, closeSingleQuote];

@@ -18,16 +18,13 @@ final RegExp _nonASCIISingleCaseWordChar = RegExp(
 
 bool _isLetter(int code) {
   if (code < 128) {
-    return code >= 48 && code <= 57 ||
-        code >= 65 && code <= 90 ||
-        code >= 97 && code <= 122;
+    return code >= 48 && code <= 57 || code >= 65 && code <= 90 || code >= 97 && code <= 122;
   }
   final character = String.fromCharCode(code);
   if (_letter.hasMatch(character)) {
     return true;
   }
-  return character.toUpperCase() != character.toLowerCase() ||
-      _nonASCIISingleCaseWordChar.hasMatch(character);
+  return character.toUpperCase() != character.toLowerCase() || _nonASCIISingleCaseWordChar.hasMatch(character);
 }
 
 // Convert a range of document into a string, so that we can easily
@@ -48,24 +45,14 @@ void _convertText(Fragment fragment, int start, int end, StringBuffer out) {
     final to = math.min(endOffset, end);
     if (from < to) {
       if (child.isText) {
-        out.write(
-          child.text!.substring(
-            math.max(0, start - offset),
-            math.min(child.text!.length, end - offset),
-          ),
-        );
+        out.write(child.text!.substring(math.max(0, start - offset), math.min(child.text!.length, end - offset)));
       } else if (child.isLeaf) {
         out.write(" ");
       } else {
         if (from == offset) {
           out.write(" ");
         }
-        _convertText(
-          child.content,
-          math.max(0, from - offset - 1),
-          math.min(child.content.size, end - offset),
-          out,
-        );
+        _convertText(child.content, math.max(0, from - offset - 1), math.min(child.content.size, end - offset), out);
         if (to == endOffset) {
           out.write(" ");
         }
@@ -90,8 +77,7 @@ List<Change<Data>> simplifyChanges<Data>(List<Change<Data>> changes, Node doc) {
   for (var index = 0; index < changes.length; index++) {
     var end = changes[index].toB;
     final start = index;
-    while (index < changes.length - 1 &&
-        changes[index + 1].fromB <= end + _maxSimplifyDistance) {
+    while (index < changes.length - 1 && changes[index + 1].fromB <= end + _maxSimplifyDistance) {
       end = changes[++index].toB;
     }
     _simplifyAdjacentChanges(changes, start, index + 1, doc, result);
@@ -99,18 +85,9 @@ List<Change<Data>> simplifyChanges<Data>(List<Change<Data>> changes, Node doc) {
   return result;
 }
 
-void _simplifyAdjacentChanges<Data>(
-  List<Change<Data>> changes,
-  int from,
-  int to,
-  Node doc,
-  List<Change<Data>> target,
-) {
+void _simplifyAdjacentChanges<Data>(List<Change<Data>> changes, int from, int to, Node doc, List<Change<Data>> target) {
   final start = math.max(0, changes[from].fromB - _maxSimplifyDistance);
-  final end = math.min(
-    doc.content.size,
-    changes[to - 1].toB + _maxSimplifyDistance,
-  );
+  final end = math.min(doc.content.size, changes[to - 1].toB + _maxSimplifyDistance);
   final text = _getText(doc.content, start, end);
 
   for (var index = from; index < to; index++) {
@@ -121,19 +98,10 @@ void _simplifyAdjacentChanges<Data>(
     while (index < to - 1) {
       final next = changes[index + 1];
       var boundary = false;
-      var prevLetter = last.toB == end
-          ? false
-          : _isLetter(text.codeUnitAt(last.toB - 1 - start));
-      for (
-        var position = last.toB;
-        !boundary && position < next.fromB;
-        position++
-      ) {
-        final nextLetter = position == end
-            ? false
-            : _isLetter(text.codeUnitAt(position - start));
-        if ((!prevLetter || !nextLetter) &&
-            position != changes[startIndex].fromB) {
+      var prevLetter = last.toB == end ? false : _isLetter(text.codeUnitAt(last.toB - 1 - start));
+      for (var position = last.toB; !boundary && position < next.fromB; position++) {
+        final nextLetter = position == end ? false : _isLetter(text.codeUnitAt(position - start));
+        if ((!prevLetter || !nextLetter) && position != changes[startIndex].fromB) {
           boundary = true;
         }
         prevLetter = nextLetter;
@@ -160,11 +128,7 @@ void _simplifyAdjacentChanges<Data>(
           toB++;
         }
       }
-      final joined = _fillChange(
-        changes.sublist(startIndex, index + 1),
-        fromB,
-        toB,
-      );
+      final joined = _fillChange(changes.sublist(startIndex, index + 1), fromB, toB);
       final lastTarget = target.isNotEmpty ? target[target.length - 1] : null;
       if (lastTarget != null && lastTarget.toA == joined.fromA) {
         target[target.length - 1] = Change<Data>(
@@ -196,16 +160,8 @@ Change<Data> _fillChange<Data>(List<Change<Data>> changes, int fromB, int toB) {
   final toA = last.toA + (toB - last.toB);
   var deleted = Span.none<Data>();
   var inserted = Span.none<Data>();
-  var deletedData =
-      (changes[0].deleted.isNotEmpty
-              ? changes[0].deleted
-              : changes[0].inserted)[0]
-          .data;
-  var insertedData =
-      (changes[0].inserted.isNotEmpty
-              ? changes[0].inserted
-              : changes[0].deleted)[0]
-          .data;
+  var deletedData = (changes[0].deleted.isNotEmpty ? changes[0].deleted : changes[0].inserted)[0].data;
+  var insertedData = (changes[0].inserted.isNotEmpty ? changes[0].inserted : changes[0].deleted)[0].data;
   var posA = fromA;
   var posB = fromB;
   for (var index = 0; ; index++) {
@@ -213,14 +169,10 @@ Change<Data> _fillChange<Data>(List<Change<Data>> changes, int fromB, int toB) {
     final endA = next != null ? next.fromA : toA;
     final endB = next != null ? next.fromB : toB;
     if (endA > posA) {
-      deleted = Span.join(deleted, [
-        Span<Data>(endA - posA, deletedData),
-      ], _combine);
+      deleted = Span.join(deleted, [Span<Data>(endA - posA, deletedData)], _combine);
     }
     if (endB > posB) {
-      inserted = Span.join(inserted, [
-        Span<Data>(endB - posB, insertedData),
-      ], _combine);
+      inserted = Span.join(inserted, [Span<Data>(endB - posB, insertedData)], _combine);
     }
     if (next == null) {
       break;

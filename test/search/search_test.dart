@@ -1,41 +1,25 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import 'builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Search >", () {
     group("Find next >", () {
       test("can find the next match", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one <c>two<d> two"),
-          findNext,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one <c>two<d> two"), findNext);
       });
 
       test("can find the next match from selection", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one <a>two<b> <c>two<d>"),
-          findNext,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one <a>two<b> <c>two<d>"), findNext);
       });
 
       test("wraps around at end of document", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one <c>two<d> <a>two<b>"),
-          findNext,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one <c>two<d> <a>two<b>"), findNext);
       });
 
       test("doesn't wrap around in no-wrap mode", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one two <a>two<b>"),
-          findNextNoWrap,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one two <a>two<b>"), findNextNoWrap);
       });
 
       test("can search a limited range", () {
@@ -57,10 +41,7 @@ void main() {
       test("can match in nested structure", () {
         _testSelectionCommand(
           const _Query(search: "one"),
-          doc(
-            blockquote(p("para <a>one<b>"), p("para two")),
-            p("and <c>one<d>"),
-          ),
+          document(blockquote(p("para <a>one<b>"), p("para two")), p("and <c>one<d>")),
           findNext,
         );
       });
@@ -68,27 +49,15 @@ void main() {
 
     group("Find previous >", () {
       test("can find the previous match", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one <c>two<d> <a>two<b>"),
-          findPrev,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one <c>two<d> <a>two<b>"), findPrev);
       });
 
       test("wraps around at start of document", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one <a>two<b> <c>two<d>"),
-          findPrev,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one <a>two<b> <c>two<d>"), findPrev);
       });
 
       test("doesn't wrap around in no-wrap mode", () {
-        _testSelectionCommand(
-          const _Query(search: "two"),
-          p("one <a>two<b> two"),
-          findPrevNoWrap,
-        );
+        _testSelectionCommand(const _Query(search: "two"), p("one <a>two<b> two"), findPrevNoWrap);
       });
 
       test("can search a limited range", () {
@@ -110,10 +79,7 @@ void main() {
       test("can match in nested structure", () {
         _testSelectionCommand(
           const _Query(search: "one"),
-          doc(
-            blockquote(p("para <c>one<d>"), p("para two")),
-            p("and <a>one<b>"),
-          ),
+          document(blockquote(p("para <c>one<d>"), p("para two")), p("and <a>one<b>")),
           findPrev,
         );
       });
@@ -121,39 +87,19 @@ void main() {
 
     group("Replace next >", () {
       test("moves to a match when not already on one", () {
-        _testCommand(
-          const _Query(search: "one", replace: "two"),
-          p("one one"),
-          p("<a>one<b> one"),
-          replaceNext,
-        );
+        _testCommand(const _Query(search: "one", replace: "two"), p("one one"), p("<a>one<b> one"), replaceNext);
       });
 
       test("can replace the current match", () {
-        _testCommand(
-          const _Query(search: "one", replace: "two"),
-          p("<a>one<b> two"),
-          p("<a>two<b> two"),
-          replaceNext,
-        );
+        _testCommand(const _Query(search: "one", replace: "two"), p("<a>one<b> two"), p("<a>two<b> two"), replaceNext);
       });
 
       test("moves selection to the next match", () {
-        _testCommand(
-          const _Query(search: "one", replace: "two"),
-          p("<a>one<b> one"),
-          p("two <a>one<b>"),
-          replaceNext,
-        );
+        _testCommand(const _Query(search: "one", replace: "two"), p("<a>one<b> one"), p("two <a>one<b>"), replaceNext);
       });
 
       test("wraps around the end of the document", () {
-        _testCommand(
-          const _Query(search: "one", replace: "two"),
-          p("one <a>one<b>"),
-          p("<a>one<b> two"),
-          replaceNext,
-        );
+        _testCommand(const _Query(search: "one", replace: "two"), p("one <a>one<b>"), p("<a>one<b> two"), replaceNext);
       });
 
       test("doesn't wrap with wrapping disabled", () {
@@ -167,11 +113,7 @@ void main() {
 
       test("can replace within a limited range", () {
         _testCommand(
-          const _Query(
-            search: "one",
-            replace: "two",
-            range: SearchRange(from: 0, to: 7),
-          ),
+          const _Query(search: "one", replace: "two", range: SearchRange(from: 0, to: 7)),
           p("one <a>one<b> one"),
           p("<a>one<b> two one"),
           replaceNext,
@@ -199,17 +141,14 @@ void main() {
       test("can replace in nested structure", () {
         _testCommand(
           const _Query(search: "one", replace: "two"),
-          doc(blockquote(p("para <a>one<b>"), p("para two")), p("and one")),
-          doc(blockquote(p("para two"), p("para two")), p("and <a>one<b>")),
+          document(blockquote(p("para <a>one<b>"), p("para two")), p("and one")),
+          document(blockquote(p("para two"), p("para two")), p("and <a>one<b>")),
           replaceNext,
         );
       });
 
       test("doesn't replace reused content", () {
-        var state = _makeState(
-          const _Query(search: ".(eu).", regexp: true, replace: r"p$1t"),
-          p("<a>deux<b> trois"),
-        );
+        var state = _makeState(const _Query(search: ".(eu).", regexp: true, replace: r"p$1t"), p("<a>deux<b> trois"));
         Transaction? transaction;
 
         replaceNext.execute(state, (tr) => transaction = tr);
@@ -238,41 +177,21 @@ void main() {
       });
 
       test("supports matches in string replacements", () {
-        _testCommand(
-          const _Query(search: "one", replace: r"$&$&"),
-          p("<a>one<b>"),
-          p("<a>oneone<b>"),
-          replaceNext,
-        );
+        _testCommand(const _Query(search: "one", replace: r"$&$&"), p("<a>one<b>"), p("<a>oneone<b>"), replaceNext);
       });
 
       test("ignores invalid replacement group markers", () {
-        _testCommand(
-          const _Query(search: "one", replace: r"$+"),
-          p("<a>one<b> two"),
-          p("<a><b> two"),
-          replaceNext,
-        );
+        _testCommand(const _Query(search: "one", replace: r"$+"), p("<a>one<b> two"), p("<a><b> two"), replaceNext);
       });
     });
 
     group("Replace current >", () {
       test("does nothing when not at a match", () {
-        _testCommand(
-          const _Query(search: "one", replace: "two"),
-          p("one"),
-          null,
-          replaceCurrent,
-        );
+        _testCommand(const _Query(search: "one", replace: "two"), p("one"), null, replaceCurrent);
       });
 
       test("selects the replacement", () {
-        _testCommand(
-          const _Query(search: "one", replace: "two"),
-          p("<a>one<b>"),
-          p("<a>two<b>"),
-          replaceCurrent,
-        );
+        _testCommand(const _Query(search: "one", replace: "two"), p("<a>one<b>"), p("<a>two<b>"), replaceCurrent);
       });
 
       test("replaces delimiters with regexp", () {
@@ -288,10 +207,7 @@ void main() {
         final footnote = _footnoteBuilders();
         _testCommand(
           const _Query(search: "footnote", replace: "NOTE"),
-          footnote.p(
-            "text",
-            footnote.footnote("This is the <a>footnote<b> text"),
-          ),
+          footnote.p("text", footnote.footnote("This is the <a>footnote<b> text")),
           footnote.p("text", footnote.footnote("This is the <a>NOTE<b> text")),
           replaceCurrent,
         );
@@ -301,14 +217,8 @@ void main() {
         final footnote = _footnoteBuilders();
         _testCommand(
           const _Query(search: "“([^”]+)”", regexp: true, replace: r"$1"),
-          footnote.p(
-            "text",
-            footnote.footnote("This is the <a>“footnote”<b> text"),
-          ),
-          footnote.p(
-            "text",
-            footnote.footnote("This is the <a>footnote<b> text"),
-          ),
+          footnote.p("text", footnote.footnote("This is the <a>“footnote”<b> text")),
+          footnote.p("text", footnote.footnote("This is the <a>footnote<b> text")),
           replaceCurrent,
         );
       });
@@ -318,8 +228,8 @@ void main() {
       test("replaces all instances", () {
         _testCommand(
           const _Query(search: "one", replace: "two"),
-          doc(p("this one"), p("that one"), blockquote(p("another one"))),
-          doc(p("this two"), p("that two"), blockquote(p("another two"))),
+          document(p("this one"), p("that one"), blockquote(p("another one"))),
+          document(p("this two"), p("that two"), blockquote(p("another two"))),
           replaceAll,
         );
       });
@@ -335,11 +245,7 @@ void main() {
 
       test("works within a limited range", () {
         _testCommand(
-          const _Query(
-            search: "one",
-            replace: "two",
-            range: SearchRange(from: 2, to: 17),
-          ),
+          const _Query(search: "one", replace: "two", range: SearchRange(from: 2, to: 17)),
           p("one one one one one"),
           p("one two two two one"),
           replaceAll,
@@ -349,8 +255,8 @@ void main() {
       test("works on zero-length matches", () {
         _testCommand(
           const _Query(search: ".*", regexp: true, replace: "/"),
-          doc(p("hello world")),
-          doc(p("/")),
+          document(p("hello world")),
+          document(p("/")),
           replaceAll,
         );
       });
@@ -360,16 +266,8 @@ void main() {
       test("lets you replace only emphasized texts", () {
         _testCommand(
           _Query(search: "one", replace: "two", filter: _emphasizedOnly),
-          doc(
-            p("this one"),
-            p("that ", em("one")),
-            blockquote(p("another ", em("one"))),
-          ),
-          doc(
-            p("this one"),
-            p("that ", em("two")),
-            blockquote(p("another ", em("two"))),
-          ),
+          document(p("this one"), p("that ", em("one")), blockquote(p("another ", em("one")))),
+          document(p("this one"), p("that ", em("two")), blockquote(p("another ", em("two")))),
           replaceAll,
         );
       });
@@ -383,12 +281,8 @@ EditorState _makeState(_Query query, Node document) {
   return EditorState.create(
     EditorStateConfig(
       doc: document,
-      selection: anchor == null
-          ? null
-          : TextSelection.create(document, anchor, head),
-      plugins: [
-        search(initialQuery: query.toSearchQuery(), initialRange: query.range),
-      ],
+      selection: anchor == null ? null : TextSelection.create(document, anchor, head),
+      plugins: [search(initialQuery: query.toSearchQuery(), initialRange: query.range)],
     ),
   );
 }
@@ -401,19 +295,11 @@ void _testSelectionCommand(_Query query, Node document, Command command) {
 
   expect(result, anchor != null);
   if (anchor != null) {
-    expect(
-      state.selection.eq(TextSelection.create(document, anchor, head)),
-      isTrue,
-    );
+    expect(state.selection.eq(TextSelection.create(document, anchor, head)), isTrue);
   }
 }
 
-void _testCommand(
-  _Query query,
-  Node start,
-  Node? expectedDocument,
-  Command command,
-) {
+void _testCommand(_Query query, Node start, Node? expectedDocument, Command command) {
   var state = _makeState(query, start);
   final result = command.execute(state, (tr) => state = state.apply(tr));
 
@@ -426,11 +312,7 @@ void _testCommand(
 }
 
 bool _emphasizedOnly(EditorState state, SearchResult result) {
-  return state.doc.rangeHasMark(
-    result.from,
-    result.to,
-    state.schema.marks["em"]!.create(),
-  );
+  return state.doc.rangeHasMark(result.from, result.to, state.schema.marks["em"]!.create());
 }
 
 _FootnoteBuilders _footnoteBuilders() {
@@ -444,7 +326,7 @@ _FootnoteBuilders _footnoteBuilders() {
       marks: schema.spec.marks,
     ),
   );
-  final builders = SearchBuilders(footnoteSchema, {
+  final b = builders(footnoteSchema, {
     "p": {"nodeType": "paragraph"},
     "pre": {"nodeType": "code_block"},
     "h1": {"nodeType": "heading", "level": 1},
@@ -459,20 +341,11 @@ _FootnoteBuilders _footnoteBuilders() {
     "hr": {"nodeType": "horizontal_rule"},
     "a": {"markType": "link", "href": "foo"},
   });
-  return _FootnoteBuilders(
-    p: builders.node("p"),
-    footnote: builders.node("footnote"),
-  );
+  return _FootnoteBuilders(p: b["p"] as NodeBuilder, footnote: b["footnote"] as NodeBuilder);
 }
 
 class _Query {
-  const _Query({
-    required this.search,
-    this.regexp = false,
-    this.replace = "",
-    this.range,
-    this.filter,
-  });
+  const _Query({required this.search, this.regexp = false, this.replace = "", this.range, this.filter});
 
   final String search;
   final bool regexp;
@@ -481,18 +354,13 @@ class _Query {
   final SearchResultFilter? filter;
 
   SearchQuery toSearchQuery() {
-    return SearchQuery(
-      search: search,
-      regexp: regexp,
-      replace: replace,
-      filter: filter,
-    );
+    return SearchQuery(search: search, regexp: regexp, replace: replace, filter: filter);
   }
 }
 
 class _FootnoteBuilders {
   _FootnoteBuilders({required this.p, required this.footnote});
 
-  final SearchNodeBuilder p;
-  final SearchNodeBuilder footnote;
+  final NodeBuilder p;
+  final NodeBuilder footnote;
 }

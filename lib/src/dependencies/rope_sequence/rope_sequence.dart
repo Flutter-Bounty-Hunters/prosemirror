@@ -42,9 +42,7 @@ abstract class RopeSequence<T> {
       // `List<T>` so the elements are preserved: when they genuinely are `T`
       // this succeeds, and when they are not it throws a clear error instead of
       // silently discarding the list.
-      return value.isEmpty
-          ? empty as RopeSequence<T>
-          : _Leaf<T>(List<T>.from(value));
+      return value.isEmpty ? empty as RopeSequence<T> : _Leaf<T>(List<T>.from(value));
     }
     return empty as RopeSequence<T>;
   }
@@ -109,11 +107,7 @@ abstract class RopeSequence<T> {
   /// When [to] is omitted it defaults to [length]. If [from] is greater than
   /// [to] the elements are visited in reverse. Returning `false` from [callback]
   /// stops the iteration immediately.
-  void forEach(
-    Object? Function(T element, int index) callback, [
-    int from = 0,
-    int? to,
-  ]) {
+  void forEach(Object? Function(T element, int index) callback, [int from = 0, int? to]) {
     final resolvedTo = to ?? length;
     if (from <= resolvedTo) {
       _forEachInner(callback, from, resolvedTo, 0);
@@ -124,11 +118,7 @@ abstract class RopeSequence<T> {
 
   /// Maps every element between [from] and [to] through [callback], collecting
   /// the results into a new list.
-  List<U> map<U>(
-    U Function(T element, int index) callback, [
-    int from = 0,
-    int? to,
-  ]) {
+  List<U> map<U>(U Function(T element, int index) callback, [int from = 0, int? to]) {
     final result = <U>[];
     forEach(
       (element, index) {
@@ -159,20 +149,10 @@ abstract class RopeSequence<T> {
   RopeSequence<T> _sliceInner(int from, int to);
 
   /// Walks elements forward. Returns `false` when [callback] aborted.
-  bool _forEachInner(
-    Object? Function(T element, int index) callback,
-    int from,
-    int to,
-    int start,
-  );
+  bool _forEachInner(Object? Function(T element, int index) callback, int from, int to, int start);
 
   /// Walks elements in reverse. Returns `false` when [callback] aborted.
-  bool _forEachInvertedInner(
-    Object? Function(T element, int index) callback,
-    int from,
-    int to,
-    int start,
-  );
+  bool _forEachInvertedInner(Object? Function(T element, int index) callback, int from, int to, int start);
 
   /// Attempts to merge [other] onto the end of this node into a single leaf,
   /// returning `null` when the combined size would exceed [_goodLeafSize].
@@ -216,12 +196,7 @@ class _Leaf<T> extends RopeSequence<T> {
   }
 
   @override
-  bool _forEachInner(
-    Object? Function(T element, int index) callback,
-    int from,
-    int to,
-    int start,
-  ) {
+  bool _forEachInner(Object? Function(T element, int index) callback, int from, int to, int start) {
     for (var index = from; index < to; index++) {
       if (callback(values[index], start + index) == false) {
         return false;
@@ -231,12 +206,7 @@ class _Leaf<T> extends RopeSequence<T> {
   }
 
   @override
-  bool _forEachInvertedInner(
-    Object? Function(T element, int index) callback,
-    int from,
-    int to,
-    int start,
-  ) {
+  bool _forEachInvertedInner(Object? Function(T element, int index) callback, int from, int to, int start) {
     for (var index = from - 1; index >= to; index--) {
       if (callback(values[index], start + index) == false) {
         return false;
@@ -284,9 +254,7 @@ class _Append<T> extends RopeSequence<T> {
 
   @override
   T _getInner(int index) {
-    return index < left.length
-        ? left.get(index) as T
-        : right.get(index - left.length) as T;
+    return index < left.length ? left.get(index) as T : right.get(index - left.length) as T;
   }
 
   @override
@@ -305,16 +273,9 @@ class _Append<T> extends RopeSequence<T> {
   }
 
   @override
-  bool _forEachInner(
-    Object? Function(T element, int index) callback,
-    int from,
-    int to,
-    int start,
-  ) {
+  bool _forEachInner(Object? Function(T element, int index) callback, int from, int to, int start) {
     final leftLength = left.length;
-    if (from < leftLength &&
-        left._forEachInner(callback, from, math.min(to, leftLength), start) ==
-            false) {
+    if (from < leftLength && left._forEachInner(callback, from, math.min(to, leftLength), start) == false) {
       return false;
     }
     if (to > leftLength &&
@@ -331,12 +292,7 @@ class _Append<T> extends RopeSequence<T> {
   }
 
   @override
-  bool _forEachInvertedInner(
-    Object? Function(T element, int index) callback,
-    int from,
-    int to,
-    int start,
-  ) {
+  bool _forEachInvertedInner(Object? Function(T element, int index) callback, int from, int to, int start) {
     final leftLength = left.length;
     if (from > leftLength &&
         right._forEachInvertedInner(
@@ -348,14 +304,7 @@ class _Append<T> extends RopeSequence<T> {
             false) {
       return false;
     }
-    if (to < leftLength &&
-        left._forEachInvertedInner(
-              callback,
-              math.min(from, leftLength),
-              to,
-              start,
-            ) ==
-            false) {
+    if (to < leftLength && left._forEachInvertedInner(callback, math.min(from, leftLength), to, start) == false) {
       return false;
     }
     return true;

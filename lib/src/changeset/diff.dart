@@ -67,13 +67,7 @@ class _DefaultEncoder implements TokenEncoder<Object> {
 const TokenEncoder<Object> DefaultEncoder = _DefaultEncoder();
 
 // Convert the given range of a fragment to tokens.
-List<T> _tokens<T>(
-  Fragment fragment,
-  TokenEncoder<T> encoder,
-  int start,
-  int end,
-  List<T> target,
-) {
+List<T> _tokens<T>(Fragment fragment, TokenEncoder<T> encoder, int start, int end, List<T> target) {
   var offset = 0;
   for (var index = 0; index < fragment.childCount; index++) {
     final child = fragment.child(index);
@@ -83,12 +77,7 @@ List<T> _tokens<T>(
     if (from < to) {
       if (child.isText) {
         for (var position = from; position < to; position++) {
-          target.add(
-            encoder.encodeCharacter(
-              child.text!.codeUnitAt(position - offset),
-              child.marks,
-            ),
-          );
+          target.add(encoder.encodeCharacter(child.text!.codeUnitAt(position - offset), child.marks));
         }
       } else if (child.isLeaf) {
         target.add(encoder.encodeNodeStart(child));
@@ -144,24 +133,11 @@ List<Change<Data>> computeDiff<Data>(
 ]) {
   // When one side is longer than our max scan distance, the algorithm
   // will never find a diff.
-  if (math.max(range.toA - range.fromA, math.max(range.toB, range.fromB)) >
-      _maxDiffSize) {
+  if (math.max(range.toA - range.fromA, math.max(range.toB, range.fromB)) > _maxDiffSize) {
     return [range];
   }
-  final tokensA = _tokens<Object?>(
-    fragA,
-    encoder,
-    range.fromA,
-    range.toA,
-    <Object?>[],
-  );
-  final tokensB = _tokens<Object?>(
-    fragB,
-    encoder,
-    range.fromB,
-    range.toB,
-    <Object?>[],
-  );
+  final tokensA = _tokens<Object?>(fragA, encoder, range.fromA, range.toA, <Object?>[]);
+  final tokensB = _tokens<Object?>(fragB, encoder, range.fromB, range.toB, <Object?>[]);
   return _diff(tokensA, tokensB, range, encoder.compareTokens);
 }
 
@@ -175,17 +151,13 @@ List<Change<Data>> _diff<Data, T>(
   var start = 0;
   var endA = tokensA.length;
   var endB = tokensB.length;
-  while (start < tokensA.length &&
-      start < tokensB.length &&
-      compare(tokensA[start], tokensB[start])) {
+  while (start < tokensA.length && start < tokensB.length && compare(tokensA[start], tokensB[start])) {
     start++;
   }
   if (start == tokensA.length && start == tokensB.length) {
     return [];
   }
-  while (endA > start &&
-      endB > start &&
-      compare(tokensA[endA - 1], tokensB[endB - 1])) {
+  while (endA > start && endB > start && compare(tokensA[endA - 1], tokensB[endB - 1])) {
     endA--;
     endB--;
   }
@@ -211,9 +183,7 @@ List<Change<Data>> _diff<Data, T>(
       final prev = _readFrontier(frontier, diag - 1 + max);
       var x = next < prev ? prev : next + 1;
       var y = x + diag;
-      while (x < lenA &&
-          y < lenB &&
-          compare(tokensA[start + x], tokensB[start + y])) {
+      while (x < lenA && y < lenB && compare(tokensA[start + x], tokensB[start + y])) {
         x++;
         y++;
       }
@@ -277,13 +247,7 @@ class _DiffAdder<Data> {
   int fromB = -1;
   int toB = -1;
 
-  void add(
-    int newFromA,
-    int newToA,
-    int newFromB,
-    int newToB,
-    List<Change<Data>> diff,
-  ) {
+  void add(int newFromA, int newToA, int newFromB, int newToB, List<Change<Data>> diff) {
     if (fromA > -1 && fromA < newToA + minSpan) {
       fromA = newFromA;
       fromB = newFromB;

@@ -40,13 +40,7 @@ bool _fitsTrivially(ResolvedPos $from, ResolvedPos $to, Slice slice) {
 }
 
 class _Fittable {
-  _Fittable({
-    required this.sliceDepth,
-    required this.frontierDepth,
-    required this.parent,
-    this.inject,
-    this.wrap,
-  });
+  _Fittable({required this.sliceDepth, required this.frontierDepth, required this.parent, this.inject, this.wrap});
 
   final int sliceDepth;
   final int frontierDepth;
@@ -67,9 +61,7 @@ class _Fitter {
   _Fitter(this.$from, this.$to, this.unplaced) {
     for (var i = 0; i <= $from.depth; i++) {
       final node = $from.node(i);
-      frontier.add(
-        _FrontierEntry(node.type, node.contentMatchAt($from.indexAfter(i))),
-      );
+      frontier.add(_FrontierEntry(node.type, node.contentMatchAt($from.indexAfter(i))));
     }
 
     for (var i = $from.depth; i > 0; i--) {
@@ -106,9 +98,7 @@ class _Fitter {
     final moveInline = mustMoveInline();
     final $from = this.$from;
     final placedSize = placed.size - depth - $from.depth;
-    final $to = close(
-      moveInline < 0 ? this.$to : $from.doc.resolve(moveInline),
-    );
+    final $to = close(moveInline < 0 ? this.$to : $from.doc.resolve(moveInline));
     if ($to == null) {
       return null;
     }
@@ -125,14 +115,7 @@ class _Fitter {
     }
     final slice = Slice(content, openStart, openEnd);
     if (moveInline > -1) {
-      return ReplaceAroundStep(
-        $from.pos,
-        moveInline,
-        this.$to.pos,
-        this.$to.end(),
-        slice,
-        placedSize,
-      );
+      return ReplaceAroundStep($from.pos, moveInline, this.$to.pos, this.$to.end(), slice, placedSize);
     }
     if (slice.size != 0 || $from.pos != this.$to.pos) {
       // Don't generate no-op steps.
@@ -164,11 +147,7 @@ class _Fitter {
     // Only try wrapping nodes (pass 2) after finding a place without
     // wrapping failed.
     for (var pass = 1; pass <= 2; pass++) {
-      for (
-        var sliceDepth = pass == 1 ? startDepth : unplaced.openStart;
-        sliceDepth >= 0;
-        sliceDepth--
-      ) {
+      for (var sliceDepth = pass == 1 ? startDepth : unplaced.openStart; sliceDepth >= 0; sliceDepth--) {
         Fragment fragment;
         Node? parent;
         if (sliceDepth != 0) {
@@ -189,27 +168,11 @@ class _Fitter {
           if (pass == 1 &&
               (first != null
                   ? match.matchType(first.type) != null ||
-                        (inject = match.fillBefore(
-                              Fragment.from(first),
-                              false,
-                            )) !=
-                            null
+                        (inject = match.fillBefore(Fragment.from(first), false)) != null
                   : parent != null && type.compatibleContent(parent.type))) {
-            return _Fittable(
-              sliceDepth: sliceDepth,
-              frontierDepth: frontierDepth,
-              parent: parent,
-              inject: inject,
-            );
-          } else if (pass == 2 &&
-              first != null &&
-              (wrap = match.findWrapping(first.type)) != null) {
-            return _Fittable(
-              sliceDepth: sliceDepth,
-              frontierDepth: frontierDepth,
-              parent: parent,
-              wrap: wrap,
-            );
+            return _Fittable(sliceDepth: sliceDepth, frontierDepth: frontierDepth, parent: parent, inject: inject);
+          } else if (pass == 2 && first != null && (wrap = match.findWrapping(first.type)) != null) {
+            return _Fittable(sliceDepth: sliceDepth, frontierDepth: frontierDepth, parent: parent, wrap: wrap);
           }
           // Don't continue looking further up if the parent node would
           // fit here.
@@ -233,10 +196,7 @@ class _Fitter {
     unplaced = Slice(
       content,
       openStart + 1,
-      math.max(
-        openEnd,
-        inner.size + openStart >= content.size - openEnd ? openStart + 1 : 0,
-      ),
+      math.max(openEnd, inner.size + openStart >= content.size - openEnd ? openStart + 1 : 0),
     );
     return true;
   }
@@ -254,11 +214,7 @@ class _Fitter {
         openAtEnd ? openStart - 1 : openEnd,
       );
     } else {
-      unplaced = Slice(
-        _dropFromFragment(content, openStart, 1),
-        openStart,
-        openEnd,
-      );
+      unplaced = Slice(_dropFromFragment(content, openStart, 1), openStart, openEnd);
     }
   }
 
@@ -297,8 +253,7 @@ class _Fitter {
     // Computes the amount of (end) open nodes at the end of the
     // fragment. When 0, the parent is open, but no more. When negative,
     // nothing is open.
-    var openEndCount =
-        (fragment.size + sliceDepth) - (slice.content.size - slice.openEnd);
+    var openEndCount = (fragment.size + sliceDepth) - (slice.content.size - slice.openEnd);
     // Scan over the fragment, fitting as many child nodes as possible.
     while (taken < fragment.childCount) {
       final next = fragment.child(taken);
@@ -329,11 +284,7 @@ class _Fitter {
 
     // If the parent types match, and the entire node was moved, and
     // it's not open, close this frontier node right away.
-    if (toEnd &&
-        openEndCount < 0 &&
-        parent != null &&
-        parent.type == frontier[depth].type &&
-        frontier.length > 1) {
+    if (toEnd && openEndCount < 0 && parent != null && parent.type == frontier[depth].type && frontier.length > 1) {
       closeFrontierNode();
     }
 
@@ -342,9 +293,7 @@ class _Fitter {
       var current = fragment;
       for (var i = 0; i < openEndCount; i++) {
         final node = current.lastChild!;
-        frontier.add(
-          _FrontierEntry(node.type, node.contentMatchAt(node.childCount)),
-        );
+        frontier.add(_FrontierEntry(node.type, node.contentMatchAt(node.childCount)));
         current = node.content;
       }
     }
@@ -352,11 +301,7 @@ class _Fitter {
     // Update `this.unplaced`. Drop the entire node from which we placed
     // it if we got to its end, otherwise just drop the placed nodes.
     if (!toEnd) {
-      unplaced = Slice(
-        _dropFromFragment(slice.content, sliceDepth, taken),
-        slice.openStart,
-        slice.openEnd,
-      );
+      unplaced = Slice(_dropFromFragment(slice.content, sliceDepth, taken), slice.openStart, slice.openEnd);
     } else if (sliceDepth == 0) {
       unplaced = Slice.empty;
     } else {
@@ -376,9 +321,7 @@ class _Fitter {
     _CloseLevel? level;
     if (!top.type.isTextblock ||
         contentAfterFits($to, $to.depth, top.type, top.match, false) == null ||
-        ($to.depth == depth &&
-            (level = findCloseLevel($to)) != null &&
-            level!.depth == depth)) {
+        ($to.depth == depth && (level = findCloseLevel($to)) != null && level!.depth == depth)) {
       return -1;
     }
 
@@ -395,8 +338,7 @@ class _Fitter {
     for (var i = math.min(depth, $to.depth); i >= 0; i--) {
       final match = frontier[i].match;
       final type = frontier[i].type;
-      final dropInner =
-          i < $to.depth && $to.end(i + 1) == $to.pos + ($to.depth - (i + 1));
+      final dropInner = i < $to.depth && $to.end(i + 1) == $to.pos + ($to.depth - (i + 1));
       final fit = contentAfterFits($to, i, type, match, dropInner);
       if (fit == null) {
         continue;
@@ -409,11 +351,7 @@ class _Fitter {
           continue outer;
         }
       }
-      return _CloseLevel(
-        depth: i,
-        fit: fit,
-        move: dropInner ? $to.doc.resolve($to.after(i + 1)) : $to,
-      );
+      return _CloseLevel(depth: i, fit: fit, move: dropInner ? $to.doc.resolve($to.after(i + 1)) : $to);
     }
     return null;
   }
@@ -433,11 +371,7 @@ class _Fitter {
     $to = close.move;
     for (var d = close.depth + 1; d <= $to.depth; d++) {
       final node = $to.node(d);
-      final add = node.type.contentMatch.fillBefore(
-        node.content,
-        true,
-        $to.index(d),
-      )!;
+      final add = node.type.contentMatch.fillBefore(node.content, true, $to.index(d))!;
       openFrontierNode(node.type, node.attrs, add);
     }
     return $to;
@@ -446,11 +380,7 @@ class _Fitter {
   void openFrontierNode(NodeType type, [Attrs? attrs, Fragment? content]) {
     final top = frontier[depth];
     top.match = top.match.matchType(type)!;
-    placed = _addToFragment(
-      placed,
-      depth,
-      Fragment.from(type.create(attrs, content)),
-    );
+    placed = _addToFragment(placed, depth, Fragment.from(type.create(attrs, content)));
     frontier.add(_FrontierEntry(type, type.contentMatch));
   }
 
@@ -477,9 +407,7 @@ Fragment _dropFromFragment(Fragment fragment, int depth, int count) {
   }
   return fragment.replaceChild(
     0,
-    fragment.firstChild!.copy(
-      _dropFromFragment(fragment.firstChild!.content, depth - 1, count),
-    ),
+    fragment.firstChild!.copy(_dropFromFragment(fragment.firstChild!.content, depth - 1, count)),
   );
 }
 
@@ -489,9 +417,7 @@ Fragment _addToFragment(Fragment fragment, int depth, Fragment content) {
   }
   return fragment.replaceChild(
     fragment.childCount - 1,
-    fragment.lastChild!.copy(
-      _addToFragment(fragment.lastChild!.content, depth - 1, content),
-    ),
+    fragment.lastChild!.copy(_addToFragment(fragment.lastChild!.content, depth - 1, content)),
   );
 }
 
@@ -510,33 +436,19 @@ Node _closeNodeStart(Node node, int openStart, int openEnd) {
   if (openStart > 1) {
     fragment = fragment.replaceChild(
       0,
-      _closeNodeStart(
-        fragment.firstChild!,
-        openStart - 1,
-        fragment.childCount == 1 ? openEnd - 1 : 0,
-      ),
+      _closeNodeStart(fragment.firstChild!, openStart - 1, fragment.childCount == 1 ? openEnd - 1 : 0),
     );
   }
   if (openStart > 0) {
     fragment = node.type.contentMatch.fillBefore(fragment)!.append(fragment);
     if (openEnd <= 0) {
-      fragment = fragment.append(
-        node.type.contentMatch
-            .matchFragment(fragment)!
-            .fillBefore(Fragment.empty, true)!,
-      );
+      fragment = fragment.append(node.type.contentMatch.matchFragment(fragment)!.fillBefore(Fragment.empty, true)!);
     }
   }
   return node.copy(fragment);
 }
 
-Fragment? contentAfterFits(
-  ResolvedPos $to,
-  int depth,
-  NodeType type,
-  ContentMatch match,
-  bool open,
-) {
+Fragment? contentAfterFits(ResolvedPos $to, int depth, NodeType type, ContentMatch match, bool open) {
   final node = $to.node(depth);
   final index = open ? $to.indexAfter(depth) : $to.index(depth);
   if (index == node.childCount && !type.compatibleContent(node.type)) {
@@ -619,8 +531,7 @@ void replaceRange(Transform tr, int from, int to, Slice slice) {
   for (var d = preferredDepth - 1; d >= 0; d--) {
     final leftNode = leftNodes[d]!;
     final defining = _definesContent(leftNode.type);
-    if (defining &&
-        !leftNode.sameMarkup($from.node(preferredTarget.abs() - 1))) {
+    if (defining && !leftNode.sameMarkup($from.node(preferredTarget.abs() - 1))) {
       preferredDepth = d;
     } else if (defining || !leftNode.type.isTextblock) {
       break;
@@ -636,8 +547,7 @@ void replaceRange(Transform tr, int from, int to, Slice slice) {
     for (var i = 0; i < targetDepths.length; i++) {
       // Loop over possible expansion levels, starting with the
       // preferred one.
-      var targetDepth =
-          targetDepths[(i + preferredTargetIndex) % targetDepths.length];
+      var targetDepth = targetDepths[(i + preferredTargetIndex) % targetDepths.length];
       var expand = true;
       if (targetDepth < 0) {
         expand = false;
@@ -649,11 +559,7 @@ void replaceRange(Transform tr, int from, int to, Slice slice) {
         tr.replace(
           $from.before(targetDepth),
           expand ? $to.after(targetDepth) : to,
-          Slice(
-            _closeFragment(slice.content, 0, slice.openStart, openDepth),
-            openDepth,
-            slice.openEnd,
-          ),
+          Slice(_closeFragment(slice.content, 0, slice.openStart, openDepth), openDepth, slice.openEnd),
         );
         return;
       }
@@ -675,36 +581,21 @@ void replaceRange(Transform tr, int from, int to, Slice slice) {
   }
 }
 
-Fragment _closeFragment(
-  Fragment fragment,
-  int depth,
-  int oldOpen,
-  int newOpen, [
-  Node? parent,
-]) {
+Fragment _closeFragment(Fragment fragment, int depth, int oldOpen, int newOpen, [Node? parent]) {
   if (depth < oldOpen) {
     final first = fragment.firstChild!;
-    fragment = fragment.replaceChild(
-      0,
-      first.copy(
-        _closeFragment(first.content, depth + 1, oldOpen, newOpen, first),
-      ),
-    );
+    fragment = fragment.replaceChild(0, first.copy(_closeFragment(first.content, depth + 1, oldOpen, newOpen, first)));
   }
   if (depth > newOpen) {
     final match = parent!.contentMatchAt(0);
     final start = match.fillBefore(fragment)!.append(fragment);
-    fragment = start.append(
-      match.matchFragment(start)!.fillBefore(Fragment.empty, true)!,
-    );
+    fragment = start.append(match.matchFragment(start)!.fillBefore(Fragment.empty, true)!);
   }
   return fragment;
 }
 
 void replaceRangeWith(Transform tr, int from, int to, Node node) {
-  if (!node.isInline &&
-      from == to &&
-      tr.doc.resolve(from).parent.content.size != 0) {
+  if (!node.isInline && from == to && tr.doc.resolve(from).parent.content.size != 0) {
     final point = insertPoint(tr.doc, from, node.type);
     if (point != null) {
       from = to = point;
@@ -756,14 +647,7 @@ void deleteRange(Transform tr, int from, int to) {
       tr.delete($from.start(depth), $to.end(depth));
       return;
     }
-    if (depth > 0 &&
-        (last ||
-            $from
-                .node(depth - 1)
-                .canReplace(
-                  $from.index(depth - 1),
-                  $to.indexAfter(depth - 1),
-                ))) {
+    if (depth > 0 && (last || $from.node(depth - 1).canReplace($from.index(depth - 1), $to.indexAfter(depth - 1)))) {
       tr.delete($from.before(depth), $to.after(depth));
       return;
     }

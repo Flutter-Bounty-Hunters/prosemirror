@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Collaboration >", () {
@@ -75,7 +75,7 @@ void main() {
     });
 
     test("supports deep undo", () {
-      final server = _DummyServer(document: doc(p("hello"), p("bye")));
+      final server = _DummyServer(document: document(p("hello"), p("bye")));
       server.update(0, _selectNear(6));
       server.update(1, _selectNear(11));
       server.type(0, "!");
@@ -89,23 +89,23 @@ void main() {
       server.type(0, "*");
       server.type(1, "*");
       server.undo(0);
-      server.expectConverged(doc(p("hello! ..."), p("bye! ,,,*")));
+      server.expectConverged(document(p("hello! ..."), p("bye! ,,,*")));
       server.undo(0);
       server.undo(0);
-      server.expectConverged(doc(p("hello"), p("bye! ,,,*")));
+      server.expectConverged(document(p("hello"), p("bye! ,,,*")));
       server.redo(0);
       server.redo(0);
       server.redo(0);
-      server.expectConverged(doc(p("hello! ...*"), p("bye! ,,,*")));
+      server.expectConverged(document(p("hello! ...*"), p("bye! ,,,*")));
       server.undo(0);
       server.undo(0);
-      server.expectConverged(doc(p("hello!"), p("bye! ,,,*")));
+      server.expectConverged(document(p("hello!"), p("bye! ,,,*")));
       server.undo(1);
-      server.expectConverged(doc(p("hello!"), p("bye")));
+      server.expectConverged(document(p("hello!"), p("bye")));
     });
 
     test("supports undo with clashing events", () {
-      final server = _DummyServer(document: doc(p("hello")));
+      final server = _DummyServer(document: document(p("hello")));
       server.update(0, _selectNear(6));
       server.type(0, "A");
       server.delay(0, () {
@@ -122,7 +122,7 @@ void main() {
     });
 
     test("handles conflicting steps", () {
-      final server = _DummyServer(document: doc(p("abcde")));
+      final server = _DummyServer(document: document(p("abcde")));
       server.delay(0, () {
         server.update(0, (state) => state.tr.delete(3, 4) as Transaction);
         server.type(0, "x");
@@ -130,11 +130,11 @@ void main() {
       });
       server.undo(0);
       server.undo(0);
-      server.expectConverged(doc(p("ae")));
+      server.expectConverged(document(p("ae")));
     });
 
     test("can undo simultaneous typing", () {
-      final server = _DummyServer(document: doc(p("A"), p("B")));
+      final server = _DummyServer(document: document(p("A"), p("B")));
       server.update(0, _selectNear(2));
       server.update(1, _selectNear(5));
       server.delay(0, () {
@@ -143,17 +143,15 @@ void main() {
         server.type(1, "x");
         server.type(1, "y");
       });
-      server.expectConverged(doc(p("A12"), p("Bxy")));
+      server.expectConverged(document(p("A12"), p("Bxy")));
       server.undo(0);
-      server.expectConverged(doc(p("A"), p("Bxy")));
+      server.expectConverged(document(p("A"), p("Bxy")));
       server.undo(1);
-      server.expectConverged(doc(p("A"), p("B")));
+      server.expectConverged(document(p("A"), p("B")));
     });
 
     test("tracks configured version and client identity", () {
-      var state = _createCollabState(
-        config: const CollabConfig(version: 7, clientID: "client-a"),
-      );
+      var state = _createCollabState(config: const CollabConfig(version: 7, clientID: "client-a"));
 
       expect(getVersion(state), 7);
       expect(sendableSteps(state), isNull);
@@ -170,39 +168,31 @@ void main() {
     });
 
     test("confirms local steps received from the authority", () {
-      var state = _createCollabState(
-        config: const CollabConfig(version: 3, clientID: "client-a"),
-      );
+      var state = _createCollabState(config: const CollabConfig(version: 3, clientID: "client-a"));
       state = state.apply(state.tr.insertText("A"));
 
       final sendable = sendableSteps(state)!;
-      state = state.apply(
-        receiveTransaction(state, sendable.steps, [sendable.clientID]),
-      );
+      state = state.apply(receiveTransaction(state, sendable.steps, [sendable.clientID]));
 
       expect(getVersion(state), 4);
       expect(sendableSteps(state), isNull);
-      expect(state.doc.eq(doc(p("A"))), isTrue);
+      expect(state.doc.eq(document(p("A"))), isTrue);
     });
 
     test("applies remote steps outside the undo history", () {
       final state = _createCollabState();
       final remoteTransaction = state.tr.insertText("A");
-      final received = receiveTransaction(state, remoteTransaction.steps, [
-        "remote-client",
-      ]);
+      final received = receiveTransaction(state, remoteTransaction.steps, ["remote-client"]);
       final updated = state.apply(received);
 
       expect(received.getMeta("addToHistory"), isFalse);
       expect(getVersion(updated), 1);
-      expect(updated.doc.eq(doc(p("A"))), isTrue);
+      expect(updated.doc.eq(document(p("A"))), isTrue);
     });
 
     test("maps text selections backward on request", () {
-      var state = _createCollabState(document: doc(p("ab")));
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 2)),
-      );
+      var state = _createCollabState(document: document(p("ab")));
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 2)));
 
       final remoteTransaction = state.tr.insertText("X", 2);
       final received = receiveTransaction(state, remoteTransaction.steps, [
@@ -210,7 +200,7 @@ void main() {
       ], const ReceiveTransactionOptions(mapSelectionBackward: true));
       final updated = state.apply(received);
 
-      expect(updated.doc.eq(doc(p("aXb"))), isTrue);
+      expect(updated.doc.eq(document(p("aXb"))), isTrue);
       expect(updated.selection.head, 2);
     });
   });
@@ -226,18 +216,9 @@ Transaction Function(EditorState state) _selectNear(int position) {
   };
 }
 
-EditorState _createCollabState({
-  CollabConfig config = const CollabConfig(),
-  Node? document,
-}) {
+EditorState _createCollabState({CollabConfig config = const CollabConfig(), Node? document}) {
   final plugin = collab(config);
-  return EditorState.create(
-    EditorStateConfig(
-      doc: document,
-      schema: schema,
-      plugins: [_historyPlugin, plugin],
-    ),
-  );
+  return EditorState.create(EditorStateConfig(doc: document, schema: schema, plugins: [_historyPlugin, plugin]));
 }
 
 class _DummyServer {
@@ -246,13 +227,7 @@ class _DummyServer {
       final plugin = collab();
       plugins.add(plugin);
       states.add(
-        EditorState.create(
-          EditorStateConfig(
-            doc: document,
-            schema: schema,
-            plugins: [_historyPlugin, plugin],
-          ),
-        ),
+        EditorState.create(EditorStateConfig(doc: document, schema: schema, plugins: [_historyPlugin, plugin])),
       );
     }
   }
@@ -267,13 +242,7 @@ class _DummyServer {
     final state = states[peerIndex];
     final version = getVersion(state);
     if (version != steps.length) {
-      states[peerIndex] = state.apply(
-        receiveTransaction(
-          state,
-          steps.sublist(version),
-          clientIDs.sublist(version),
-        ),
-      );
+      states[peerIndex] = state.apply(receiveTransaction(state, steps.sublist(version), clientIDs.sublist(version)));
     }
   }
 
@@ -300,13 +269,8 @@ class _DummyServer {
     }
   }
 
-  void update(
-    int peerIndex,
-    Transaction Function(EditorState state) transactionBuilder,
-  ) {
-    states[peerIndex] = states[peerIndex].apply(
-      transactionBuilder(states[peerIndex]),
-    );
+  void update(int peerIndex, Transaction Function(EditorState state) transactionBuilder) {
+    states[peerIndex] = states[peerIndex].apply(transactionBuilder(states[peerIndex]));
     broadcast(peerIndex);
   }
 
@@ -330,8 +294,8 @@ class _DummyServer {
     });
   }
 
-  void expectConverged(Object document) {
-    final expected = document is String ? doc(p(document)) : document as Node;
+  void expectConverged(Object expectedDocument) {
+    final expected = expectedDocument is String ? document(p(expectedDocument)) : expectedDocument as Node;
     for (final state in states) {
       expect(state.doc.eq(expected), isTrue);
     }

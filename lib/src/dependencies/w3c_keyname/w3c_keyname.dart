@@ -37,21 +37,14 @@ String keyName(KeyEvent event) {
   // in `.key`. (The IE branch from the original is dropped: there is no IE in
   // the Dart port.)
   final ignoreKey =
-      (_mac &&
-          event.metaKey &&
-          event.shiftKey &&
-          !event.ctrlKey &&
-          !event.altKey) ||
-      event.key == "Unidentified";
+      (_mac && event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey) || event.key == "Unidentified";
 
   String? name;
   final key = event.key;
   if (!ignoreKey && key != null && key.isNotEmpty) {
     name = key;
   }
-  name ??= (event.keyCode != null)
-      ? (event.shiftKey ? shift : base)[event.keyCode!]
-      : null;
+  name ??= (event.keyCode != null) ? (event.shiftKey ? shift : base)[event.keyCode!] : null;
   name ??= (key != null && key.isNotEmpty) ? key : null;
   name ??= "Unidentified";
 

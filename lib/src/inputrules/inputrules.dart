@@ -8,12 +8,7 @@ import 'package:prosemirror/src/state/transaction.dart';
 /// array produced by the rule's regular expression, together with the start
 /// and end of the matched range, and returns a [Transaction] that describes
 /// the rule's effect, or `null` to indicate the input was not handled.
-typedef InputRuleHandler = Transaction? Function(
-  EditorState state,
-  RegExpMatch match,
-  int start,
-  int end,
-);
+typedef InputRuleHandler = Transaction? Function(EditorState state, RegExpMatch match, int start, int end);
 
 /// Input rules are regular expressions describing a piece of text that, when
 /// typed, causes something to happen. This might be changing two dashes into
@@ -33,15 +28,8 @@ class InputRule {
   /// Set [inCode] to true to change that, or to `"only"` to only match in
   /// such nodes. When [inCodeMark] is set to false, this rule will not fire
   /// inside marks marked as code.
-  InputRule(
-    this.match,
-    Object handler, {
-    this.undoable = true,
-    this.inCode = false,
-    this.inCodeMark = true,
-  }) : handler = handler is String
-           ? _stringHandler(handler)
-           : handler as InputRuleHandler;
+  InputRule(this.match, Object handler, {this.undoable = true, this.inCode = false, this.inCodeMark = true})
+    : handler = handler is String ? _stringHandler(handler) : handler as InputRuleHandler;
 
   /// The regular expression this rule matches against.
   final RegExp match;
@@ -103,12 +91,7 @@ Plugin inputRules({required List<InputRule> rules}) {
 }
 
 class _InputRulesState {
-  _InputRulesState({
-    required this.transform,
-    required this.from,
-    required this.to,
-    required this.text,
-  });
+  _InputRulesState({required this.transform, required this.from, required this.to, required this.text});
 
   final Transaction transform;
   final int from;
@@ -138,13 +121,7 @@ bool runInputRules(
   }
   final $from = state.doc.resolve(from);
   final textBefore =
-      $from.parent.textBetween(
-        max(0, $from.parentOffset - _maxMatch),
-        $from.parentOffset,
-        null,
-        "￼",
-      ) +
-      text;
+      $from.parent.textBetween(max(0, $from.parentOffset - _maxMatch), $from.parentOffset, null, "￼") + text;
   for (final rule in rules) {
     if (!rule.inCodeMark && $from.marks().any((mark) => mark.type.spec.code)) {
       continue;
@@ -178,10 +155,7 @@ bool runInputRules(
       continue;
     }
     if (rule.undoable) {
-      tr.setMeta(
-        plugin,
-        _InputRulesState(transform: tr, from: from, to: to, text: text),
-      );
+      tr.setMeta(plugin, _InputRulesState(transform: tr, from: from, to: to, text: text));
     }
     dispatch(tr);
     return true;
@@ -212,11 +186,7 @@ final Command undoInputRule = FunctionCommand((
       }
       if (undoable.text.isNotEmpty) {
         final marks = tr.doc.resolve(undoable.from).marks();
-        tr.replaceWith(
-          undoable.from,
-          undoable.to,
-          state.schema.text(undoable.text, marks),
-        );
+        tr.replaceWith(undoable.from, undoable.to, state.schema.text(undoable.text, marks));
       } else {
         tr.delete(undoable.from, undoable.to);
       }

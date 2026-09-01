@@ -26,3 +26,6 @@ analyzer:
 
 # For additional information about configuring this file, see
 # https://dart.dev/tools/analysis
+
+formatter:
+  page_width: 120

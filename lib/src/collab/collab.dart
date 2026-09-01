@@ -68,20 +68,13 @@ Plugin collab([CollabConfig config = const CollabConfig()]) {
     PluginSpec(
       key: _collabKey,
       state: _collabStateField,
-      extra: <String, Object?>{
-        "config": resolvedConfig,
-        "historyPreserveItems": true,
-      },
+      extra: <String, Object?>{"config": resolvedConfig, "historyPreserveItems": true},
     ),
   );
 }
 
 /// Undo local steps, apply steps from the authority, and redo local steps.
-List<RebaseableStep> rebaseSteps(
-  List<RebaseableStep> steps,
-  List<Step> over,
-  Transform transform,
-) {
+List<RebaseableStep> rebaseSteps(List<RebaseableStep> steps, List<Step> over, Transform transform) {
   for (var stepIndex = steps.length - 1; stepIndex >= 0; stepIndex--) {
     transform.step(steps[stepIndex].inverted);
   }
@@ -90,11 +83,7 @@ List<RebaseableStep> rebaseSteps(
   }
 
   final result = <RebaseableStep>[];
-  for (
-    var stepIndex = 0, mapFrom = steps.length;
-    stepIndex < steps.length;
-    stepIndex++
-  ) {
+  for (var stepIndex = 0, mapFrom = steps.length; stepIndex < steps.length; stepIndex++) {
     final mapped = steps[stepIndex].step.map(transform.mapping.slice(mapFrom));
     mapFrom--;
     if (mapped != null && transform.maybeStep(mapped).failed == null) {
@@ -174,24 +163,13 @@ int getVersion(EditorState state) {
 }
 
 final PluginKey _collabKey = PluginKey("collab");
-final StateField _collabStateField = StateField(
-  init: _initCollabState,
-  apply: _applyCollabState,
-);
+final StateField _collabStateField = StateField(init: _initCollabState, apply: _applyCollabState);
 
 Object? _initCollabState(EditorStateConfig config, EditorState instance) {
-  return _CollabState(
-    _requireCollabConfig(instance).version,
-    <RebaseableStep>[],
-  );
+  return _CollabState(_requireCollabConfig(instance).version, <RebaseableStep>[]);
 }
 
-Object? _applyCollabState(
-  Transaction transaction,
-  Object? value,
-  EditorState oldState,
-  EditorState newState,
-) {
+Object? _applyCollabState(Transaction transaction, Object? value, EditorState oldState, EditorState newState) {
   final newStateMeta = transaction.getMeta(_collabKey);
   if (newStateMeta is _CollabState) {
     return newStateMeta;
@@ -199,10 +177,7 @@ Object? _applyCollabState(
 
   final collabState = value as _CollabState;
   if (transaction.docChanged) {
-    return _CollabState(collabState.version, [
-      ...collabState.unconfirmed,
-      ..._unconfirmedFrom(transaction),
-    ]);
+    return _CollabState(collabState.version, [...collabState.unconfirmed, ..._unconfirmedFrom(transaction)]);
   }
   return collabState;
 }
@@ -212,9 +187,7 @@ List<RebaseableStep> _unconfirmedFrom(Transaction transaction) {
     for (var stepIndex = 0; stepIndex < transaction.steps.length; stepIndex++)
       (
         step: transaction.steps[stepIndex],
-        inverted: transaction.steps[stepIndex].invert(
-          transaction.docs[stepIndex],
-        ),
+        inverted: transaction.steps[stepIndex].invert(transaction.docs[stepIndex]),
         origin: transaction,
       ),
   ];

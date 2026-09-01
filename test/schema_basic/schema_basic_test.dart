@@ -25,10 +25,7 @@ void main() {
       expect(basicSchema.nodes["doc"]!.spec.content, "block+");
 
       // An empty doc violates `block+`.
-      expect(
-        () => basicSchema.nodes["doc"]!.createChecked(),
-        throwsA(isA<RangeError>()),
-      );
+      expect(() => basicSchema.nodes["doc"]!.createChecked(), throwsA(isA<RangeError>()));
 
       // A doc containing a paragraph satisfies `block+`.
       final paragraph = basicSchema.node("paragraph");
@@ -130,15 +127,10 @@ void main() {
 
     test("image requires src and defaults alt and title to null", () {
       // Missing the required `src` attribute fails.
-      expect(
-        () => basicSchema.nodes["image"]!.createChecked(),
-        throwsA(isA<RangeError>()),
-      );
+      expect(() => basicSchema.nodes["image"]!.createChecked(), throwsA(isA<RangeError>()));
 
       // Providing `src` succeeds, and `alt`/`title` default to null.
-      final image = basicSchema.nodes["image"]!.createChecked({
-        "src": "image.png",
-      });
+      final image = basicSchema.nodes["image"]!.createChecked({"src": "image.png"});
       expect(image.attrs["src"], "image.png");
       expect(image.attrs["alt"], isNull);
       expect(image.attrs["title"], isNull);
@@ -147,23 +139,12 @@ void main() {
     test("image with a non-string src fails validation", () {
       final image = basicSchema.nodes["image"]!.createChecked({"src": 123});
 
-      expect(
-        image.check,
-        throwsA(
-          predicate(
-            (error) =>
-                error.toString().contains("Expected value of type string"),
-          ),
-        ),
-      );
+      expect(image.check, throwsA(predicate((error) => error.toString().contains("Expected value of type string"))));
     });
 
     test("link requires href and defaults title to null", () {
       // Missing the required `href` attribute fails.
-      expect(
-        () => basicSchema.marks["link"]!.create(),
-        throwsA(isA<RangeError>()),
-      );
+      expect(() => basicSchema.marks["link"]!.create(), throwsA(isA<RangeError>()));
 
       // Providing `href` succeeds, and `title` defaults to null.
       final link = basicSchema.marks["link"]!.create({"href": "https://x.dev"});

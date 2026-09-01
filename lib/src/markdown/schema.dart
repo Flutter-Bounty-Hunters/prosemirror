@@ -1,9 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 
 /// Document schema for the data model used by CommonMark.
-final Schema markdownSchema = Schema(
-  SchemaSpec(nodes: markdownSchemaNodes, marks: markdownSchemaMarks),
-);
+final Schema markdownSchema = Schema(SchemaSpec(nodes: markdownSchemaNodes, marks: markdownSchemaMarks));
 
 /// Specs for the nodes defined by the markdown schema.
 final Map<String, NodeSpec> markdownSchemaNodes = {

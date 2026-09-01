@@ -73,8 +73,7 @@ class Mark {
 
   /// Test whether this mark has the same type and attributes as another mark.
   bool eq(Mark other) {
-    return identical(this, other) ||
-        (identical(type, other.type) && compareDeep(attrs, other.attrs));
+    return identical(this, other) || (identical(type, other.type) && compareDeep(attrs, other.attrs));
   }
 
   /// Convert this mark to a JSON-serializeable representation.

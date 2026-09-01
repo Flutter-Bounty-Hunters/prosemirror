@@ -295,9 +295,7 @@ void _testMapping(Mapping mapping, List<List<Object?>> cases) {
   for (final testCase in cases) {
     final from = testCase[0] as int;
     final to = testCase[1] as int;
-    final bias = testCase.length > 2 && testCase[2] != null
-        ? testCase[2] as int
-        : 1;
+    final bias = testCase.length > 2 && testCase[2] != null ? testCase[2] as int : 1;
     final lossy = testCase.length > 3 && testCase[3] == true;
     expect(mapping.map(from, bias), to);
     if (!lossy) {

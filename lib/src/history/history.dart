@@ -50,10 +50,7 @@ final PluginKey _closeHistoryKey = PluginKey("closeHistory");
 /// You can set an `"addToHistory"` metadata property of `false` on a
 /// transaction to prevent it from being rolled back by undo.
 Plugin history([HistoryOptions? config]) {
-  final resolvedConfig = HistoryOptions(
-    depth: config?.depth ?? 100,
-    newGroupDelay: config?.newGroupDelay ?? 500,
-  );
+  final resolvedConfig = HistoryOptions(depth: config?.depth ?? 100, newGroupDelay: config?.newGroupDelay ?? 500);
 
   return Plugin(
     PluginSpec(
@@ -63,12 +60,7 @@ Plugin history([HistoryOptions? config]) {
           return HistoryState(Branch.empty, Branch.empty, null, 0, -1);
         },
         apply: (tr, history, oldState, newState) {
-          return _applyTransaction(
-            history as HistoryState,
-            oldState,
-            tr,
-            resolvedConfig,
-          );
+          return _applyTransaction(history as HistoryState, oldState, tr, resolvedConfig);
         },
       ),
       extra: {"config": resolvedConfig},
@@ -101,8 +93,7 @@ final Command redoNoScroll = _buildCommand(true, false);
 FunctionCommand _buildCommand(bool redo, bool scroll) {
   return FunctionCommand((state, [dispatch, view]) {
     final history = _historyKey.getState(state) as HistoryState?;
-    if (history == null ||
-        (redo ? history.undone : history.done).eventCount == 0) {
+    if (history == null || (redo ? history.undone : history.done).eventCount == 0) {
       return false;
     }
     if (dispatch != null) {
@@ -139,18 +130,10 @@ typedef _HistoryMeta = ({bool redo, HistoryState historyState});
 
 // Apply the latest event from one branch to the document and shift the
 // event onto the other branch.
-Transaction? _histTransaction(
-  HistoryState history,
-  EditorState state,
-  bool redo,
-) {
+Transaction? _histTransaction(HistoryState history, EditorState state, bool redo) {
   final preserveItems = _mustPreserveItems(state);
-  final histOptions =
-      _historyKey.get(state)!.spec.extra["config"] as HistoryOptions;
-  final pop = (redo ? history.undone : history.done)._popEvent(
-    state,
-    preserveItems,
-  );
+  final histOptions = _historyKey.get(state)!.spec.extra["config"] as HistoryOptions;
+  final pop = (redo ? history.undone : history.done)._popEvent(state, preserveItems);
   if (pop == null) {
     return null;
   }
@@ -163,17 +146,8 @@ Transaction? _histTransaction(
     preserveItems,
   );
 
-  final newHistory = HistoryState(
-    redo ? added : pop.remaining,
-    redo ? pop.remaining : added,
-    null,
-    0,
-    -1,
-  );
-  return pop.transform.setSelection(selection).setMeta(_historyKey, (
-    redo: redo,
-    historyState: newHistory,
-  ));
+  final newHistory = HistoryState(redo ? added : pop.remaining, redo ? pop.remaining : added, null, 0, -1);
+  return pop.transform.setSelection(selection).setMeta(_historyKey, (redo: redo, historyState: newHistory));
 }
 
 bool _cachedPreserveItems = false;
@@ -200,12 +174,7 @@ bool _mustPreserveItems(EditorState state) {
 const int _depthOverflow = 20;
 
 // Record a transformation in undo history.
-HistoryState _applyTransaction(
-  HistoryState history,
-  EditorState state,
-  Transaction tr,
-  HistoryOptions options,
-) {
+HistoryState _applyTransaction(HistoryState history, EditorState state, Transaction tr, HistoryOptions options) {
   final historyTr = tr.getMeta(_historyKey) as _HistoryMeta?;
   if (historyTr != null) {
     return historyTr.historyState;
@@ -213,13 +182,7 @@ HistoryState _applyTransaction(
 
   var currentHistory = history;
   if (tr.getMeta(_closeHistoryKey) != null) {
-    currentHistory = HistoryState(
-      currentHistory.done,
-      currentHistory.undone,
-      null,
-      0,
-      -1,
-    );
+    currentHistory = HistoryState(currentHistory.done, currentHistory.undone, null, 0, -1);
   }
 
   final appended = tr.getMeta("appendedTransaction") as Transaction?;
@@ -230,12 +193,7 @@ HistoryState _applyTransaction(
     final appendedMeta = appended.getMeta(_historyKey) as _HistoryMeta;
     if (appendedMeta.redo) {
       return HistoryState(
-        currentHistory.done.addTransform(
-          tr,
-          null,
-          options,
-          _mustPreserveItems(state),
-        ),
+        currentHistory.done.addTransform(tr, null, options, _mustPreserveItems(state)),
         currentHistory.undone,
         _rangesFor(tr.mapping.maps),
         currentHistory.prevTime,
@@ -244,19 +202,13 @@ HistoryState _applyTransaction(
     } else {
       return HistoryState(
         currentHistory.done,
-        currentHistory.undone.addTransform(
-          tr,
-          null,
-          options,
-          _mustPreserveItems(state),
-        ),
+        currentHistory.undone.addTransform(tr, null, options, _mustPreserveItems(state)),
         null,
         currentHistory.prevTime,
         currentHistory.prevComposition,
       );
     }
-  } else if (tr.getMeta("addToHistory") != false &&
-      !(appended != null && appended.getMeta("addToHistory") == false)) {
+  } else if (tr.getMeta("addToHistory") != false && !(appended != null && appended.getMeta("addToHistory") == false)) {
     // Group transforms that occur in quick succession into one event.
     final composition = tr.getMeta("composition") as int?;
     final newGroup =
@@ -354,13 +306,7 @@ List<int>? _mapRanges(List<int>? ranges, Mapping mapping) {
 /// active.
 class HistoryState {
   /// Create a history state.
-  HistoryState(
-    this.done,
-    this.undone,
-    this.prevRanges,
-    this.prevTime,
-    this.prevComposition,
-  );
+  HistoryState(this.done, this.undone, this.prevRanges, this.prevTime, this.prevComposition);
 
   /// The undo branch. This is mutable so that the test suite can rewrite
   /// it in place after a compression.
@@ -451,9 +397,7 @@ class Branch {
           StepMap? map;
           if (step != null && transform.maybeStep(step).doc != null) {
             map = transform.mapping.maps[transform.mapping.maps.length - 1];
-            addAfter.add(
-              Item(map, null, null, addAfter.length + addBefore.length),
-            );
+            addAfter.add(Item(map, null, null, addAfter.length + addBefore.length));
           }
           mapFrom = mapFrom! - 1;
           if (map != null) {
@@ -464,16 +408,8 @@ class Branch {
         }
 
         if (item.selection != null) {
-          selection = remap != null
-              ? item.selection!.map(remap!.slice(mapFrom!))
-              : item.selection;
-          remaining = Branch(
-            _appendItems(items.slice(0, end), [
-              ...addBefore.reversed,
-              ...addAfter,
-            ]),
-            eventCount - 1,
-          );
+          selection = remap != null ? item.selection!.map(remap!.slice(mapFrom!)) : item.selection;
+          remaining = Branch(_appendItems(items.slice(0, end), [...addBefore.reversed, ...addAfter]), eventCount - 1);
           return false;
         }
         return null;
@@ -495,9 +431,7 @@ class Branch {
     final newItems = <Item>[];
     var eventCount = this.eventCount;
     var oldItems = items;
-    var lastItem = !preserveItems && oldItems.length > 0
-        ? oldItems.get(oldItems.length - 1)
-        : null;
+    var lastItem = !preserveItems && oldItems.length > 0 ? oldItems.get(oldItems.length - 1) : null;
     var currentSelection = selection;
 
     for (var index = 0; index < transform.steps.length; index++) {
@@ -534,8 +468,7 @@ class Branch {
     items.forEach(
       (item, index) {
         final mirrorOffset = item.mirrorOffset;
-        final int? mirrorPos =
-            mirrorOffset != null && index - mirrorOffset >= from
+        final int? mirrorPos = mirrorOffset != null && index - mirrorOffset >= from
             ? maps.maps.length - mirrorOffset
             : null;
         maps.appendMap(item.map, mirrorPos);
@@ -551,10 +484,7 @@ class Branch {
     if (eventCount == 0) {
       return this;
     }
-    return Branch(
-      _appendItems(items, array.map((map) => Item(map)).toList()),
-      eventCount,
-    );
+    return Branch(_appendItems(items, array.map((map) => Item(map)).toList()), eventCount);
   }
 
   // When the collab module receives remote changes, the history has to
@@ -589,9 +519,7 @@ class Branch {
       newUntil = min(newUntil, pos);
       final map = mapping.maps[pos];
       if (item.step != null) {
-        final step = rebasedTransform.steps[pos].invert(
-          rebasedTransform.docs[pos],
-        );
+        final step = rebasedTransform.steps[pos].invert(rebasedTransform.docs[pos]);
         final selection = item.selection?.map(mapping.slice(iRebased + 1, pos));
         if (selection != null) {
           newEventCount++;
@@ -607,10 +535,7 @@ class Branch {
     for (var index = rebasedCount; index < newUntil; index++) {
       newMaps.add(Item(mapping.maps[index]));
     }
-    final newBranchItems = _appendItems(
-      _appendItems(items.slice(0, start), newMaps),
-      rebasedItems,
-    );
+    final newBranchItems = _appendItems(_appendItems(items.slice(0, start), newMaps), rebasedItems);
     var branch = Branch(newBranchItems, newEventCount);
 
     if (branch.emptyItemCount() > _maxEmptyItems) {
@@ -663,9 +588,7 @@ class Branch {
             }
             final newItem = Item(map!.invert(), step, selection);
             final last = newItems.length - 1;
-            final merged = newItems.isNotEmpty
-                ? newItems[last].merge(newItem)
-                : null;
+            final merged = newItems.isNotEmpty ? newItems[last].merge(newItem) : null;
             if (merged != null) {
               newItems[last] = merged;
             } else {

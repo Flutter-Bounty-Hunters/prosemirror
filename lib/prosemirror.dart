@@ -4,14 +4,11 @@ export 'package:prosemirror/src/dependencies/orderedmap/ordered_map.dart';
 export 'package:prosemirror/src/dependencies/rope_sequence/rope_sequence.dart';
 
 // w3c-keyname
-export 'package:prosemirror/src/dependencies/w3c_keyname/w3c_keyname.dart'
-    show base, keyName, KeyEvent;
-export 'package:prosemirror/src/dependencies/w3c_keyname/platform.dart'
-    show isMacPlatform, isWindowsPlatform;
+export 'package:prosemirror/src/dependencies/w3c_keyname/w3c_keyname.dart' show base, keyName, KeyEvent;
+export 'package:prosemirror/src/dependencies/w3c_keyname/platform.dart' show isMacPlatform, isWindowsPlatform;
 
 // prosemirror-keymap
-export 'package:prosemirror/src/keymap/keymap.dart'
-    show keymap, keydownHandler, KeymapView, KeydownHandler;
+export 'package:prosemirror/src/keymap/keymap.dart' show keymap, keydownHandler, KeymapView, KeydownHandler;
 
 // prosemirror-model
 export 'package:prosemirror/src/model/compare_deep.dart';
@@ -25,8 +22,7 @@ export 'package:prosemirror/src/model/resolved_pos.dart';
 export 'package:prosemirror/src/model/schema.dart';
 
 // prosemirror-schema-basic
-export 'package:prosemirror/src/schema_basic/schema_basic.dart'
-    show basicSchema, basicSchemaNodes, basicSchemaMarks;
+export 'package:prosemirror/src/schema_basic/schema_basic.dart' show basicSchema, basicSchemaNodes, basicSchemaMarks;
 
 // prosemirror-schema-list
 export 'package:prosemirror/src/schema_list/schema_list.dart'
@@ -43,44 +39,23 @@ export 'package:prosemirror/src/schema_list/schema_list.dart'
         sinkListItem;
 
 // prosemirror-transform
-export 'package:prosemirror/src/transform/transform.dart'
-    show Transform, TransformError;
+export 'package:prosemirror/src/transform/transform.dart' show Transform, TransformError;
 export 'package:prosemirror/src/transform/step.dart' show Step, StepResult;
-export 'package:prosemirror/src/transform/map.dart'
-    show StepMap, MapResult, Mapping, Mappable;
+export 'package:prosemirror/src/transform/map.dart' show StepMap, MapResult, Mapping, Mappable;
 export 'package:prosemirror/src/transform/mark_step.dart'
     show AddMarkStep, RemoveMarkStep, AddNodeMarkStep, RemoveNodeMarkStep;
-export 'package:prosemirror/src/transform/replace_step.dart'
-    show ReplaceStep, ReplaceAroundStep;
-export 'package:prosemirror/src/transform/attr_step.dart'
-    show AttrStep, DocAttrStep;
+export 'package:prosemirror/src/transform/replace_step.dart' show ReplaceStep, ReplaceAroundStep;
+export 'package:prosemirror/src/transform/attr_step.dart' show AttrStep, DocAttrStep;
 export 'package:prosemirror/src/transform/replace.dart' show replaceStep;
 export 'package:prosemirror/src/transform/structure.dart'
-    show
-        joinPoint,
-        canJoin,
-        canSplit,
-        insertPoint,
-        dropPoint,
-        liftTarget,
-        findWrapping,
-        NodeTypeWithAttributes;
+    show joinPoint, canJoin, canSplit, insertPoint, dropPoint, liftTarget, findWrapping, NodeTypeWithAttributes;
 
 // prosemirror-state
 export 'package:prosemirror/src/state/selection.dart'
-    show
-        Selection,
-        SelectionRange,
-        TextSelection,
-        NodeSelection,
-        AllSelection,
-        SelectionBookmark;
-export 'package:prosemirror/src/state/transaction.dart'
-    show Transaction, Command, FunctionCommand;
-export 'package:prosemirror/src/state/state.dart'
-    show EditorState, EditorStateConfig, Configuration;
-export 'package:prosemirror/src/state/plugin.dart'
-    show Plugin, PluginKey, PluginSpec, StateField, PluginView;
+    show Selection, SelectionRange, TextSelection, NodeSelection, AllSelection, SelectionBookmark;
+export 'package:prosemirror/src/state/transaction.dart' show Transaction, Command, FunctionCommand;
+export 'package:prosemirror/src/state/state.dart' show EditorState, EditorStateConfig, Configuration;
+export 'package:prosemirror/src/state/plugin.dart' show Plugin, PluginKey, PluginSpec, StateField, PluginView;
 
 // prosemirror-history
 export 'package:prosemirror/src/history/history.dart'
@@ -193,25 +168,13 @@ export 'package:prosemirror/src/search/search.dart'
         setSearchState;
 
 // prosemirror-inputrules
-export 'package:prosemirror/src/inputrules/inputrules.dart'
-    show InputRule, inputRules, undoInputRule, runInputRules;
-export 'package:prosemirror/src/inputrules/rulebuilders.dart'
-    show wrappingInputRule, textblockTypeInputRule;
+export 'package:prosemirror/src/inputrules/inputrules.dart' show InputRule, inputRules, undoInputRule, runInputRules;
+export 'package:prosemirror/src/inputrules/rulebuilders.dart' show wrappingInputRule, textblockTypeInputRule;
 export 'package:prosemirror/src/inputrules/rules.dart'
-    show
-        emDash,
-        ellipsis,
-        openDoubleQuote,
-        closeDoubleQuote,
-        openSingleQuote,
-        closeSingleQuote,
-        smartQuotes;
+    show emDash, ellipsis, openDoubleQuote, closeDoubleQuote, openSingleQuote, closeSingleQuote, smartQuotes;
 
 // prosemirror-changeset
-export 'package:prosemirror/src/changeset/change.dart'
-    show Change, Span, ChangeJSON;
-export 'package:prosemirror/src/changeset/changeset.dart'
-    show ChangeSet, ChangeSetConfig;
-export 'package:prosemirror/src/changeset/diff.dart'
-    show computeDiff, TokenEncoder, DefaultEncoder;
+export 'package:prosemirror/src/changeset/change.dart' show Change, Span, ChangeJSON;
+export 'package:prosemirror/src/changeset/changeset.dart' show ChangeSet, ChangeSetConfig;
+export 'package:prosemirror/src/changeset/diff.dart' show computeDiff, TokenEncoder, DefaultEncoder;
 export 'package:prosemirror/src/changeset/simplify.dart' show simplifyChanges;

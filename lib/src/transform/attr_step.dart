@@ -32,12 +32,7 @@ class AttrStep extends Step {
     }
     attrs[attr] = value;
     final updated = node.type.create(attrs, null, node.marks);
-    return StepResult.fromReplace(
-      doc,
-      pos,
-      pos + 1,
-      Slice(Fragment.from(updated), 0, node.isLeaf ? 0 : 1),
-    );
+    return StepResult.fromReplace(doc, pos, pos + 1, Slice(Fragment.from(updated), 0, node.isLeaf ? 0 : 1));
   }
 
   @override
@@ -58,12 +53,7 @@ class AttrStep extends Step {
 
   @override
   Object? toJSON() {
-    return <String, Object?>{
-      "stepType": "attr",
-      "pos": pos,
-      "attr": attr,
-      "value": value,
-    };
+    return <String, Object?>{"stepType": "attr", "pos": pos, "attr": attr, "value": value};
   }
 
   /// @internal
@@ -115,11 +105,7 @@ class DocAttrStep extends Step {
 
   @override
   Object? toJSON() {
-    return <String, Object?>{
-      "stepType": "docAttr",
-      "attr": attr,
-      "value": value,
-    };
+    return <String, Object?>{"stepType": "docAttr", "attr": attr, "value": value};
   }
 
   /// @internal

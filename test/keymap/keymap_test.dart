@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("keymap >", () {
@@ -51,18 +51,12 @@ void main() {
       final percent = _Counter();
       final view = _FakeView();
       final percentHandler = keydownHandler({"Ctrl-%": percent});
-      percentHandler(
-        view,
-        _FakeKeyEvent(key: "%", shiftKey: true, ctrlKey: true, keyCode: 53),
-      );
+      percentHandler(view, _FakeKeyEvent(key: "%", shiftKey: true, ctrlKey: true, keyCode: 53));
       expect(percent.count, 1);
 
       final shift5 = _Counter();
       final shift5Handler = keydownHandler({"Ctrl-Shift-5": shift5});
-      shift5Handler(
-        view,
-        _FakeKeyEvent(key: "%", shiftKey: true, ctrlKey: true, keyCode: 53),
-      );
+      shift5Handler(view, _FakeKeyEvent(key: "%", shiftKey: true, ctrlKey: true, keyCode: 53));
       expect(shift5.count, 1);
     });
 
@@ -70,10 +64,7 @@ void main() {
       final count = _Counter();
       final view = _FakeView();
       final handler = keydownHandler({"Shift-Alt-3": count});
-      handler(
-        view,
-        _FakeKeyEvent(key: "×", shiftKey: true, altKey: true, keyCode: 51),
-      );
+      handler(view, _FakeKeyEvent(key: "×", shiftKey: true, altKey: true, keyCode: 51));
       expect(count.count, 1);
     });
 
@@ -84,15 +75,7 @@ void main() {
       // "Mod" normalizes to Meta on macOS and Ctrl elsewhere. Send whichever
       // modifier "Mod" actually resolves to on this platform so the test is
       // deterministic everywhere.
-      handler(
-        view,
-        _FakeKeyEvent(
-          key: "ы",
-          keyCode: 83,
-          metaKey: isMacPlatform,
-          ctrlKey: !isMacPlatform,
-        ),
-      );
+      handler(view, _FakeKeyEvent(key: "ы", keyCode: 83, metaKey: isMacPlatform, ctrlKey: !isMacPlatform));
       expect(count.count, 1);
     });
   });
@@ -100,9 +83,7 @@ void main() {
 
 class _FakeView implements KeymapView {
   @override
-  final EditorState state = EditorState.create(
-    EditorStateConfig(schema: schema),
-  );
+  final EditorState state = EditorState.create(EditorStateConfig(schema: schema));
 
   @override
   final void Function(Transaction) dispatch = _noopDispatch;
@@ -143,11 +124,7 @@ class _Counter implements Command {
   int count = 0;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction)? dispatch, Object? view]) {
     count++;
     return true;
   }

@@ -144,19 +144,9 @@ void main() {
   });
 }
 
-void _test(
-  List<List<int>> changeA,
-  List<List<int>> changeB,
-  List<List<int>> expected,
-) {
-  final merged = Change.merge<int>(
-    changeA.map(_range).toList(),
-    changeB.map(_range).toList(),
-    (a, b) => a,
-  );
-  final result = merged
-      .map((change) => [change.fromA, change.toA, change.fromB, change.toB])
-      .toList();
+void _test(List<List<int>> changeA, List<List<int>> changeB, List<List<int>> expected) {
+  final merged = Change.merge<int>(changeA.map(_range).toList(), changeB.map(_range).toList(), (a, b) => a);
+  final result = merged.map((change) => [change.fromA, change.toA, change.fromB, change.toB]).toList();
   expect(result, expected);
 }
 
@@ -165,12 +155,5 @@ Change<int> _range(List<int> array, [int author = 0]) {
   final toA = array[1];
   final fromB = array.length > 2 ? array[2] : array[0];
   final toB = array.length > 2 ? array[3] : array[1];
-  return Change<int>(
-    fromA,
-    toA,
-    fromB,
-    toB,
-    [Span<int>(toA - fromA, author)],
-    [Span<int>(toB - fromB, author)],
-  );
+  return Change<int>(fromA, toA, fromB, toB, [Span<int>(toA - fromA, author)], [Span<int>(toB - fromB, author)]);
 }

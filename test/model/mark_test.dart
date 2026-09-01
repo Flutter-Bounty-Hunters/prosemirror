@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import 'support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Mark > sameSet >", () {
@@ -22,23 +22,11 @@ void main() {
     });
 
     test("recognizes identical links in set", () {
-      expect(
-        Mark.sameSet(
-          [_link("http://foo"), _code],
-          [_link("http://foo"), _code],
-        ),
-        isTrue,
-      );
+      expect(Mark.sameSet([_link("http://foo"), _code], [_link("http://foo"), _code]), isTrue);
     });
 
     test("recognizes different links in set", () {
-      expect(
-        Mark.sameSet(
-          [_link("http://foo"), _code],
-          [_link("http://bar"), _code],
-        ),
-        isFalse,
-      );
+      expect(Mark.sameSet([_link("http://foo"), _code], [_link("http://bar"), _code]), isFalse);
     });
   });
 
@@ -75,48 +63,31 @@ void main() {
 
     test("replaces different marks with new attributes", () {
       expect(
-        Mark.sameSet(_link("http://bar").addToSet([_link("http://foo"), _em]), [
-          _link("http://bar"),
-          _em,
-        ]),
+        Mark.sameSet(_link("http://bar").addToSet([_link("http://foo"), _em]), [_link("http://bar"), _em]),
         isTrue,
       );
     });
 
     test("does nothing when adding an existing link", () {
       expect(
-        Mark.sameSet(_link("http://foo").addToSet([_em, _link("http://foo")]), [
-          _em,
-          _link("http://foo"),
-        ]),
+        Mark.sameSet(_link("http://foo").addToSet([_em, _link("http://foo")]), [_em, _link("http://foo")]),
         isTrue,
       );
     });
 
     test("puts code marks at the end", () {
       expect(
-        Mark.sameSet(_code.addToSet([_em, _strong, _link("http://foo")]), [
-          _em,
-          _strong,
-          _link("http://foo"),
-          _code,
-        ]),
+        Mark.sameSet(_code.addToSet([_em, _strong, _link("http://foo")]), [_em, _strong, _link("http://foo"), _code]),
         isTrue,
       );
     });
 
     test("puts marks with middle rank in the middle", () {
-      expect(
-        Mark.sameSet(_strong.addToSet([_em, _code]), [_em, _strong, _code]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_strong.addToSet([_em, _code]), [_em, _strong, _code]), isTrue);
     });
 
     test("allows nonexclusive instances of marks with the same type", () {
-      expect(
-        Mark.sameSet(_remark2.addToSet([_remark1]), [_remark1, _remark2]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_remark2.addToSet([_remark1]), [_remark1, _remark2]), isTrue);
     });
 
     test("doesn't duplicate identical instances of nonexclusive marks", () {
@@ -124,41 +95,23 @@ void main() {
     });
 
     test("clears all others when adding a globally-excluding mark", () {
-      expect(
-        Mark.sameSet(_user1.addToSet([_remark1, _customEm]), [_user1]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_user1.addToSet([_remark1, _customEm]), [_user1]), isTrue);
     });
 
     test("does not allow adding another mark to a globally-excluding mark", () {
       expect(Mark.sameSet(_customEm.addToSet([_user1]), [_user1]), isTrue);
     });
 
-    test(
-      "does overwrite a globally-excluding mark when adding another instance",
-      () {
-        expect(Mark.sameSet(_user2.addToSet([_user1]), [_user2]), isTrue);
-      },
-    );
+    test("does overwrite a globally-excluding mark when adding another instance", () {
+      expect(Mark.sameSet(_user2.addToSet([_user1]), [_user2]), isTrue);
+    });
 
     test("doesn't add anything when another mark excludes the added mark", () {
-      expect(
-        Mark.sameSet(_customEm.addToSet([_remark1, _customStrong]), [
-          _remark1,
-          _customStrong,
-        ]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_customEm.addToSet([_remark1, _customStrong]), [_remark1, _customStrong]), isTrue);
     });
 
     test("removes excluded marks when adding a mark", () {
-      expect(
-        Mark.sameSet(_customStrong.addToSet([_remark1, _customEm]), [
-          _remark1,
-          _customStrong,
-        ]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_customStrong.addToSet([_remark1, _customEm]), [_remark1, _customStrong]), isTrue);
     });
   });
 
@@ -176,21 +129,12 @@ void main() {
     });
 
     test("can remove a mark with attributes", () {
-      expect(
-        Mark.sameSet(
-          _link("http://foo").removeFromSet([_link("http://foo")]),
-          <Mark>[],
-        ),
-        isTrue,
-      );
+      expect(Mark.sameSet(_link("http://foo").removeFromSet([_link("http://foo")]), <Mark>[]), isTrue);
     });
 
     test("doesn't remove a mark when its attrs differ", () {
       expect(
-        Mark.sameSet(
-          _link("http://foo", "title").removeFromSet([_link("http://foo")]),
-          [_link("http://foo")],
-        ),
+        Mark.sameSet(_link("http://foo", "title").removeFromSet([_link("http://foo")]), [_link("http://foo")]),
         isTrue,
       );
     });
@@ -198,41 +142,35 @@ void main() {
 
   group("Mark > resolved position marks >", () {
     test("recognizes a mark exists inside marked text", () {
-      _isAt(doc(p(em("fo<a>o"))), _em, true);
+      _isAt(document(p(em("fo<a>o"))), _em, true);
     });
 
     test("recognizes a mark doesn't exist in non-marked text", () {
-      _isAt(doc(p(em("fo<a>o"))), _strong, false);
+      _isAt(document(p(em("fo<a>o"))), _strong, false);
     });
 
     test("considers a mark active after the mark", () {
-      _isAt(doc(p(em("hi"), "<a> there")), _em, true);
+      _isAt(document(p(em("hi"), "<a> there")), _em, true);
     });
 
     test("considers a mark inactive before the mark", () {
-      _isAt(doc(p("one <a>", em("two"))), _em, false);
+      _isAt(document(p("one <a>", em("two"))), _em, false);
     });
 
     test("considers a mark active at the start of the textblock", () {
-      _isAt(doc(p(em("<a>one"))), _em, true);
+      _isAt(document(p(em("<a>one"))), _em, true);
     });
 
     test("notices that attributes differ", () {
-      _isAt(doc(p(a("li<a>nk"))), _link("http://baz"), false);
+      _isAt(document(p(a("li<a>nk"))), _link("http://baz"), false);
     });
 
     test("omits non-inclusive marks at end of mark", () {
-      expect(
-        Mark.sameSet(_customDoc.resolve(4).marks(), [_customStrong]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_customDoc.resolve(4).marks(), [_customStrong]), isTrue);
     });
 
     test("includes non-inclusive marks inside a text node", () {
-      expect(
-        Mark.sameSet(_customDoc.resolve(3).marks(), [_remark1, _customStrong]),
-        isTrue,
-      );
+      expect(Mark.sameSet(_customDoc.resolve(3).marks(), [_remark1, _customStrong]), isTrue);
     });
 
     test("omits non-inclusive marks at the end of a line", () {
@@ -258,10 +196,7 @@ final Mark _strong = schema.mark("strong");
 final Mark _code = schema.mark("code");
 
 Mark _link(String href, [String? title]) {
-  return schema.mark(
-    "link",
-    title == null ? {"href": href} : {"href": href, "title": title},
-  );
+  return schema.mark("link", title == null ? {"href": href} : {"href": href, "title": title});
 }
 
 final Schema _customSchema = Schema(
@@ -272,11 +207,7 @@ final Schema _customSchema = Schema(
       "text": NodeSpec(),
     },
     marks: {
-      "remark": MarkSpec(
-        attrs: {"id": const AttributeSpec()},
-        excludes: "",
-        inclusive: false,
-      ),
+      "remark": MarkSpec(attrs: {"id": const AttributeSpec()}, excludes: "", inclusive: false),
       "user": MarkSpec(attrs: {"id": const AttributeSpec()}, excludes: "_"),
       "strong": MarkSpec(excludes: "em-group"),
       "em": MarkSpec(group: "em-group"),

@@ -4,96 +4,72 @@ library;
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Join backward >", () {
     test("can join paragraphs", () {
-      _apply(doc(p("hi"), p("<a>there")), joinBackward, doc(p("hithere")));
+      _apply(document(p("hi"), p("<a>there")), joinBackward, document(p("hithere")));
     });
 
     test("can join out of a nested node", () {
-      _apply(
-        doc(p("hi"), blockquote(p("<a>there"))),
-        joinBackward,
-        doc(p("hi"), p("there")),
-      );
+      _apply(document(p("hi"), blockquote(p("<a>there"))), joinBackward, document(p("hi"), p("there")));
     });
 
     test("moves a block into an adjacent wrapper", () {
-      _apply(
-        doc(blockquote(p("hi")), p("<a>there")),
-        joinBackward,
-        doc(blockquote(p("hi"), p("there"))),
-      );
+      _apply(document(blockquote(p("hi")), p("<a>there")), joinBackward, document(blockquote(p("hi"), p("there"))));
     });
 
     test("moves a block into an adjacent wrapper from another wrapper", () {
       _apply(
-        doc(blockquote(p("hi")), blockquote(p("<a>there"))),
+        document(blockquote(p("hi")), blockquote(p("<a>there"))),
         joinBackward,
-        doc(blockquote(p("hi"), p("there"))),
+        document(blockquote(p("hi"), p("there"))),
       );
     });
 
     test("joins the wrapper to a subsequent one if applicable", () {
       _apply(
-        doc(blockquote(p("hi")), p("<a>there"), blockquote(p("x"))),
+        document(blockquote(p("hi")), p("<a>there"), blockquote(p("x"))),
         joinBackward,
-        doc(blockquote(p("hi"), p("there"), p("x"))),
+        document(blockquote(p("hi"), p("there"), p("x"))),
       );
     });
 
     test("moves a block into a list item", () {
-      _apply(
-        doc(ul(li(p("hi"))), p("<a>there")),
-        joinBackward,
-        doc(ul(li(p("hi")), li(p("there")))),
-      );
+      _apply(document(ul(li(p("hi"))), p("<a>there")), joinBackward, document(ul(li(p("hi")), li(p("there")))));
     });
 
     test("joins lists", () {
-      _apply(
-        doc(ul(li(p("hi"))), ul(li(p("<a>there")))),
-        joinBackward,
-        doc(ul(li(p("hi")), li(p("there")))),
-      );
+      _apply(document(ul(li(p("hi"))), ul(li(p("<a>there")))), joinBackward, document(ul(li(p("hi")), li(p("there")))));
     });
 
     test("joins list items", () {
-      _apply(
-        doc(ul(li(p("hi")), li(p("<a>there")))),
-        joinBackward,
-        doc(ul(li(p("hi"), p("there")))),
-      );
+      _apply(document(ul(li(p("hi")), li(p("<a>there")))), joinBackward, document(ul(li(p("hi"), p("there")))));
     });
 
     test("lifts out of a list at the start", () {
-      _apply(doc(ul(li(p("<a>there")))), joinBackward, doc(p("<a>there")));
+      _apply(document(ul(li(p("<a>there")))), joinBackward, document(p("<a>there")));
     });
 
     test("joins lists before and after", () {
       _apply(
-        doc(ul(li(p("hi"))), p("<a>there"), ul(li(p("x")))),
+        document(ul(li(p("hi"))), p("<a>there"), ul(li(p("x")))),
         joinBackward,
-        doc(ul(li(p("hi")), li(p("there")), li(p("x")))),
+        document(ul(li(p("hi")), li(p("there")), li(p("x")))),
       );
     });
 
     test("deletes leaf nodes before", () {
-      _apply(doc(hr(), p("<a>there")), joinBackward, doc(p("there")));
+      _apply(document(hr(), p("<a>there")), joinBackward, document(p("there")));
     });
 
     test("lifts before it deletes", () {
-      _apply(
-        doc(hr(), blockquote(p("<a>there"))),
-        joinBackward,
-        doc(hr(), p("there")),
-      );
+      _apply(document(hr(), blockquote(p("<a>there"))), joinBackward, document(hr(), p("there")));
     });
 
     test("does nothing at start of doc", () {
-      _apply(doc(p("<a>foo")), joinBackward, null);
+      _apply(document(p("<a>foo")), joinBackward, null);
     });
 
     test("can join single-textblock-child nodes", () {
@@ -116,69 +92,52 @@ void main() {
         ]),
       ]);
       var state = EditorState.create(
-        EditorStateConfig(
-          doc: document,
-          selection: TextSelection.between(
-            document.resolve(7),
-            document.resolve(7),
-          ),
-        ),
+        EditorStateConfig(doc: document, selection: TextSelection.between(document.resolve(7), document.resolve(7))),
       );
 
-      expect(
-        joinBackward.execute(state, (tr) => state = state.apply(tr)),
-        isTrue,
-      );
+      expect(joinBackward.execute(state, (tr) => state = state.apply(tr)), isTrue);
       expect(state.doc.toString(), 'doc(block(para("ab")))');
     });
 
     test("doesn't return true on empty blocks that can't be deleted", () {
-      _apply(doc(p("a"), ul(li(p("<a>"), ul(li("b"))))), joinBackward, null);
+      _apply(document(p("a"), ul(li(p("<a>"), ul(li("b"))))), joinBackward, null);
     });
 
     test("doesn't join surrounding nodes of different types", () {
       _apply(
-        doc(ul(li(p("a"))), p("<a>"), ol(li(p("b")))),
+        document(ul(li(p("a"))), p("<a>"), ol(li(p("b")))),
         joinBackward,
-        doc(ul(li(p("a")), li(p("<a>"))), ol(li(p("b")))),
+        document(ul(li(p("a")), li(p("<a>"))), ol(li(p("b")))),
       );
     });
   });
 
   group("Join textblock backward >", () {
     test("can join paragraphs", () {
-      _apply(
-        doc(p("hi"), p("<a>there")),
-        joinTextblockBackward,
-        doc(p("hi<a>there")),
-      );
+      _apply(document(p("hi"), p("<a>there")), joinTextblockBackward, document(p("hi<a>there")));
     });
 
     test("can join if second block is wrapped", () {
-      _apply(
-        doc(p("hi"), ul(li(p("<a>there")))),
-        joinTextblockBackward,
-        doc(p("hi<a>there")),
-      );
+      _apply(document(p("hi"), ul(li(p("<a>there")))), joinTextblockBackward, document(p("hi<a>there")));
     });
 
     test("can join if first block is wrapped", () {
       _apply(
-        doc(blockquote(p("hi")), p("<a>there")),
+        document(blockquote(p("hi")), p("<a>there")),
         joinTextblockBackward,
-        doc(blockquote(p("hi<a>there"))),
+        document(blockquote(p("hi<a>there"))),
       );
     });
 
     test("does nothing at start of doc", () {
-      _apply(doc(p("<a>foo")), joinTextblockBackward, null);
+      _apply(document(p("<a>foo")), joinTextblockBackward, null);
     });
 
     test("can join if inside a nested block", () {
       _apply(
-        doc(blockquote(blockquote(p("hi")), p("<a>there"))),
+        document(blockquote(blockquote(p("hi")), p("<a>there"))),
         joinTextblockBackward,
-        doc(blockquote(blockquote(p("hi<a>there")))),
+        document(blockquote(blockquote(p("hi<a>there")))),
       );
     });
   });
@@ -186,342 +145,256 @@ void main() {
   group("Select node backward >", () {
     test("selects the node before the cut", () {
       _apply(
-        doc(blockquote(p("a")), blockquote(p("<a>b"))),
+        document(blockquote(p("a")), blockquote(p("<a>b"))),
         selectNodeBackward,
-        doc("<a>", blockquote(p("a")), blockquote(p("b"))),
+        document("<a>", blockquote(p("a")), blockquote(p("b"))),
       );
     });
 
     test("does nothing when not at the start of the textblock", () {
-      _apply(doc(p("a<a>b")), selectNodeBackward, null);
+      _apply(document(p("a<a>b")), selectNodeBackward, null);
     });
   });
 
   group("Delete selection >", () {
     test("deletes part of a text node", () {
-      _apply(doc(p("f<a>o<b>o")), deleteSelection, doc(p("fo")));
+      _apply(document(p("f<a>o<b>o")), deleteSelection, document(p("fo")));
     });
 
     test("can delete across blocks", () {
-      _apply(doc(p("f<a>oo"), p("ba<b>r")), deleteSelection, doc(p("fr")));
+      _apply(document(p("f<a>oo"), p("ba<b>r")), deleteSelection, document(p("fr")));
     });
 
     test("deletes node selections", () {
-      _apply(doc(p("foo"), "<a>", hr()), deleteSelection, doc(p("foo")));
+      _apply(document(p("foo"), "<a>", hr()), deleteSelection, document(p("foo")));
     });
 
     test("moves selection after deleted node", () {
       _apply(
-        doc(p("a"), "<a>", p("b"), blockquote(p("c"))),
+        document(p("a"), "<a>", p("b"), blockquote(p("c"))),
         deleteSelection,
-        doc(p("a"), blockquote(p("<a>c"))),
+        document(p("a"), blockquote(p("<a>c"))),
       );
     });
 
     test("moves selection before deleted node at end", () {
-      _apply(doc(p("a"), "<a>", p("b")), deleteSelection, doc(p("a<a>")));
+      _apply(document(p("a"), "<a>", p("b")), deleteSelection, document(p("a<a>")));
     });
   });
 
   group("Join forward >", () {
     test("joins two textblocks", () {
-      _apply(doc(p("foo<a>"), p("bar")), joinForward, doc(p("foobar")));
+      _apply(document(p("foo<a>"), p("bar")), joinForward, document(p("foobar")));
     });
 
     test("keeps type of second node when first is empty", () {
-      _apply(
-        doc(p("x"), p("<a>"), h1("hi")),
-        joinForward,
-        doc(p("x"), h1("<a>hi")),
-      );
+      _apply(document(p("x"), p("<a>"), h1("hi")), joinForward, document(p("x"), h1("<a>hi")));
     });
 
     test("clears nodes from joined node that wouldn't be allowed", () {
-      _apply(
-        doc(pre("foo<a>"), p("bar", img())),
-        joinForward,
-        doc(pre("foo<a>bar")),
-      );
+      _apply(document(pre("foo<a>"), p("bar", img())), joinForward, document(pre("foo<a>bar")));
     });
 
     test("does nothing at the end of the document", () {
-      _apply(doc(p("foo<a>")), joinForward, null);
+      _apply(document(p("foo<a>")), joinForward, null);
     });
 
     test("deletes a leaf node after the current block", () {
-      _apply(
-        doc(p("foo<a>"), hr(), p("bar")),
-        joinForward,
-        doc(p("foo"), p("bar")),
-      );
+      _apply(document(p("foo<a>"), hr(), p("bar")), joinForward, document(p("foo"), p("bar")));
     });
 
     test("pulls the next block into the current list item", () {
-      _apply(
-        doc(ul(li(p("a<a>")), li(p("b")))),
-        joinForward,
-        doc(ul(li(p("a"), p("b")))),
-      );
+      _apply(document(ul(li(p("a<a>")), li(p("b")))), joinForward, document(ul(li(p("a"), p("b")))));
     });
 
     test("joins two blocks inside of a list item", () {
-      _apply(doc(ul(li(p("a<a>"), p("b")))), joinForward, doc(ul(li(p("ab")))));
+      _apply(document(ul(li(p("a<a>"), p("b")))), joinForward, document(ul(li(p("ab")))));
     });
 
     test("pulls the next block into a blockquote", () {
-      _apply(
-        doc(blockquote(p("foo<a>")), p("bar")),
-        joinForward,
-        doc(blockquote(p("foo<a>"), p("bar"))),
-      );
+      _apply(document(blockquote(p("foo<a>")), p("bar")), joinForward, document(blockquote(p("foo<a>"), p("bar"))));
     });
 
     test("joins two blockquotes", () {
       _apply(
-        doc(blockquote(p("hi<a>")), blockquote(p("there"))),
+        document(blockquote(p("hi<a>")), blockquote(p("there"))),
         joinForward,
-        doc(blockquote(p("hi"), p("there"))),
+        document(blockquote(p("hi"), p("there"))),
       );
     });
 
     test("pulls the next block outside of a wrapping blockquote", () {
-      _apply(
-        doc(p("foo<a>"), blockquote(p("bar"))),
-        joinForward,
-        doc(p("foo"), p("bar")),
-      );
+      _apply(document(p("foo<a>"), blockquote(p("bar"))), joinForward, document(p("foo"), p("bar")));
     });
 
     test("joins two lists", () {
-      _apply(
-        doc(ul(li(p("hi<a>"))), ul(li(p("there")))),
-        joinForward,
-        doc(ul(li(p("hi")), li(p("there")))),
-      );
+      _apply(document(ul(li(p("hi<a>"))), ul(li(p("there")))), joinForward, document(ul(li(p("hi")), li(p("there")))));
     });
 
     test("does nothing in a nested node at the end of the document", () {
-      _apply(doc(ul(li(p("there<a>")))), joinForward, null);
+      _apply(document(ul(li(p("there<a>")))), joinForward, null);
     });
 
     test("deletes a leaf node at the end of the document", () {
-      _apply(doc(p("there<a>"), hr()), joinForward, doc(p("there")));
+      _apply(document(p("there<a>"), hr()), joinForward, document(p("there")));
     });
 
     test("moves before it deletes a leaf node", () {
-      _apply(
-        doc(blockquote(p("there<a>")), hr()),
-        joinForward,
-        doc(blockquote(p("there"), hr())),
-      );
+      _apply(document(blockquote(p("there<a>")), hr()), joinForward, document(blockquote(p("there"), hr())));
     });
 
     test("does nothing when it can't join", () {
-      _apply(
-        doc(p("foo<a>"), ul(li(p("bar"), ul(li(p("baz")))))),
-        joinForward,
-        null,
-      );
+      _apply(document(p("foo<a>"), ul(li(p("bar"), ul(li(p("baz")))))), joinForward, null);
     });
   });
 
   group("Join textblock forward >", () {
     test("can join paragraphs", () {
-      _apply(
-        doc(p("hi<a>"), p("there")),
-        joinTextblockForward,
-        doc(p("hi<a>there")),
-      );
+      _apply(document(p("hi<a>"), p("there")), joinTextblockForward, document(p("hi<a>there")));
     });
 
     test("can join if second block is wrapped", () {
-      _apply(
-        doc(p("hi<a>"), ul(li(p("there")))),
-        joinTextblockForward,
-        doc(p("hi<a>there")),
-      );
+      _apply(document(p("hi<a>"), ul(li(p("there")))), joinTextblockForward, document(p("hi<a>there")));
     });
 
     test("can join if first block is wrapped", () {
-      _apply(
-        doc(blockquote(p("hi<a>")), p("there")),
-        joinTextblockForward,
-        doc(blockquote(p("hi<a>there"))),
-      );
+      _apply(document(blockquote(p("hi<a>")), p("there")), joinTextblockForward, document(blockquote(p("hi<a>there"))));
     });
 
     test("does nothing at end of doc", () {
-      _apply(doc(p("foo<a>")), joinTextblockForward, null);
+      _apply(document(p("foo<a>")), joinTextblockForward, null);
     });
   });
 
   group("Select node forward >", () {
     test("selects the next node", () {
       _apply(
-        doc(p("foo<a>"), ul(li(p("bar"), ul(li(p("baz")))))),
+        document(p("foo<a>"), ul(li(p("bar"), ul(li(p("baz")))))),
         selectNodeForward,
-        doc(p("foo<a>"), "<a>", ul(li(p("bar"), ul(li(p("baz")))))),
+        document(p("foo<a>"), "<a>", ul(li(p("bar"), ul(li(p("baz")))))),
       );
     });
 
     test("does nothing at end of document", () {
-      _apply(doc(p("foo<a>")), selectNodeForward, null);
+      _apply(document(p("foo<a>")), selectNodeForward, null);
     });
   });
 
   group("Join up >", () {
     test("joins identical parent blocks", () {
       _apply(
-        doc(blockquote(p("foo")), blockquote(p("<a>bar"))),
+        document(blockquote(p("foo")), blockquote(p("<a>bar"))),
         joinUp,
-        doc(blockquote(p("foo"), p("<a>bar"))),
+        document(blockquote(p("foo"), p("<a>bar"))),
       );
     });
 
     test("does nothing in the first block", () {
-      _apply(doc(blockquote(p("<a>foo")), blockquote(p("bar"))), joinUp, null);
+      _apply(document(blockquote(p("<a>foo")), blockquote(p("bar"))), joinUp, null);
     });
 
     test("joins lists", () {
-      _apply(
-        doc(ul(li(p("foo"))), ul(li(p("<a>bar")))),
-        joinUp,
-        doc(ul(li(p("foo")), li(p("bar")))),
-      );
+      _apply(document(ul(li(p("foo"))), ul(li(p("<a>bar")))), joinUp, document(ul(li(p("foo")), li(p("bar")))));
     });
 
     test("joins list items", () {
-      _apply(
-        doc(ul(li(p("foo")), li(p("<a>bar")))),
-        joinUp,
-        doc(ul(li(p("foo"), p("bar")))),
-      );
+      _apply(document(ul(li(p("foo")), li(p("<a>bar")))), joinUp, document(ul(li(p("foo"), p("bar")))));
     });
 
     test("doesn't look at ancestors when a block is selected", () {
-      _apply(doc(ul(li(p("foo")), li("<a>", p("bar")))), joinUp, null);
+      _apply(document(ul(li(p("foo")), li("<a>", p("bar")))), joinUp, null);
     });
 
     test("can join selected block nodes", () {
-      _apply(
-        doc(ul(li(p("foo")), "<a>", li(p("bar")))),
-        joinUp,
-        doc(ul("<a>", li(p("foo"), p("bar")))),
-      );
+      _apply(document(ul(li(p("foo")), "<a>", li(p("bar")))), joinUp, document(ul("<a>", li(p("foo"), p("bar")))));
     });
   });
 
   group("Join down >", () {
     test("joins parent blocks", () {
       _apply(
-        doc(blockquote(p("foo<a>")), blockquote(p("bar"))),
+        document(blockquote(p("foo<a>")), blockquote(p("bar"))),
         joinDown,
-        doc(blockquote(p("foo<a>"), p("bar"))),
+        document(blockquote(p("foo<a>"), p("bar"))),
       );
     });
 
     test("doesn't join with the block before", () {
-      _apply(
-        doc(blockquote(p("foo")), blockquote(p("<a>bar"))),
-        joinDown,
-        null,
-      );
+      _apply(document(blockquote(p("foo")), blockquote(p("<a>bar"))), joinDown, null);
     });
 
     test("joins lists", () {
-      _apply(
-        doc(ul(li(p("foo<a>"))), ul(li(p("bar")))),
-        joinDown,
-        doc(ul(li(p("foo")), li(p("bar")))),
-      );
+      _apply(document(ul(li(p("foo<a>"))), ul(li(p("bar")))), joinDown, document(ul(li(p("foo")), li(p("bar")))));
     });
 
     test("joins list items", () {
-      _apply(
-        doc(ul(li(p("<a>foo")), li(p("bar")))),
-        joinDown,
-        doc(ul(li(p("foo"), p("bar")))),
-      );
+      _apply(document(ul(li(p("<a>foo")), li(p("bar")))), joinDown, document(ul(li(p("foo"), p("bar")))));
     });
 
     test("doesn't look at parent nodes of a selected node", () {
-      _apply(doc(ul(li("<a>", p("foo")), li(p("bar")))), joinDown, null);
+      _apply(document(ul(li("<a>", p("foo")), li(p("bar")))), joinDown, null);
     });
 
     test("can join selected nodes", () {
-      _apply(
-        doc(ul("<a>", li(p("foo")), li(p("bar")))),
-        joinDown,
-        doc(ul("<a>", li(p("foo"), p("bar")))),
-      );
+      _apply(document(ul("<a>", li(p("foo")), li(p("bar")))), joinDown, document(ul("<a>", li(p("foo"), p("bar")))));
     });
   });
 
   group("Lift >", () {
     test("lifts out of a parent block", () {
-      _apply(doc(blockquote(p("<a>foo"))), lift, doc(p("<a>foo")));
+      _apply(document(blockquote(p("<a>foo"))), lift, document(p("<a>foo")));
     });
 
     test("splits the parent block when necessary", () {
       _apply(
-        doc(blockquote(p("foo"), p("<a>bar"), p("baz"))),
+        document(blockquote(p("foo"), p("<a>bar"), p("baz"))),
         lift,
-        doc(blockquote(p("foo")), p("bar"), blockquote(p("baz"))),
+        document(blockquote(p("foo")), p("bar"), blockquote(p("baz"))),
       );
     });
 
     test("can lift out of a list", () {
-      _apply(doc(ul(li(p("<a>foo")))), lift, doc(p("foo")));
+      _apply(document(ul(li(p("<a>foo")))), lift, document(p("foo")));
     });
 
     test("does nothing for a top-level block", () {
-      _apply(doc(p("<a>foo")), lift, null);
+      _apply(document(p("<a>foo")), lift, null);
     });
 
     test("lifts out of the innermost parent", () {
-      _apply(
-        doc(blockquote(ul(li(p("foo<a>"))))),
-        lift,
-        doc(blockquote(p("foo<a>"))),
-      );
+      _apply(document(blockquote(ul(li(p("foo<a>"))))), lift, document(blockquote(p("foo<a>"))));
     });
 
     test("can lift a node selection", () {
-      _apply(
-        doc(blockquote("<a>", ul(li(p("foo"))))),
-        lift,
-        doc("<a>", ul(li(p("foo")))),
-      );
+      _apply(document(blockquote("<a>", ul(li(p("foo"))))), lift, document("<a>", ul(li(p("foo")))));
     });
 
     test("lifts out of a nested list", () {
       _apply(
-        doc(
-          ul(li(p("one"), ul(li(p("<a>sub1")), li(p("sub2")))), li(p("two"))),
-        ),
+        document(ul(li(p("one"), ul(li(p("<a>sub1")), li(p("sub2")))), li(p("two")))),
         lift,
-        doc(ul(li(p("one"), p("<a>sub1"), ul(li(p("sub2")))), li(p("two")))),
+        document(ul(li(p("one"), p("<a>sub1"), ul(li(p("sub2")))), li(p("two")))),
       );
     });
   });
 
   group("Newline in code >", () {
     test("inserts a newline in a code block", () {
-      _apply(doc(pre("foo<a>bar")), newlineInCode, doc(pre("foo\nbar")));
+      _apply(document(pre("foo<a>bar")), newlineInCode, document(pre("foo\nbar")));
     });
 
     test("does nothing outside a code block", () {
-      _apply(doc(p("foo<a>bar")), newlineInCode, null);
+      _apply(document(p("foo<a>bar")), newlineInCode, null);
     });
   });
 
   group("Exit code >", () {
     test("creates a paragraph after a code block", () {
-      _apply(doc(pre("foo<a>")), exitCode, doc(pre("foo"), p("<a>")));
+      _apply(document(pre("foo<a>")), exitCode, document(pre("foo"), p("<a>")));
     });
 
     test("does nothing outside a code block", () {
-      _apply(doc(p("foo<a>")), exitCode, null);
+      _apply(document(p("foo<a>")), exitCode, null);
     });
   });
 
@@ -529,73 +402,61 @@ void main() {
     final wrap = wrapIn(schema.nodes["blockquote"]!);
 
     test("can wrap a paragraph", () {
-      _apply(doc(p("fo<a>o")), wrap, doc(blockquote(p("foo"))));
+      _apply(document(p("fo<a>o")), wrap, document(blockquote(p("foo"))));
     });
 
     test("wraps multiple paragraphs", () {
       _apply(
-        doc(p("fo<a>o"), p("bar"), p("ba<b>z"), p("quux")),
+        document(p("fo<a>o"), p("bar"), p("ba<b>z"), p("quux")),
         wrap,
-        doc(blockquote(p("foo"), p("bar"), p("baz")), p("quux")),
+        document(blockquote(p("foo"), p("bar"), p("baz")), p("quux")),
       );
     });
 
     test("wraps an already wrapped node", () {
-      _apply(
-        doc(blockquote(p("fo<a>o"))),
-        wrap,
-        doc(blockquote(blockquote(p("foo")))),
-      );
+      _apply(document(blockquote(p("fo<a>o"))), wrap, document(blockquote(blockquote(p("foo")))));
     });
 
     test("can wrap a node selection", () {
-      _apply(
-        doc("<a>", ul(li(p("foo")))),
-        wrap,
-        doc(blockquote(ul(li(p("foo"))))),
-      );
+      _apply(document("<a>", ul(li(p("foo")))), wrap, document(blockquote(ul(li(p("foo"))))));
     });
   });
 
   group("Split block >", () {
     test("splits a paragraph at the end", () {
-      _apply(doc(p("foo<a>")), splitBlock, doc(p("foo"), p()));
+      _apply(document(p("foo<a>")), splitBlock, document(p("foo"), p()));
     });
 
     test("splits a paragraph in the middle", () {
-      _apply(doc(p("foo<a>bar")), splitBlock, doc(p("foo"), p("bar")));
+      _apply(document(p("foo<a>bar")), splitBlock, document(p("foo"), p("bar")));
     });
 
     test("splits a paragraph from a heading", () {
-      _apply(doc(h1("foo<a>")), splitBlock, doc(h1("foo"), p()));
+      _apply(document(h1("foo<a>")), splitBlock, document(h1("foo"), p()));
     });
 
     test("splits a heading in two when in the middle", () {
-      _apply(doc(h1("foo<a>bar")), splitBlock, doc(h1("foo"), h1("bar")));
+      _apply(document(h1("foo<a>bar")), splitBlock, document(h1("foo"), h1("bar")));
     });
 
     test("deletes selected content", () {
-      _apply(doc(p("fo<a>ob<b>ar")), splitBlock, doc(p("fo"), p("ar")));
+      _apply(document(p("fo<a>ob<b>ar")), splitBlock, document(p("fo"), p("ar")));
     });
 
     test("splits a parent block when a node is selected", () {
       _apply(
-        doc(ol(li(p("a")), "<a>", li(p("b")), li(p("c")))),
+        document(ol(li(p("a")), "<a>", li(p("b")), li(p("c")))),
         splitBlock,
-        doc(ol(li(p("a"))), ol(li(p("b")), li(p("c")))),
+        document(ol(li(p("a"))), ol(li(p("b")), li(p("c")))),
       );
     });
 
     test("doesn't split the parent block when at the start", () {
-      _apply(
-        doc(ol("<a>", li(p("a")), li(p("b")), li(p("c")))),
-        splitBlock,
-        null,
-      );
+      _apply(document(ol("<a>", li(p("a")), li(p("b")), li(p("c")))), splitBlock, null);
     });
 
     test("splits off a normal paragraph at the start of a textblock", () {
-      _apply(doc(h1("<a>foo")), splitBlock, doc(p(), h1("foo")));
+      _apply(document(h1("<a>foo")), splitBlock, document(p(), h1("foo")));
     });
 
     test("splits a heading when a double heading isn't allowed", () {
@@ -603,9 +464,7 @@ void main() {
         _headingDocument(4),
         splitBlock,
         _headingSchema.node("doc", null, [
-          _headingSchema.node("heading", {
-            "level": 1,
-          }, _headingSchema.text("foo")),
+          _headingSchema.node("heading", {"level": 1}, _headingSchema.text("foo")),
           _headingSchema.node("paragraph", null, _headingSchema.text("bar")),
         ]),
       );
@@ -638,14 +497,8 @@ void main() {
         initial,
         splitBlock,
         _headingSchema.node("doc", null, [
-          _headingSchema.node("heading", {
-            "level": 1,
-          }, _headingSchema.node("span", null, _headingSchema.text("ab"))),
-          _headingSchema.node(
-            "paragraph",
-            null,
-            _headingSchema.node("span", null, _headingSchema.text("cd")),
-          ),
+          _headingSchema.node("heading", {"level": 1}, _headingSchema.node("span", null, _headingSchema.text("ab"))),
+          _headingSchema.node("paragraph", null, _headingSchema.node("span", null, _headingSchema.text("cd"))),
         ]),
       );
     });
@@ -679,52 +532,42 @@ void main() {
     });
 
     test("can handle selection deletion dropping wrapper nodes", () {
-      _apply(
-        doc(ul(li(p(), pre("<a>0")), li(p("<b>")))),
-        splitBlock,
-        doc(ul(li(p()), li(p(), p()))),
-      );
+      _apply(document(ul(li(p(), pre("<a>0")), li(p("<b>")))), splitBlock, document(ul(li(p()), li(p(), p()))));
     });
   });
 
   group("Split block as >", () {
     test("splits to the appropriate type", () {
       _apply(
-        doc(p("on<a>e")),
+        document(p("on<a>e")),
         splitBlockAs(
-          (node, atEnd, position) => SplitBlockType(
-            type: node.type.schema.nodes["heading"]!,
-            attrs: {"level": 1},
-          ),
+          (node, atEnd, position) => SplitBlockType(type: node.type.schema.nodes["heading"]!, attrs: {"level": 1}),
         ),
-        doc(p("on"), h1("<a>e")),
+        document(p("on"), h1("<a>e")),
       );
     });
 
     test("passes an end-of-block flag", () {
       _apply(
-        doc(p("one<a>")),
+        document(p("one<a>")),
         splitBlockAs(
-          (node, atEnd, position) => atEnd
-              ? SplitBlockType(type: node.type.schema.nodes["code_block"]!)
-              : null,
+          (node, atEnd, position) => atEnd ? SplitBlockType(type: node.type.schema.nodes["code_block"]!) : null,
         ),
-        doc(p("one"), pre("<a>")),
+        document(p("one"), pre("<a>")),
       );
     });
   });
 
   group("Split block keep marks >", () {
     test("keeps marks when used after marked text", () {
-      var state = _makeState(doc(p(strong("foo<a>"), "bar")));
+      var state = _makeState(document(p(strong("foo<a>"), "bar")));
       splitBlockKeepMarks.execute(state, (tr) => state = state.apply(tr));
       expect(state.storedMarks!.length, 1);
     });
 
     test("preserves the stored marks", () {
-      var state = _makeState(doc(p(em("foo<a>"))));
-      toggleMark(schema.marks["strong"]!)
-          .execute(state, (tr) => state = state.apply(tr));
+      var state = _makeState(document(p(em("foo<a>"))));
+      toggleMark(schema.marks["strong"]!).execute(state, (tr) => state = state.apply(tr));
       splitBlockKeepMarks.execute(state, (tr) => state = state.apply(tr));
       expect(state.storedMarks!.length, 2);
     });
@@ -733,56 +576,44 @@ void main() {
   group("Lift empty block >", () {
     test("splits the parent block when there are siblings before", () {
       _apply(
-        doc(blockquote(p("foo"), p("<a>"), p("bar"))),
+        document(blockquote(p("foo"), p("<a>"), p("bar"))),
         liftEmptyBlock,
-        doc(blockquote(p("foo")), blockquote(p(), p("bar"))),
+        document(blockquote(p("foo")), blockquote(p(), p("bar"))),
       );
     });
 
     test("lifts the last child out of its parent", () {
-      _apply(
-        doc(blockquote(p("foo"), p("<a>"))),
-        liftEmptyBlock,
-        doc(blockquote(p("foo")), p()),
-      );
+      _apply(document(blockquote(p("foo"), p("<a>"))), liftEmptyBlock, document(blockquote(p("foo")), p()));
     });
 
     test("lifts an only child", () {
       _apply(
-        doc(blockquote(p("foo")), blockquote(p("<a>"))),
+        document(blockquote(p("foo")), blockquote(p("<a>"))),
         liftEmptyBlock,
-        doc(blockquote(p("foo")), p("<a>")),
+        document(blockquote(p("foo")), p("<a>")),
       );
     });
 
     test("does not violate schema constraints", () {
-      _apply(
-        doc(ul(li(p("<a>foo"), blockquote(p("bar"))))),
-        liftEmptyBlock,
-        null,
-      );
+      _apply(document(ul(li(p("<a>foo"), blockquote(p("bar"))))), liftEmptyBlock, null);
     });
 
     test("lifts out of a list", () {
-      _apply(
-        doc(ul(li(p("hi")), li(p("<a>")))),
-        liftEmptyBlock,
-        doc(ul(li(p("hi"))), p()),
-      );
+      _apply(document(ul(li(p("hi")), li(p("<a>")))), liftEmptyBlock, document(ul(li(p("hi"))), p()));
     });
   });
 
   group("Create paragraph near >", () {
     test("creates a paragraph before a selected node at the start", () {
-      _apply(doc("<a>", hr(), hr()), createParagraphNear, doc(p(), hr(), hr()));
+      _apply(document("<a>", hr(), hr()), createParagraphNear, document(p(), hr(), hr()));
     });
 
     test("creates a paragraph after a lone selected node", () {
-      _apply(doc("<a>", hr()), createParagraphNear, doc(hr(), p()));
+      _apply(document("<a>", hr()), createParagraphNear, document(hr(), p()));
     });
 
     test("creates a paragraph after selected nodes not at the start", () {
-      _apply(doc(p(), "<a>", hr()), createParagraphNear, doc(p(), hr(), p()));
+      _apply(document(p(), "<a>", hr()), createParagraphNear, document(p(), hr(), p()));
     });
   });
 
@@ -792,91 +623,87 @@ void main() {
     final setCode = setBlockType(schema.nodes["code_block"]!);
 
     test("can change the type of a paragraph", () {
-      _apply(doc(p("fo<a>o")), setHeading, doc(h1("foo")));
+      _apply(document(p("fo<a>o")), setHeading, document(h1("foo")));
     });
 
     test("can change the type of a code block", () {
-      _apply(doc(pre("fo<a>o")), setHeading, doc(h1("foo")));
+      _apply(document(pre("fo<a>o")), setHeading, document(h1("foo")));
     });
 
     test("can make a heading into a paragraph", () {
-      _apply(doc(h1("fo<a>o")), setParagraph, doc(p("foo")));
+      _apply(document(h1("fo<a>o")), setParagraph, document(p("foo")));
     });
 
     test("preserves marks", () {
-      _apply(
-        doc(h1("fo<a>o", em("bar"))),
-        setParagraph,
-        doc(p("foo", em("bar"))),
-      );
+      _apply(document(h1("fo<a>o", em("bar"))), setParagraph, document(p("foo", em("bar"))));
     });
 
     test("acts on node selections", () {
-      _apply(doc("<a>", h1("foo")), setParagraph, doc(p("foo")));
+      _apply(document("<a>", h1("foo")), setParagraph, document(p("foo")));
     });
 
     test("can make a block a code block", () {
-      _apply(doc(h1("fo<a>o")), setCode, doc(pre("foo")));
+      _apply(document(h1("fo<a>o")), setCode, document(pre("foo")));
     });
 
     test("clears marks when necessary", () {
-      _apply(doc(p("fo<a>o", em("bar"))), setCode, doc(pre("foobar")));
+      _apply(document(p("fo<a>o", em("bar"))), setCode, document(pre("foobar")));
     });
 
     test("acts on multiple blocks when possible", () {
       _apply(
-        doc(p("a<a>bc"), p("def"), ul(li(p("ghi"), p("jk<b>l")))),
+        document(p("a<a>bc"), p("def"), ul(li(p("ghi"), p("jk<b>l")))),
         setCode,
-        doc(pre("a<a>bc"), pre("def"), ul(li(p("ghi"), pre("jk<b>l")))),
+        document(pre("a<a>bc"), pre("def"), ul(li(p("ghi"), pre("jk<b>l")))),
       );
     });
 
     test("returns false when all textblocks already have this type", () {
-      _apply(doc(pre("a<a>bc"), pre("de<b>f")), setCode, null);
+      _apply(document(pre("a<a>bc"), pre("de<b>f")), setCode, null);
     });
 
     test("returns false when the selected blocks can't be changed", () {
-      _apply(doc(ul(p("a<a>b<b>c"), p("def"))), setCode, null);
+      _apply(document(ul(p("a<a>b<b>c"), p("def"))), setCode, null);
     });
   });
 
   group("Select parent node >", () {
     test("selects the whole textblock", () {
       _apply(
-        doc(ul(li(p("foo"), p("b<a>ar")), li(p("baz")))),
+        document(ul(li(p("foo"), p("b<a>ar")), li(p("baz")))),
         selectParentNode,
-        doc(ul(li(p("foo"), "<a>", p("bar")), li(p("baz")))),
+        document(ul(li(p("foo"), "<a>", p("bar")), li(p("baz")))),
       );
     });
 
     test("goes one level up when on a block", () {
       _apply(
-        doc(ul(li(p("foo"), "<a>", p("bar")), li(p("baz")))),
+        document(ul(li(p("foo"), "<a>", p("bar")), li(p("baz")))),
         selectParentNode,
-        doc(ul("<a>", li(p("foo"), p("bar")), li(p("baz")))),
+        document(ul("<a>", li(p("foo"), p("bar")), li(p("baz")))),
       );
     });
 
     test("goes further up", () {
       _apply(
-        doc(ul("<a>", li(p("foo"), p("bar")), li(p("baz")))),
+        document(ul("<a>", li(p("foo"), p("bar")), li(p("baz")))),
         selectParentNode,
-        doc("<a>", ul(li(p("foo"), p("bar")), li(p("baz")))),
+        document("<a>", ul(li(p("foo"), p("bar")), li(p("baz")))),
       );
     });
 
     test("stops at the top level", () {
       _apply(
-        doc("<a>", ul(li(p("foo"), p("bar")), li(p("baz")))),
+        document("<a>", ul(li(p("foo"), p("bar")), li(p("baz")))),
         selectParentNode,
-        doc("<a>", ul(li(p("foo"), p("bar")), li(p("baz")))),
+        document("<a>", ul(li(p("foo"), p("bar")), li(p("baz")))),
       );
     });
   });
 
   group("Select all >", () {
     test("selects the whole document", () {
-      var state = _makeState(doc(p("one<a>"), p("two")));
+      var state = _makeState(document(p("one<a>"), p("two")));
       expect(selectAll.execute(state, (tr) => state = state.apply(tr)), isTrue);
       expect(state.selection, isA<AllSelection>());
       expect(state.selection.from, 0);
@@ -887,41 +714,41 @@ void main() {
   group("Auto join >", () {
     test("joins lists when deleting a paragraph between them", () {
       _apply(
-        doc(ul(li(p("a"))), "<a>", p("b"), ul(li(p("c")))),
+        document(ul(li(p("a"))), "<a>", p("b"), ul(li(p("c")))),
         autoJoin(deleteSelection, ["bullet_list"]),
-        doc(ul(li(p("a")), li(p("c")))),
+        document(ul(li(p("a")), li(p("c")))),
       );
     });
 
     test("doesn't join lists when deleting an item inside of them", () {
       _apply(
-        doc(ul(li(p("a")), "<a>", li(p("b"))), ul(li(p("c")))),
+        document(ul(li(p("a")), "<a>", li(p("b"))), ul(li(p("c")))),
         autoJoin(deleteSelection, ["bullet_list"]),
-        doc(ul(li(p("a"))), ul(li(p("c")))),
+        document(ul(li(p("a"))), ul(li(p("c")))),
       );
     });
 
     test("joins lists when wrapping a paragraph after them in a list", () {
       _apply(
-        doc(ul(li(p("a"))), p("b<a>")),
+        document(ul(li(p("a"))), p("b<a>")),
         autoJoin(wrapIn(schema.nodes["bullet_list"]!), ["bullet_list"]),
-        doc(ul(li(p("a")), li(p("b")))),
+        document(ul(li(p("a")), li(p("b")))),
       );
     });
 
     test("joins lists when wrapping a paragraph between them in a list", () {
       _apply(
-        doc(ul(li(p("a"))), p("b<a>"), ul(li(p("c")))),
+        document(ul(li(p("a"))), p("b<a>"), ul(li(p("c")))),
         autoJoin(wrapIn(schema.nodes["bullet_list"]!), ["bullet_list"]),
-        doc(ul(li(p("a")), li(p("b")), li(p("c")))),
+        document(ul(li(p("a")), li(p("b")), li(p("c")))),
       );
     });
 
     test("joins lists when lifting a list between them", () {
       _apply(
-        doc(ul(li(p("a"))), blockquote("<a>", ul(li(p("b")))), ul(li(p("c")))),
+        document(ul(li(p("a"))), blockquote("<a>", ul(li(p("b")))), ul(li(p("c")))),
         autoJoin(lift, ["bullet_list"]),
-        doc(ul(li(p("a")), li(p("b")), li(p("c")))),
+        document(ul(li(p("a")), li(p("b")), li(p("c")))),
       );
     });
   });
@@ -936,23 +763,19 @@ void main() {
     );
 
     test("can add a mark", () {
-      _apply(doc(p("one <a>two<b>")), toggleEm, doc(p("one ", em("two"))));
+      _apply(document(p("one <a>two<b>")), toggleEm, document(p("one ", em("two"))));
     });
 
     test("can stack marks", () {
-      _apply(
-        doc(p("one <a>tw", strong("o<b>"))),
-        toggleEm,
-        doc(p("one ", em("tw", strong("o")))),
-      );
+      _apply(document(p("one <a>tw", strong("o<b>"))), toggleEm, document(p("one ", em("tw", strong("o")))));
     });
 
     test("can remove marks", () {
-      _apply(doc(p(em("one <a>two<b>"))), toggleEm, doc(p(em("one "), "two")));
+      _apply(document(p(em("one <a>two<b>"))), toggleEm, document(p(em("one "), "two")));
     });
 
     test("can toggle pending marks", () {
-      var state = _makeState(doc(p("hell<a>o")));
+      var state = _makeState(document(p("hell<a>o")));
       toggleEm.execute(state, (tr) => state = state.apply(tr));
       expect(state.storedMarks!.length, 1);
       toggleStrong.execute(state, (tr) => state = state.apply(tr));
@@ -962,77 +785,46 @@ void main() {
     });
 
     test("skips whitespace at selection ends when adding marks", () {
-      _apply(
-        doc(p("one<a> two  <b>three")),
-        toggleEm,
-        doc(p("one ", em("two"), "  three")),
-      );
+      _apply(document(p("one<a> two  <b>three")), toggleEm, document(p("one ", em("two"), "  three")));
     });
 
     test("doesn't skip whitespace-only selections", () {
-      _apply(doc(p("one<a> <b>two")), toggleEm, doc(p("one", em(" "), "two")));
+      _apply(document(p("one<a> <b>two")), toggleEm, document(p("one", em(" "), "two")));
     });
 
     test("includes whitespace when asked", () {
       _apply(
-        doc(p("one<a> two  <b>three")),
-        toggleMark(
-          schema.marks["em"]!,
-          null,
-          const ToggleMarkOptions(includeWhitespace: true),
-        ),
-        doc(p("one", em(" two  "), "three")),
+        document(p("one<a> two  <b>three")),
+        toggleMark(schema.marks["em"]!, null, const ToggleMarkOptions(includeWhitespace: true)),
+        document(p("one", em(" two  "), "three")),
       );
     });
 
     test("can add marks with remove-when-present off", () {
-      _apply(
-        doc(p("<a>", em("one"), " two<b>")),
-        toggleEmWithoutRemoval,
-        doc(p(em("one two"))),
-      );
-      _apply(
-        doc(p("<a>three<b>")),
-        toggleEmWithoutRemoval,
-        doc(p(em("three"))),
-      );
+      _apply(document(p("<a>", em("one"), " two<b>")), toggleEmWithoutRemoval, document(p(em("one two"))));
+      _apply(document(p("<a>three<b>")), toggleEmWithoutRemoval, document(p(em("three"))));
     });
 
     test("can remove marks with remove-when-present off", () {
-      _apply(
-        doc(p(em("o<a>ne two<b>"))),
-        toggleEmWithoutRemoval,
-        doc(p(em("o"), "ne two")),
-      );
+      _apply(document(p(em("o<a>ne two<b>"))), toggleEmWithoutRemoval, document(p(em("o"), "ne two")));
     });
 
-    test(
-      "can remove marks with trailing space when remove-when-present is off",
-      () {
-        _apply(
-          doc(p(em("o<a>ne two"), "  <b>three")),
-          toggleEmWithoutRemoval,
-          doc(p(em("o"), "ne two  three")),
-        );
-      },
-    );
+    test("can remove marks with trailing space when remove-when-present is off", () {
+      _apply(
+        document(p(em("o<a>ne two"), "  <b>three")),
+        toggleEmWithoutRemoval,
+        document(p(em("o"), "ne two  three")),
+      );
+    });
 
     test("enters inline atoms by default", () {
       final builders = _footnoteBuilders();
 
       _apply(
-        builders.document(
-          builders.paragraph("h<a>ello", builders.footnote("okay"), "<b>"),
-        ),
+        builders.document(builders.paragraph("h<a>ello", builders.footnote("okay"), "<b>")),
         toggleMark(builders.schema.marks["em"]!),
         builders.document(
-          builders.paragraph(
-            "h",
-            builders.emphasized(
-              "ello",
-              builders.footnote(builders.emphasized("okay")),
-            ),
-          ),
+          builders.paragraph("h", builders.emphasized("ello", builders.footnote(builders.emphasized("okay")))),
         ),
       );
     });
@@ -1041,20 +833,9 @@ void main() {
       final builders = _footnoteBuilders();
 
       _apply(
-        builders.document(
-          builders.paragraph("h<a>ello", builders.footnote("okay"), "<b>"),
-        ),
-        toggleMark(
-          builders.schema.marks["em"]!,
-          null,
-          const ToggleMarkOptions(enterInlineAtoms: false),
-        ),
-        builders.document(
-          builders.paragraph(
-            "h",
-            builders.emphasized("ello", builders.footnote("okay")),
-          ),
-        ),
+        builders.document(builders.paragraph("h<a>ello", builders.footnote("okay"), "<b>")),
+        toggleMark(builders.schema.marks["em"]!, null, const ToggleMarkOptions(enterInlineAtoms: false)),
+        builders.document(builders.paragraph("h", builders.emphasized("ello", builders.footnote("okay")))),
       );
     });
 
@@ -1062,20 +843,9 @@ void main() {
       final builders = _footnoteBuilders();
 
       _apply(
-        builders.document(
-          builders.paragraph("hello", builders.footnote("o<a>kay<b>")),
-        ),
-        toggleMark(
-          builders.schema.marks["em"]!,
-          null,
-          const ToggleMarkOptions(enterInlineAtoms: false),
-        ),
-        builders.document(
-          builders.paragraph(
-            "hello",
-            builders.footnote("o", builders.emphasized("kay")),
-          ),
-        ),
+        builders.document(builders.paragraph("hello", builders.footnote("o<a>kay<b>"))),
+        toggleMark(builders.schema.marks["em"]!, null, const ToggleMarkOptions(enterInlineAtoms: false)),
+        builders.document(builders.paragraph("hello", builders.footnote("o", builders.emphasized("kay")))),
       );
     });
 
@@ -1083,26 +853,10 @@ void main() {
       final builders = _footnoteBuilders();
 
       _apply(
+        builders.document(builders.paragraph("h<a>ello", builders.footnote(builders.emphasized("okay")), "<b>")),
+        toggleMark(builders.schema.marks["em"]!, null, const ToggleMarkOptions(enterInlineAtoms: false)),
         builders.document(
-          builders.paragraph(
-            "h<a>ello",
-            builders.footnote(builders.emphasized("okay")),
-            "<b>",
-          ),
-        ),
-        toggleMark(
-          builders.schema.marks["em"]!,
-          null,
-          const ToggleMarkOptions(enterInlineAtoms: false),
-        ),
-        builders.document(
-          builders.paragraph(
-            "h",
-            builders.emphasized(
-              "ello",
-              builders.footnote(builders.emphasized("okay")),
-            ),
-          ),
+          builders.paragraph("h", builders.emphasized("ello", builders.footnote(builders.emphasized("okay")))),
         ),
       );
     });
@@ -1112,25 +866,11 @@ void main() {
 
       _apply(
         builders.document(
-          builders.paragraph(
-            builders.emphasized(
-              "h<a>ello",
-              builders.footnote(builders.emphasized("okay")),
-              "<b>",
-            ),
-          ),
+          builders.paragraph(builders.emphasized("h<a>ello", builders.footnote(builders.emphasized("okay")), "<b>")),
         ),
-        toggleMark(
-          builders.schema.marks["em"]!,
-          null,
-          const ToggleMarkOptions(enterInlineAtoms: false),
-        ),
+        toggleMark(builders.schema.marks["em"]!, null, const ToggleMarkOptions(enterInlineAtoms: false)),
         builders.document(
-          builders.paragraph(
-            builders.emphasized("h"),
-            "ello",
-            builders.footnote(builders.emphasized("okay")),
-          ),
+          builders.paragraph(builders.emphasized("h"), "ello", builders.footnote(builders.emphasized("okay"))),
         ),
       );
     });
@@ -1138,30 +878,26 @@ void main() {
 
   group("Select textblock boundaries >", () {
     test("can move the cursor when the selection is empty", () {
-      _apply(doc(p("one <a>two")), selectTextblockStart, doc(p("<a>one two")));
-      _apply(doc(p("one <a>two")), selectTextblockEnd, doc(p("one two<a>")));
+      _apply(document(p("one <a>two")), selectTextblockStart, document(p("<a>one two")));
+      _apply(document(p("one <a>two")), selectTextblockEnd, document(p("one two<a>")));
     });
 
     test("can move the cursor when the selection is not empty", () {
-      _apply(
-        doc(p("one <a>two<b>")),
-        selectTextblockStart,
-        doc(p("<a>one two")),
-      );
-      _apply(doc(p("one <a>two<b>")), selectTextblockEnd, doc(p("one two<a>")));
+      _apply(document(p("one <a>two<b>")), selectTextblockStart, document(p("<a>one two")));
+      _apply(document(p("one <a>two<b>")), selectTextblockEnd, document(p("one two<a>")));
     });
 
     test("can move the cursor when selection crosses text blocks", () {
       _apply(
-        doc(p("one <a>two"), p("three<b> four")),
+        document(p("one <a>two"), p("three<b> four")),
         selectTextblockStart,
-        doc(p("<a>one two"), p("three four")),
+        document(p("<a>one two"), p("three four")),
       );
 
       _apply(
-        doc(p("one <a>two"), p("three<b> four")),
+        document(p("one <a>two"), p("three<b> four")),
         selectTextblockEnd,
-        doc(p("one two"), p("three four<a>")),
+        document(p("one two"), p("three four<a>")),
       );
     });
   });
@@ -1175,7 +911,7 @@ void main() {
         _CountingCommand(counter, true),
       ]);
 
-      expect(command.execute(_makeState(doc(p("<a>")))), isTrue);
+      expect(command.execute(_makeState(document(p("<a>")))), isTrue);
       expect(counter.calls, 2);
     });
   });
@@ -1187,11 +923,7 @@ void main() {
       expect(pcBaseKeymap["Mod-a"], same(selectAll));
       expect(macBaseKeymap["Ctrl-a"], same(selectTextblockStart));
       expect(macBaseKeymap["Ctrl-e"], same(selectTextblockEnd));
-      expect(
-        identical(baseKeymap, pcBaseKeymap) ||
-            identical(baseKeymap, macBaseKeymap),
-        isTrue,
-      );
+      expect(identical(baseKeymap, pcBaseKeymap) || identical(baseKeymap, macBaseKeymap), isTrue);
     });
   });
 }
@@ -1207,9 +939,7 @@ void _apply(Node initial, Command command, Node? expected) {
 }
 
 EditorState _makeState(Node document) {
-  return EditorState.create(
-    EditorStateConfig(doc: document, selection: _selectionFor(document)),
-  );
+  return EditorState.create(EditorStateConfig(doc: document, selection: _selectionFor(document)));
 }
 
 Selection _selectionFor(Node document) {
@@ -1237,9 +967,7 @@ Node _tagNode(Node node, Map<String, int> tags) {
 Node _headingDocument(int a) {
   return _tagNode(
     _headingSchema.node("doc", null, [
-      _headingSchema.node("heading", {
-        "level": 1,
-      }, _headingSchema.text("foobar")),
+      _headingSchema.node("heading", {"level": 1}, _headingSchema.text("foobar")),
     ]),
     {"a": a},
   );
@@ -1250,10 +978,7 @@ final Schema _headingSchema = Schema(
     nodes: schema.spec.nodes
         .update("heading", NodeSpec(content: "inline*"))
         .update("doc", NodeSpec(content: "heading block*"))
-        .addToEnd(
-          "span",
-          NodeSpec(inline: true, group: "inline", content: "inline*"),
-        ),
+        .addToEnd("span", NodeSpec(inline: true, group: "inline", content: "inline*")),
   ),
 );
 
@@ -1375,11 +1100,7 @@ class _CommandMarkBuilder {
   }
 }
 
-_FlattenResult _flatten(
-  Schema schema,
-  List<Object?> children, [
-  Node Function(Node) transform = _identity,
-]) {
+_FlattenResult _flatten(Schema schema, List<Object?> children, [Node Function(Node) transform = _identity]) {
   final result = <Node>[];
   var position = 0;
   Map<String, int>? tags;
@@ -1464,11 +1185,7 @@ class _CountingCommand implements Command {
   final bool result;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     counter.calls++;
     return result;
   }

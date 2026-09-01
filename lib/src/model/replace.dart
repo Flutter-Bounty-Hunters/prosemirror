@@ -40,18 +40,12 @@ class Slice {
 
   /// @internal
   Slice removeBetween(int from, int to) {
-    return Slice(
-      _removeRange(content, from + openStart, to + openStart),
-      openStart,
-      openEnd,
-    );
+    return Slice(_removeRange(content, from + openStart, to + openStart), openStart, openEnd);
   }
 
   /// Tests whether this slice is equal to another slice.
   bool eq(Slice other) {
-    return content.eq(other.content) &&
-        openStart == other.openStart &&
-        openEnd == other.openEnd;
+    return content.eq(other.content) && openStart == other.openStart && openEnd == other.openEnd;
   }
 
   /// @internal
@@ -91,18 +85,14 @@ class Slice {
     var openEnd = 0;
     for (
       Node? node = fragment.firstChild;
-      node != null &&
-          !node.isLeaf &&
-          (openIsolating || !node.type.spec.isolating);
+      node != null && !node.isLeaf && (openIsolating || !node.type.spec.isolating);
       node = node.firstChild
     ) {
       openStart++;
     }
     for (
       Node? node = fragment.lastChild;
-      node != null &&
-          !node.isLeaf &&
-          (openIsolating || !node.type.spec.isolating);
+      node != null && !node.isLeaf && (openIsolating || !node.type.spec.isolating);
       node = node.lastChild
     ) {
       openEnd++;
@@ -129,40 +119,21 @@ Fragment _removeRange(Fragment content, int from, int to) {
   }
   return content.replaceChild(
     found.index,
-    child.copy(
-      _removeRange(
-        child.content,
-        from - found.offset - 1,
-        to - found.offset - 1,
-      ),
-    ),
+    child.copy(_removeRange(child.content, from - found.offset - 1, to - found.offset - 1)),
   );
 }
 
-Fragment? _insertInto(
-  Fragment content,
-  int dist,
-  Fragment insert,
-  Node? parent,
-) {
+Fragment? _insertInto(Fragment content, int dist, Fragment insert, Node? parent) {
   final found = content.findIndex(dist);
   final child = content.maybeChild(found.index);
   if (found.offset == dist || child!.isText) {
-    if (parent != null &&
-        !parent.canReplace(found.index, found.index, insert)) {
+    if (parent != null && !parent.canReplace(found.index, found.index, insert)) {
       return null;
     }
     return content.cut(0, dist).append(insert).append(content.cut(dist));
   }
-  final inner = _insertInto(
-    child.content,
-    dist - found.offset - 1,
-    insert,
-    child,
-  );
-  return inner != null
-      ? content.replaceChild(found.index, child.copy(inner))
-      : null;
+  final inner = _insertInto(child.content, dist - found.offset - 1, insert, child);
+  return inner != null ? content.replaceChild(found.index, child.copy(inner)) : null;
 }
 
 /// Replace the range between [$from] and [$to] with [slice].
@@ -184,25 +155,16 @@ Node _replaceOuter(ResolvedPos $from, ResolvedPos $to, Slice slice, int depth) {
     return node.copy(node.content.replaceChild(index, inner));
   } else if (slice.content.size == 0) {
     return _close(node, _replaceTwoWay($from, $to, depth));
-  } else if (slice.openStart == 0 &&
-      slice.openEnd == 0 &&
-      $from.depth == depth &&
-      $to.depth == depth) {
+  } else if (slice.openStart == 0 && slice.openEnd == 0 && $from.depth == depth && $to.depth == depth) {
     final parent = $from.parent;
     final content = parent.content;
     return _close(
       parent,
-      content
-          .cut(0, $from.parentOffset)
-          .append(slice.content)
-          .append(content.cut($to.parentOffset)),
+      content.cut(0, $from.parentOffset).append(slice.content).append(content.cut($to.parentOffset)),
     );
   } else {
     final prepared = _prepareSliceForReplace(slice, $from);
-    return _close(
-      node,
-      _replaceThreeWay($from, prepared.start, prepared.end, $to, depth),
-    );
+    return _close(node, _replaceThreeWay($from, prepared.start, prepared.end, $to, depth));
   }
 }
 
@@ -221,20 +183,13 @@ Node _joinable(ResolvedPos $before, ResolvedPos $after, int depth) {
 void _addNode(Node child, List<Node> target) {
   final last = target.length - 1;
   if (last >= 0 && child.isText && child.sameMarkup(target[last])) {
-    target[last] = (child as TextNode).withText(
-      target[last].text! + child.text,
-    );
+    target[last] = (child as TextNode).withText(target[last].text! + child.text);
   } else {
     target.add(child);
   }
 }
 
-void _addRange(
-  ResolvedPos? $start,
-  ResolvedPos? $end,
-  int depth,
-  List<Node> target,
-) {
+void _addRange(ResolvedPos? $start, ResolvedPos? $end, int depth, List<Node> target) {
   final node = ($end ?? $start)!.node(depth);
   var startIndex = 0;
   final endIndex = $end != null ? $end.index(depth) : node.childCount;
@@ -260,36 +215,18 @@ Node _close(Node node, Fragment content) {
   return node.copy(content);
 }
 
-Fragment _replaceThreeWay(
-  ResolvedPos $from,
-  ResolvedPos $start,
-  ResolvedPos $end,
-  ResolvedPos $to,
-  int depth,
-) {
-  final Node? openStart = $from.depth > depth
-      ? _joinable($from, $start, depth + 1)
-      : null;
-  final Node? openEnd = $to.depth > depth
-      ? _joinable($end, $to, depth + 1)
-      : null;
+Fragment _replaceThreeWay(ResolvedPos $from, ResolvedPos $start, ResolvedPos $end, ResolvedPos $to, int depth) {
+  final Node? openStart = $from.depth > depth ? _joinable($from, $start, depth + 1) : null;
+  final Node? openEnd = $to.depth > depth ? _joinable($end, $to, depth + 1) : null;
 
   final content = <Node>[];
   _addRange(null, $from, depth, content);
-  if (openStart != null &&
-      openEnd != null &&
-      $start.index(depth) == $end.index(depth)) {
+  if (openStart != null && openEnd != null && $start.index(depth) == $end.index(depth)) {
     _checkJoin(openStart, openEnd);
-    _addNode(
-      _close(openStart, _replaceThreeWay($from, $start, $end, $to, depth + 1)),
-      content,
-    );
+    _addNode(_close(openStart, _replaceThreeWay($from, $start, $end, $to, depth + 1)), content);
   } else {
     if (openStart != null) {
-      _addNode(
-        _close(openStart, _replaceTwoWay($from, $start, depth + 1)),
-        content,
-      );
+      _addNode(_close(openStart, _replaceTwoWay($from, $start, depth + 1)), content);
     }
     _addRange($start, $end, depth, content);
     if (openEnd != null) {
@@ -311,10 +248,7 @@ Fragment _replaceTwoWay(ResolvedPos $from, ResolvedPos $to, int depth) {
   return Fragment(content);
 }
 
-({ResolvedPos start, ResolvedPos end}) _prepareSliceForReplace(
-  Slice slice,
-  ResolvedPos $along,
-) {
+({ResolvedPos start, ResolvedPos end}) _prepareSliceForReplace(Slice slice, ResolvedPos $along) {
   final extra = $along.depth - slice.openStart;
   final parent = $along.node(extra);
   var node = parent.copy(slice.content);

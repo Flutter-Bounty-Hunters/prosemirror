@@ -9,11 +9,7 @@ import 'package:prosemirror/src/model/schema.dart';
 import 'package:prosemirror/src/transform/step.dart';
 import 'package:prosemirror/src/transform/map.dart';
 
-Fragment _mapFragment(
-  Fragment fragment,
-  Node Function(Node child, Node parent, int index) callback,
-  Node parent,
-) {
+Fragment _mapFragment(Fragment fragment, Node Function(Node child, Node parent, int index) callback, Node parent) {
   final mapped = <Node>[];
   for (var index = 0; index < fragment.childCount; index++) {
     var child = fragment.child(index);
@@ -77,27 +73,15 @@ class AddMarkStep extends Step {
 
   @override
   Step? merge(Step other) {
-    if (other is AddMarkStep &&
-        other.mark.eq(mark) &&
-        from <= other.to &&
-        to >= other.from) {
-      return AddMarkStep(
-        math.min(from, other.from),
-        math.max(to, other.to),
-        mark,
-      );
+    if (other is AddMarkStep && other.mark.eq(mark) && from <= other.to && to >= other.from) {
+      return AddMarkStep(math.min(from, other.from), math.max(to, other.to), mark);
     }
     return null;
   }
 
   @override
   Object? toJSON() {
-    return <String, Object?>{
-      "stepType": "addMark",
-      "mark": mark.toJSON(),
-      "from": from,
-      "to": to,
-    };
+    return <String, Object?>{"stepType": "addMark", "mark": mark.toJSON(), "from": from, "to": to};
   }
 
   /// @internal
@@ -106,11 +90,7 @@ class AddMarkStep extends Step {
     if (map["from"] is! int || map["to"] is! int) {
       throw RangeError("Invalid input for AddMarkStep.fromJSON");
     }
-    return AddMarkStep(
-      map["from"] as int,
-      map["to"] as int,
-      schema.markFromJSON(map["mark"]),
-    );
+    return AddMarkStep(map["from"] as int, map["to"] as int, schema.markFromJSON(map["mark"]));
   }
 }
 
@@ -158,27 +138,15 @@ class RemoveMarkStep extends Step {
 
   @override
   Step? merge(Step other) {
-    if (other is RemoveMarkStep &&
-        other.mark.eq(mark) &&
-        from <= other.to &&
-        to >= other.from) {
-      return RemoveMarkStep(
-        math.min(from, other.from),
-        math.max(to, other.to),
-        mark,
-      );
+    if (other is RemoveMarkStep && other.mark.eq(mark) && from <= other.to && to >= other.from) {
+      return RemoveMarkStep(math.min(from, other.from), math.max(to, other.to), mark);
     }
     return null;
   }
 
   @override
   Object? toJSON() {
-    return <String, Object?>{
-      "stepType": "removeMark",
-      "mark": mark.toJSON(),
-      "from": from,
-      "to": to,
-    };
+    return <String, Object?>{"stepType": "removeMark", "mark": mark.toJSON(), "from": from, "to": to};
   }
 
   /// @internal
@@ -187,11 +155,7 @@ class RemoveMarkStep extends Step {
     if (map["from"] is! int || map["to"] is! int) {
       throw RangeError("Invalid input for RemoveMarkStep.fromJSON");
     }
-    return RemoveMarkStep(
-      map["from"] as int,
-      map["to"] as int,
-      schema.markFromJSON(map["mark"]),
-    );
+    return RemoveMarkStep(map["from"] as int, map["to"] as int, schema.markFromJSON(map["mark"]));
   }
 }
 
@@ -212,17 +176,8 @@ class AddNodeMarkStep extends Step {
     if (node == null) {
       return StepResult.fail("No node at mark step's position");
     }
-    final updated = node.type.create(
-      node.attrs,
-      null,
-      mark.addToSet(node.marks),
-    );
-    return StepResult.fromReplace(
-      doc,
-      pos,
-      pos + 1,
-      Slice(Fragment.from(updated), 0, node.isLeaf ? 0 : 1),
-    );
+    final updated = node.type.create(node.attrs, null, mark.addToSet(node.marks));
+    return StepResult.fromReplace(doc, pos, pos + 1, Slice(Fragment.from(updated), 0, node.isLeaf ? 0 : 1));
   }
 
   @override
@@ -250,11 +205,7 @@ class AddNodeMarkStep extends Step {
 
   @override
   Object? toJSON() {
-    return <String, Object?>{
-      "stepType": "addNodeMark",
-      "pos": pos,
-      "mark": mark.toJSON(),
-    };
+    return <String, Object?>{"stepType": "addNodeMark", "pos": pos, "mark": mark.toJSON()};
   }
 
   /// @internal
@@ -284,17 +235,8 @@ class RemoveNodeMarkStep extends Step {
     if (node == null) {
       return StepResult.fail("No node at mark step's position");
     }
-    final updated = node.type.create(
-      node.attrs,
-      null,
-      mark.removeFromSet(node.marks),
-    );
-    return StepResult.fromReplace(
-      doc,
-      pos,
-      pos + 1,
-      Slice(Fragment.from(updated), 0, node.isLeaf ? 0 : 1),
-    );
+    final updated = node.type.create(node.attrs, null, mark.removeFromSet(node.marks));
+    return StepResult.fromReplace(doc, pos, pos + 1, Slice(Fragment.from(updated), 0, node.isLeaf ? 0 : 1));
   }
 
   @override
@@ -314,11 +256,7 @@ class RemoveNodeMarkStep extends Step {
 
   @override
   Object? toJSON() {
-    return <String, Object?>{
-      "stepType": "removeNodeMark",
-      "pos": pos,
-      "mark": mark.toJSON(),
-    };
+    return <String, Object?>{"stepType": "removeNodeMark", "pos": pos, "mark": mark.toJSON()};
   }
 
   /// @internal
@@ -327,9 +265,6 @@ class RemoveNodeMarkStep extends Step {
     if (map["pos"] is! int) {
       throw RangeError("Invalid input for RemoveNodeMarkStep.fromJSON");
     }
-    return RemoveNodeMarkStep(
-      map["pos"] as int,
-      schema.markFromJSON(map["mark"]),
-    );
+    return RemoveNodeMarkStep(map["pos"] as int, schema.markFromJSON(map["mark"]));
   }
 }

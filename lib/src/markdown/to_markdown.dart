@@ -2,20 +2,10 @@ import 'package:prosemirror/src/model/mark.dart';
 import 'package:prosemirror/src/model/node.dart';
 
 /// Serializes a ProseMirror node as markdown.
-typedef NodeSerializer = void Function(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-);
+typedef NodeSerializer = void Function(MarkdownSerializerState state, Node node, Node parent, int index);
 
 /// Computes a markdown string for an opening or closing mark.
-typedef MarkString = String Function(
-  MarkdownSerializerState state,
-  Mark mark,
-  Node parent,
-  int index,
-);
+typedef MarkString = String Function(MarkdownSerializerState state, Mark mark, Node parent, int index);
 
 /// Computes the first-line delimiter for a list item.
 typedef ListDelimiter = String Function(int index);
@@ -75,8 +65,7 @@ class MarkdownSerializerOptions {
       return this;
     }
     return MarkdownSerializerOptions(
-      escapeExtraCharacters:
-          other.escapeExtraCharacters ?? escapeExtraCharacters,
+      escapeExtraCharacters: other.escapeExtraCharacters ?? escapeExtraCharacters,
       hardBreakNodeName: other.hardBreakNodeName,
       strict: other.strict,
       tightLists: other.tightLists,
@@ -100,11 +89,7 @@ class MarkdownSerializer {
 
   /// Serialize the given node as CommonMark markdown.
   String serialize(Node content, [MarkdownSerializerOptions? options]) {
-    final state = MarkdownSerializerState(
-      nodes,
-      marks,
-      this.options.merge(options),
-    );
+    final state = MarkdownSerializerState(nodes, marks, this.options.merge(options));
     state.renderContent(content);
     return state.out;
   }
@@ -126,54 +111,22 @@ const MarkdownSerializer defaultMarkdownSerializer = MarkdownSerializer(
     "text": _serializeText,
   },
   {
-    "em": MarkSerializerSpec(
-      open: "*",
-      close: "*",
-      mixable: true,
-      expelEnclosingWhitespace: true,
-    ),
-    "strong": MarkSerializerSpec(
-      open: "**",
-      close: "**",
-      mixable: true,
-      expelEnclosingWhitespace: true,
-    ),
-    "link": MarkSerializerSpec(
-      open: _openLink,
-      close: _closeLink,
-      mixable: true,
-    ),
-    "code": MarkSerializerSpec(
-      open: _openCode,
-      close: _closeCode,
-      escape: false,
-    ),
+    "em": MarkSerializerSpec(open: "*", close: "*", mixable: true, expelEnclosingWhitespace: true),
+    "strong": MarkSerializerSpec(open: "**", close: "**", mixable: true, expelEnclosingWhitespace: true),
+    "link": MarkSerializerSpec(open: _openLink, close: _closeLink, mixable: true),
+    "code": MarkSerializerSpec(open: _openCode, close: _closeCode, escape: false),
   },
 );
 
 const MarkdownSerializerOptions _noOptions = MarkdownSerializerOptions();
 
-const MarkSerializerSpec _blankMark = MarkSerializerSpec(
-  open: "",
-  close: "",
-  mixable: true,
-);
+const MarkSerializerSpec _blankMark = MarkSerializerSpec(open: "", close: "", mixable: true);
 
-void _serializeBlockquote(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeBlockquote(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.wrapBlock("> ", null, node, _RenderContent(state, node).call);
 }
 
-void _serializeCodeBlock(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeCodeBlock(MarkdownSerializerState state, Node node, Node parent, int index) {
   final fence = _codeFenceFor(node.textContent);
   state.write("$fence${node.attrs["params"] ?? ""}\n");
   state.text(node.textContent, false);
@@ -182,77 +135,38 @@ void _serializeCodeBlock(
   state.closeBlock(node);
 }
 
-void _serializeHeading(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeHeading(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.write("${state.repeat("#", node.attrs["level"] as int)} ");
   state.renderInline(node, false);
   state.closeBlock(node);
 }
 
-void _serializeHorizontalRule(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeHorizontalRule(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.write((node.attrs["markup"] as String?) ?? "---");
   state.closeBlock(node);
 }
 
-void _serializeBulletList(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeBulletList(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.renderList(node, "  ", _BulletListDelimiter(node).call);
 }
 
-void _serializeOrderedList(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeOrderedList(MarkdownSerializerState state, Node node, Node parent, int index) {
   final start = node.attrs["order"] as int? ?? 1;
   final maxWidth = (start + node.childCount - 1).toString().length;
   final space = state.repeat(" ", maxWidth + 2);
-  state.renderList(
-    node,
-    space,
-    _OrderedListDelimiter(start, maxWidth, state).call,
-  );
+  state.renderList(node, space, _OrderedListDelimiter(start, maxWidth, state).call);
 }
 
-void _serializeListItem(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeListItem(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.renderContent(node);
 }
 
-void _serializeParagraph(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeParagraph(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.renderInline(node);
   state.closeBlock(node);
 }
 
-void _serializeImage(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeImage(MarkdownSerializerState state, Node node, Node parent, int index) {
   final alt = state.esc((node.attrs["alt"] as String?) ?? "");
   final src = _escapeImageUrl(node.attrs["src"] as String);
   final title = node.attrs["title"] as String?;
@@ -260,12 +174,7 @@ void _serializeImage(
   state.write("![$alt]($src$titleText)");
 }
 
-void _serializeHardBreak(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeHardBreak(MarkdownSerializerState state, Node node, Node parent, int index) {
   for (var nextIndex = index + 1; nextIndex < parent.childCount; nextIndex++) {
     if (!identical(parent.child(nextIndex).type, node.type)) {
       state.write("\\\n");
@@ -274,31 +183,16 @@ void _serializeHardBreak(
   }
 }
 
-void _serializeText(
-  MarkdownSerializerState state,
-  Node node,
-  Node parent,
-  int index,
-) {
+void _serializeText(MarkdownSerializerState state, Node node, Node parent, int index) {
   state.text(node.text!, state.inAutolink != true);
 }
 
-String _openLink(
-  MarkdownSerializerState state,
-  Mark mark,
-  Node parent,
-  int index,
-) {
+String _openLink(MarkdownSerializerState state, Mark mark, Node parent, int index) {
   state.inAutolink = _isPlainUrl(mark, parent, index);
   return state.inAutolink == true ? "<" : "[";
 }
 
-String _closeLink(
-  MarkdownSerializerState state,
-  Mark mark,
-  Node parent,
-  int index,
-) {
+String _closeLink(MarkdownSerializerState state, Mark mark, Node parent, int index) {
   final inAutolink = state.inAutolink == true;
   state.inAutolink = null;
   if (inAutolink) {
@@ -310,30 +204,18 @@ String _closeLink(
   return "]($href$titleText)";
 }
 
-String _openCode(
-  MarkdownSerializerState state,
-  Mark mark,
-  Node parent,
-  int index,
-) {
+String _openCode(MarkdownSerializerState state, Mark mark, Node parent, int index) {
   return _backticksFor(parent.child(index), -1);
 }
 
-String _closeCode(
-  MarkdownSerializerState state,
-  Mark mark,
-  Node parent,
-  int index,
-) {
+String _closeCode(MarkdownSerializerState state, Mark mark, Node parent, int index) {
   return _backticksFor(parent.child(index - 1), 1);
 }
 
 String _codeFenceFor(String text) {
   var longest = 0;
   for (final match in RegExp(r'`{3,}').allMatches(text)) {
-    longest = longest > match.group(0)!.length
-        ? longest
-        : match.group(0)!.length;
+    longest = longest > match.group(0)!.length ? longest : match.group(0)!.length;
   }
   return longest == 0 ? "```" : "`" * (longest + 1);
 }
@@ -376,9 +258,7 @@ String _backticksFor(Node node, int side) {
 
 bool _isPlainUrl(Mark link, Node parent, int index) {
   final href = link.attrs["href"];
-  if (link.attrs["title"] != null ||
-      href is! String ||
-      !RegExp(r'^\w+:').hasMatch(href)) {
+  if (link.attrs["title"] != null || href is! String || !RegExp(r'^\w+:').hasMatch(href)) {
     return false;
   }
   final content = parent.child(index);
@@ -388,8 +268,7 @@ bool _isPlainUrl(Mark link, Node parent, int index) {
       !content.marks[content.marks.length - 1].eq(link)) {
     return false;
   }
-  return index == parent.childCount - 1 ||
-      !link.isInSet(parent.child(index + 1).marks);
+  return index == parent.childCount - 1 || !link.isInSet(parent.child(index + 1).marks);
 }
 
 class _RenderContent {
@@ -489,12 +368,7 @@ class MarkdownSerializerState {
   }
 
   /// Render a block, prefixing each line with [delim].
-  void wrapBlock(
-    String delim,
-    String? firstDelim,
-    Node node,
-    void Function() render,
-  ) {
+  void wrapBlock(String delim, String? firstDelim, Node node, void Function() render) {
     final old = this.delim;
     write(firstDelim ?? delim);
     this.delim += delim;
@@ -536,9 +410,7 @@ class MarkdownSerializerState {
     final lines = text.split("\n");
     for (var index = 0; index < lines.length; index++) {
       write();
-      if (!escape &&
-          lines[index].startsWith("[") &&
-          RegExp(r'(^|[^\\])!$').hasMatch(out)) {
+      if (!escape && lines[index].startsWith("[") && RegExp(r'(^|[^\\])!$').hasMatch(out)) {
         out = "${out.substring(0, out.length - 1)}\\!";
       }
       out += escape ? esc(lines[index], atBlockStart) : lines[index];
@@ -556,9 +428,7 @@ class MarkdownSerializerState {
       return;
     }
     if (options.strict) {
-      throw StateError(
-        "Token type `${node.type.name}` not supported by Markdown renderer",
-      );
+      throw StateError("Token type `${node.type.name}` not supported by Markdown renderer");
     }
     if (!node.type.isLeaf) {
       if (node.type.inlineContent) {
@@ -591,13 +461,7 @@ class MarkdownSerializerState {
     atBlockStart = false;
   }
 
-  String _renderInlineNode(
-    Node parent,
-    Node? node,
-    int index,
-    List<Mark> active,
-    String trailing,
-  ) {
+  String _renderInlineNode(Node parent, Node? node, int index, List<Mark> active, String trailing) {
     var marks = node != null ? List<Mark>.of(node.marks) : <Mark>[];
     marks = _withoutExpiredHardBreakMarks(parent, node, index, marks);
 
@@ -607,22 +471,13 @@ class MarkdownSerializerState {
     marks = _reorderMixableMarks(marks, active, length);
 
     var keep = 0;
-    while (keep < active.length &&
-        keep < length &&
-        marks[keep].eq(active[keep])) {
+    while (keep < active.length && keep < length && marks[keep].eq(active[keep])) {
       keep += 1;
     }
 
     var leading = trailing;
     var nextTrailing = "";
-    final expelled = _expelEnclosingWhitespace(
-      parent,
-      node,
-      index,
-      marks,
-      active,
-      keep,
-    );
+    final expelled = _expelEnclosingWhitespace(parent, node, index, marks, active, keep);
     node = expelled.node;
     marks = expelled.marks;
     leading += expelled.leading;
@@ -647,12 +502,7 @@ class MarkdownSerializerState {
       }
 
       if (noEscape && node.isText) {
-        text(
-          markString(inner, true, parent, index) +
-              node.text! +
-              markString(inner, false, parent, index + 1),
-          false,
-        );
+        text(markString(inner, true, parent, index) + node.text! + markString(inner, false, parent, index + 1), false);
       } else {
         render(node, parent, index);
       }
@@ -666,12 +516,7 @@ class MarkdownSerializerState {
     return nextTrailing;
   }
 
-  List<Mark> _withoutExpiredHardBreakMarks(
-    Node parent,
-    Node? node,
-    int index,
-    List<Mark> marks,
-  ) {
+  List<Mark> _withoutExpiredHardBreakMarks(Node parent, Node? node, int index, List<Mark> marks) {
     if (node == null || node.type.name != options.hardBreakNodeName) {
       return marks;
     }
@@ -681,19 +526,14 @@ class MarkdownSerializerState {
         continue;
       }
       final next = parent.child(index + 1);
-      if (mark.isInSet(next.marks) &&
-          (!next.isText || RegExp(r'\S').hasMatch(next.text!))) {
+      if (mark.isInSet(next.marks) && (!next.isText || RegExp(r'\S').hasMatch(next.text!))) {
         kept.add(mark);
       }
     }
     return kept;
   }
 
-  List<Mark> _reorderMixableMarks(
-    List<Mark> marks,
-    List<Mark> active,
-    int length,
-  ) {
+  List<Mark> _reorderMixableMarks(List<Mark> marks, List<Mark> active, int length) {
     var reordered = List<Mark>.of(marks);
     outer:
     for (var markIndex = 0; markIndex < length; markIndex++) {
@@ -739,51 +579,33 @@ class MarkdownSerializerState {
   ) {
     var leading = "";
     var trailing = "";
-    if (node != null &&
-        node.isText &&
-        _shouldExpelLeadingWhitespace(marks, active, keep)) {
+    if (node != null && node.isText && _shouldExpelLeadingWhitespace(marks, active, keep)) {
       final split = _splitLeadingWhitespace(node.text!);
       if (split.whitespace.isNotEmpty) {
         leading = split.whitespace;
-        node = split.rest.isNotEmpty
-            ? (node as TextNode).withText(split.rest)
-            : null;
+        node = split.rest.isNotEmpty ? (node as TextNode).withText(split.rest) : null;
         if (node == null) {
           marks = active;
         }
       }
     }
-    if (node != null &&
-        node.isText &&
-        _shouldExpelTrailingWhitespace(parent, node, index, marks)) {
+    if (node != null && node.isText && _shouldExpelTrailingWhitespace(parent, node, index, marks)) {
       final split = _splitTrailingWhitespace(node.text!);
       if (split.whitespace.isNotEmpty) {
         trailing = split.whitespace;
-        node = split.rest.isNotEmpty
-            ? (node as TextNode).withText(split.rest)
-            : null;
+        node = split.rest.isNotEmpty ? (node as TextNode).withText(split.rest) : null;
         if (node == null) {
           marks = active;
         }
       }
     }
-    return _ExpelledWhitespace(
-      node: node,
-      marks: marks,
-      leading: leading,
-      trailing: trailing,
-    );
+    return _ExpelledWhitespace(node: node, marks: marks, leading: leading, trailing: trailing);
   }
 
-  bool _shouldExpelLeadingWhitespace(
-    List<Mark> marks,
-    List<Mark> active,
-    int keep,
-  ) {
+  bool _shouldExpelLeadingWhitespace(List<Mark> marks, List<Mark> active, int keep) {
     for (final mark in marks) {
       final info = getMark(mark.type.name);
-      if (info.expelEnclosingWhitespace &&
-          !_hasActivePrefixMark(mark, active, keep)) {
+      if (info.expelEnclosingWhitespace && !_hasActivePrefixMark(mark, active, keep)) {
         return true;
       }
     }
@@ -799,17 +621,11 @@ class MarkdownSerializerState {
     return false;
   }
 
-  bool _shouldExpelTrailingWhitespace(
-    Node parent,
-    Node node,
-    int index,
-    List<Mark> marks,
-  ) {
+  bool _shouldExpelTrailingWhitespace(Node parent, Node node, int index, List<Mark> marks) {
     for (var markIndex = 0; markIndex < marks.length; markIndex++) {
       final mark = marks[markIndex];
       final info = getMark(mark.type.name);
-      if (info.expelEnclosingWhitespace &&
-          !isMarkAhead(parent, index + 1, marks.sublist(0, markIndex + 1))) {
+      if (info.expelEnclosingWhitespace && !isMarkAhead(parent, index + 1, marks.sublist(0, markIndex + 1))) {
         return true;
       }
     }
@@ -824,21 +640,14 @@ class MarkdownSerializerState {
       flushClose(1);
     }
 
-    final isTight = node.attrs.containsKey("tight")
-        ? node.attrs["tight"] == true
-        : options.tightLists;
+    final isTight = node.attrs.containsKey("tight") ? node.attrs["tight"] == true : options.tightLists;
     final previousTight = inTightList;
     inTightList = isTight;
     node.forEach((child, offset, index) {
       if (index > 0 && isTight) {
         flushClose(1);
       }
-      wrapBlock(
-        delim,
-        firstDelim(index),
-        node,
-        _RenderNode(this, child, node, index).call,
-      );
+      wrapBlock(delim, firstDelim(index), node, _RenderNode(this, child, node, index).call);
     });
     inTightList = previousTight;
   }
@@ -860,10 +669,7 @@ class MarkdownSerializerState {
     if (startOfLine) {
       result = result
           .replaceFirstMapped(RegExp(r'^(\+[ ]|[\-*>])'), _escapeWholeMatch)
-          .replaceFirstMapped(
-            RegExp(r'^(\s*)(#{1,6})(\s|$)'),
-            _escapeHeadingStart,
-          )
+          .replaceFirstMapped(RegExp(r'^(\s*)(#{1,6})(\s|$)'), _escapeHeadingStart)
           .replaceFirstMapped(RegExp(r'^(\s*\d+)\.\s'), _escapeOrderedMarker);
     }
     final extra = options.escapeExtraCharacters;
@@ -919,8 +725,7 @@ class MarkdownSerializerState {
       }
       final next = parent.child(nextIndex);
       if (next.type.name != options.hardBreakNodeName) {
-        return next.marks.length >= marks.length &&
-            Mark.sameSet(next.marks.sublist(0, marks.length), marks);
+        return next.marks.length >= marks.length && Mark.sameSet(next.marks.sublist(0, marks.length), marks);
       }
       nextIndex += 2;
     }
@@ -941,12 +746,7 @@ class _RenderNode {
 }
 
 class _ExpelledWhitespace {
-  const _ExpelledWhitespace({
-    required this.node,
-    required this.marks,
-    required this.leading,
-    required this.trailing,
-  });
+  const _ExpelledWhitespace({required this.node, required this.marks, required this.leading, required this.trailing});
 
   final Node? node;
   final List<Mark> marks;

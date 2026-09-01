@@ -11,29 +11,21 @@ class _FieldDesc {
 
   final String name;
   final Object? Function(EditorStateConfig config, EditorState instance) init;
-  final Object? Function(
-    Transaction tr,
-    Object? value,
-    EditorState oldState,
-    EditorState newState,
-  )
-  apply;
+  final Object? Function(Transaction tr, Object? value, EditorState oldState, EditorState newState) apply;
 }
 
 final List<_FieldDesc> _baseFields = <_FieldDesc>[
   _FieldDesc(
     "doc",
     StateField(
-      init: (config, instance) =>
-          config.doc ?? config.schema!.topNodeType.createAndFill(),
+      init: (config, instance) => config.doc ?? config.schema!.topNodeType.createAndFill(),
       apply: (tr, value, oldState, newState) => tr.doc,
     ),
   ),
   _FieldDesc(
     "selection",
     StateField(
-      init: (config, instance) =>
-          config.selection ?? Selection.atStart(instance.doc),
+      init: (config, instance) => config.selection ?? Selection.atStart(instance.doc),
       apply: (tr, value, oldState, newState) => tr.selection,
     ),
   ),
@@ -43,9 +35,7 @@ final List<_FieldDesc> _baseFields = <_FieldDesc>[
       init: (config, instance) => config.storedMarks,
       apply: (tr, value, oldState, newState) {
         final selection = newState.selection;
-        return (selection is TextSelection && selection.$cursor != null)
-            ? tr.storedMarks
-            : null;
+        return (selection is TextSelection && selection.$cursor != null) ? tr.storedMarks : null;
       },
     ),
   ),
@@ -53,8 +43,7 @@ final List<_FieldDesc> _baseFields = <_FieldDesc>[
     "scrollToSelection",
     StateField(
       init: (config, instance) => 0,
-      apply: (tr, prev, oldState, newState) =>
-          tr.scrolledIntoView ? (prev as int) + 1 : prev,
+      apply: (tr, prev, oldState, newState) => tr.scrolledIntoView ? (prev as int) + 1 : prev,
     ),
   ),
 ];
@@ -67,9 +56,7 @@ class Configuration {
     if (plugins != null) {
       for (final plugin in plugins) {
         if (pluginsByKey.containsKey(plugin.key)) {
-          throw RangeError(
-            "Adding different instances of a keyed plugin (${plugin.key})",
-          );
+          throw RangeError("Adding different instances of a keyed plugin (${plugin.key})");
         }
         this.plugins.add(plugin);
         pluginsByKey[plugin.key] = plugin;
@@ -89,13 +76,7 @@ class Configuration {
 /// The type of object passed to [EditorState.create].
 class EditorStateConfig {
   /// Create an editor state config.
-  EditorStateConfig({
-    this.schema,
-    this.doc,
-    this.selection,
-    this.storedMarks,
-    this.plugins,
-  });
+  EditorStateConfig({this.schema, this.doc, this.selection, this.storedMarks, this.plugins});
 
   /// The schema to use (only relevant if no `doc` is specified).
   final Schema? schema;
@@ -219,9 +200,7 @@ class EditorState {
 
   /// Verbose variant of [apply] that returns the precise transactions that
   /// were applied along with the new state.
-  ({EditorState state, List<Transaction> transactions}) applyTransaction(
-    Transaction rootTr,
-  ) {
+  ({EditorState state, List<Transaction> transactions}) applyTransaction(Transaction rootTr) {
     if (!filterTransaction(rootTr)) {
       return (state: this, transactions: <Transaction>[]);
     }
@@ -240,23 +219,13 @@ class EditorState {
         if (append != null) {
           final n = seen != null ? seen[index].n : 0;
           final oldState = seen != null ? seen[index].state : this;
-          final tr = n < trs.length
-              ? append(n != 0 ? trs.sublist(n) : trs, oldState, newState)
-              : null;
+          final tr = n < trs.length ? append(n != 0 ? trs.sublist(n) : trs, oldState, newState) : null;
           if (tr != null && newState.filterTransaction(tr, index)) {
             tr.setMeta("appendedTransaction", rootTr);
             if (seen == null) {
               seen = <({EditorState state, int n})>[];
-              for (
-                var otherIndex = 0;
-                otherIndex < config.plugins.length;
-                otherIndex++
-              ) {
-                seen.add(
-                  otherIndex < index
-                      ? (state: newState, n: trs.length)
-                      : (state: this, n: 0),
-                );
+              for (var otherIndex = 0; otherIndex < config.plugins.length; otherIndex++) {
+                seen.add(otherIndex < index ? (state: newState, n: trs.length) : (state: this, n: 0));
               }
             }
             trs.add(tr);
@@ -283,10 +252,7 @@ class EditorState {
     final fields = config._fields;
     for (var index = 0; index < fields.length; index++) {
       final field = fields[index];
-      newInstance._setField(
-        field.name,
-        field.apply(tr, _getField(field.name), this, newInstance),
-      );
+      newInstance._setField(field.name, field.apply(tr, _getField(field.name), this, newInstance));
     }
     return newInstance;
   }
@@ -297,16 +263,11 @@ class EditorState {
 
   /// Create a new state.
   static EditorState create(EditorStateConfig config) {
-    final schema = config.doc != null
-        ? config.doc!.type.schema
-        : config.schema!;
+    final schema = config.doc != null ? config.doc!.type.schema : config.schema!;
     final configuration = Configuration(schema, config.plugins);
     final instance = EditorState(configuration);
     for (var index = 0; index < configuration._fields.length; index++) {
-      instance._setField(
-        configuration._fields[index].name,
-        configuration._fields[index].init(config, instance),
-      );
+      instance._setField(configuration._fields[index].name, configuration._fields[index].init(config, instance));
     }
     return instance;
   }
@@ -322,12 +283,7 @@ class EditorState {
     final config = EditorStateConfig(plugins: plugins);
     for (var index = 0; index < fields.length; index++) {
       final name = fields[index].name;
-      instance._setField(
-        name,
-        _hasField(name)
-            ? _getField(name)
-            : fields[index].init(config, instance),
-      );
+      instance._setField(name, _hasField(name) ? _getField(name) : fields[index].init(config, instance));
     }
     return instance;
   }
@@ -336,21 +292,14 @@ class EditorState {
   /// plugins, pass an object mapping property names to use in the resulting
   /// JSON object to plugin objects.
   Map<String, Object?> toJSON([Object? pluginFields]) {
-    final result = <String, Object?>{
-      "doc": doc.toJSON(),
-      "selection": selection.toJSON(),
-    };
+    final result = <String, Object?>{"doc": doc.toJSON(), "selection": selection.toJSON()};
     if (storedMarks != null) {
-      result["storedMarks"] = storedMarks!
-          .map((mark) => mark.toJSON())
-          .toList();
+      result["storedMarks"] = storedMarks!.map((mark) => mark.toJSON()).toList();
     }
     if (pluginFields is Map<String, Plugin>) {
       pluginFields.forEach((prop, plugin) {
         if (prop == "doc" || prop == "selection") {
-          throw RangeError(
-            "The JSON fields `doc` and `selection` are reserved",
-          );
+          throw RangeError("The JSON fields `doc` and `selection` are reserved");
         }
         final state = plugin.spec.state;
         if (state != null && state.toJSON != null) {
@@ -379,10 +328,7 @@ class EditorState {
       if (field.name == "doc") {
         instance.doc = Node.fromJSON(config.schema!, json["doc"]);
       } else if (field.name == "selection") {
-        instance.selection = Selection.fromJSON(
-          instance.doc,
-          json["selection"] as Map<String, Object?>,
-        );
+        instance.selection = Selection.fromJSON(instance.doc, json["selection"] as Map<String, Object?>);
       } else if (field.name == "storedMarks") {
         if (json["storedMarks"] != null) {
           instance.storedMarks = (json["storedMarks"] as List)
@@ -395,16 +341,10 @@ class EditorState {
           for (final prop in pluginFields.keys) {
             final plugin = pluginFields[prop]!;
             final state = plugin.spec.state;
-            if (plugin.key == field.name &&
-                state != null &&
-                state.fromJSON != null &&
-                json.containsKey(prop)) {
+            if (plugin.key == field.name && state != null && state.fromJSON != null && json.containsKey(prop)) {
               // This field belongs to a plugin mapped to a JSON field, read
               // it from there.
-              instance._setField(
-                field.name,
-                state.fromJSON!(config, json[prop], instance),
-              );
+              instance._setField(field.name, state.fromJSON!(config, json[prop], instance));
               handled = true;
               break;
             }

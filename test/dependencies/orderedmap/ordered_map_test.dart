@@ -385,11 +385,7 @@ void main() {
       test("chained operations never mutate the original map", () {
         final original = OrderedMap<int>.from(<String, int>{"a": 1, "b": 2});
 
-        original
-            .update("a", 99)
-            .remove("b")
-            .addToStart("z", 26)
-            .addToEnd("y", 25);
+        original.update("a", 99).remove("b").addToStart("z", 26).addToEnd("y", 25);
 
         expect(_keysOf(original), ["a", "b"]);
         expect(original.get("a"), 1);

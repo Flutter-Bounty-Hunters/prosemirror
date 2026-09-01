@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import 'support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Node > resolve >", () {
@@ -63,9 +63,7 @@ void main() {
     });
 
     test("has a working posAtIndex method", () {
-      final d = doc(
-        blockquote(p("one"), blockquote(p("two ", em("three")), p("four"))),
-      );
+      final d = document(blockquote(p("one"), blockquote(p("two ", em("three")), p("four"))));
       final pThree = d.resolve(12); // Start of em("three")
       expect(pThree.posAtIndex(0), 8);
       expect(pThree.posAtIndex(1), 12);
@@ -82,7 +80,7 @@ void main() {
   });
 }
 
-final Node _testDoc = doc(p("ab"), blockquote(p(em("cd"), "ef")));
+final Node _testDoc = document(p("ab"), blockquote(p(em("cd"), "ef")));
 final _NodeInfo _document = _NodeInfo(_testDoc, 0, 12);
 final _NodeInfo _paragraph1 = _NodeInfo(_testDoc.child(0), 1, 3);
 final _NodeInfo _blockquote = _NodeInfo(_testDoc.child(1), 5, 11);

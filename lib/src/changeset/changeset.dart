@@ -11,11 +11,7 @@ const int _veryLarge = 200000000;
 
 /// Configuration for a [ChangeSet].
 class ChangeSetConfig<Data> {
-  ChangeSetConfig({
-    required this.doc,
-    required this.combine,
-    required this.encoder,
-  });
+  ChangeSetConfig({required this.doc, required this.combine, required this.encoder});
 
   final Node doc;
   final Data? Function(Data dataA, Data dataB) combine;
@@ -73,12 +69,8 @@ class ChangeSet<Data> {
             toA + offset,
             fromB,
             toB,
-            fromA == toA
-                ? Span.none<Data>()
-                : [Span<Data>(toA - fromA, entryData)],
-            fromB == toB
-                ? Span.none<Data>()
-                : [Span<Data>(toB - fromB, entryData)],
+            fromA == toA ? Span.none<Data>() : [Span<Data>(toA - fromA, entryData)],
+            fromB == toB ? Span.none<Data>() : [Span<Data>(toB - fromB, entryData)],
           ),
         );
         offset = (toB - fromB) - (toA - fromA);
@@ -98,22 +90,13 @@ class ChangeSet<Data> {
       if (change.fromA == change.toA ||
           change.fromB == change.toB ||
           // Only look at changes that touch newly added changed ranges
-          !newChanges.any(
-            (range) => range.toB > change.fromB && range.fromB < change.toB,
-          )) {
+          !newChanges.any((range) => range.toB > change.fromB && range.fromB < change.toB)) {
         continue;
       }
-      final diff = _computeDiff(
-        config.doc.content,
-        newDoc.content,
-        change,
-        config.encoder,
-      );
+      final diff = _computeDiff(config.doc.content, newDoc.content, change, config.encoder);
 
       // Fast path: If they are completely different, don't do anything
-      if (diff.length == 1 &&
-          diff[0].fromB == 0 &&
-          diff[0].toB == change.toB - change.fromB) {
+      if (diff.length == 1 && diff[0].fromB == 0 && diff[0].toB == change.toB - change.fromB) {
         continue;
       }
 
@@ -155,17 +138,12 @@ class ChangeSet<Data> {
   /// the maps for the steps that changed it as second argument, and
   /// make sure the method is called on the old set and passed the new
   /// set. The returned positions will be in new document coordinates.
-  ({int from, int to})? changedRange(
-    ChangeSet<Object?> other, [
-    List<StepMap>? maps,
-  ]) {
+  ({int from, int to})? changedRange(ChangeSet<Object?> other, [List<StepMap>? maps]) {
     if (identical(other, this)) {
       return null;
     }
     final touched = maps != null ? _touchedRange(maps) : null;
-    final moved = touched != null
-        ? (touched.toB - touched.fromB) - (touched.toA - touched.fromA)
-        : 0;
+    final moved = touched != null ? (touched.toB - touched.fromB) - (touched.toA - touched.fromA) : 0;
 
     final accumulator = _ChangedRangeAccumulator(
       from: touched != null ? touched.fromB : _veryLarge,
@@ -186,17 +164,12 @@ class ChangeSet<Data> {
         accumulator.add(rangeB.fromB, rangeB.toB);
         indexB++;
       } else {
-        accumulator.add(
-          _mapPosition(rangeA.fromB, touched, moved),
-          _mapPosition(rangeA.toB, touched, moved),
-        );
+        accumulator.add(_mapPosition(rangeA.fromB, touched, moved), _mapPosition(rangeA.toB, touched, moved));
         indexA++;
       }
     }
 
-    return accumulator.from <= accumulator.to
-        ? (from: accumulator.from, to: accumulator.to)
-        : null;
+    return accumulator.from <= accumulator.to ? (from: accumulator.from, to: accumulator.to) : null;
   }
 
   /// Create a changeset with the given base object and configuration.
@@ -269,11 +242,7 @@ List<Change<Data>> _mergeAll<Data>(
     return [ranges[start]];
   }
   final mid = (start + end) >> 1;
-  return Change.merge(
-    _mergeAll(ranges, combine, start, mid),
-    _mergeAll(ranges, combine, mid, end),
-    combine,
-  );
+  return Change.merge(_mergeAll(ranges, combine, start, mid), _mergeAll(ranges, combine, mid, end), combine);
 }
 
 ({int from, int to})? _endRange(List<StepMap> maps) {
@@ -298,25 +267,12 @@ List<Change<Data>> _mergeAll<Data>(
   if (rangeB == null) {
     return null;
   }
-  final rangeA = _endRange(
-    maps.map((map) => map.invert()).toList().reversed.toList(),
-  )!;
-  return (
-    fromA: rangeA.from,
-    toA: rangeA.to,
-    fromB: rangeB.from,
-    toB: rangeB.to,
-  );
+  final rangeA = _endRange(maps.map((map) => map.invert()).toList().reversed.toList())!;
+  return (fromA: rangeA.from, toA: rangeA.to, fromB: rangeB.from, toB: rangeB.to);
 }
 
-int _mapPosition(
-  int position,
-  ({int fromA, int toA, int fromB, int toB})? touched,
-  int moved,
-) {
-  return touched == null || position <= touched.fromA
-      ? position
-      : position + moved;
+int _mapPosition(int position, ({int fromA, int toA, int fromB, int toB})? touched, int moved) {
+  return touched == null || position <= touched.fromA ? position : position + moved;
 }
 
 class _ChangedRangeAccumulator {
@@ -334,9 +290,7 @@ class _ChangedRangeAccumulator {
 
 Span<Data> _mapSpan<Data>(Span<Data> span, Data Function(Span<Data>) f) {
   final newData = f(span);
-  return identical(newData, span.data)
-      ? span
-      : Span<Data>(span.length, newData);
+  return identical(newData, span.data) ? span : Span<Data>(span.length, newData);
 }
 
 bool _sameRanges<Data>(
@@ -356,8 +310,7 @@ bool _sameSpans<Data>(List<Span<Data>> a, List<Span<Object?>> b) {
     return false;
   }
   for (var index = 0; index < a.length; index++) {
-    if (a[index].length != b[index].length ||
-        !identical(a[index].data, b[index].data)) {
+    if (a[index].length != b[index].length || !identical(a[index].data, b[index].data)) {
       return false;
     }
   }

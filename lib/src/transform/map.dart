@@ -125,9 +125,7 @@ class StepMap implements Mappable {
         if (simple) {
           return result;
         }
-        final int? recover = pos == (assoc < 0 ? start : end)
-            ? null
-            : _makeRecover(i ~/ 3, pos - start);
+        final int? recover = pos == (assoc < 0 ? start : end) ? null : _makeRecover(i ~/ 3, pos - start);
         var del = pos == start
             ? _delAfter
             : pos == end
@@ -166,9 +164,7 @@ class StepMap implements Mappable {
 
   /// Calls the given function on each of the changed ranges included in
   /// this map.
-  void forEach(
-    void Function(int oldStart, int oldEnd, int newStart, int newEnd) callback,
-  ) {
+  void forEach(void Function(int oldStart, int oldEnd, int newStart, int newEnd) callback) {
     final oldIndex = inverted ? 2 : 1;
     final newIndex = inverted ? 1 : 2;
     for (var i = 0, diff = 0; i < ranges.length; i += 3) {
@@ -197,9 +193,7 @@ class StepMap implements Mappable {
   /// may be negative). This can be useful when applying steps meant for
   /// a sub-document to a larger document, or vice-versa.
   static StepMap offset(int distance) {
-    return distance == 0
-        ? StepMap.empty
-        : StepMap(distance < 0 ? [0, -distance, 0] : [0, 0, distance]);
+    return distance == 0 ? StepMap.empty : StepMap(distance < 0 ? [0, -distance, 0] : [0, 0, distance]);
   }
 
   /// A StepMap that contains no changed ranges.
@@ -262,10 +256,7 @@ class Mapping implements Mappable {
   void appendMapping(Mapping mapping) {
     for (var i = 0, startSize = _maps.length; i < mapping._maps.length; i++) {
       final mirrorIndex = mapping.getMirror(i);
-      appendMap(
-        mapping._maps[i],
-        mirrorIndex != null && mirrorIndex < i ? startSize + mirrorIndex : null,
-      );
+      appendMap(mapping._maps[i], mirrorIndex != null && mirrorIndex < i ? startSize + mirrorIndex : null);
     }
   }
 
@@ -292,19 +283,9 @@ class Mapping implements Mappable {
 
   /// Append the inverse of the given mapping to this one.
   void appendMappingInverted(Mapping mapping) {
-    for (
-      var i = mapping.maps.length - 1,
-          totalSize = _maps.length + mapping._maps.length;
-      i >= 0;
-      i--
-    ) {
+    for (var i = mapping.maps.length - 1, totalSize = _maps.length + mapping._maps.length; i >= 0; i--) {
       final mirrorIndex = mapping.getMirror(i);
-      appendMap(
-        mapping._maps[i].invert(),
-        mirrorIndex != null && mirrorIndex > i
-            ? totalSize - mirrorIndex - 1
-            : null,
-      );
+      appendMap(mapping._maps[i].invert(), mirrorIndex != null && mirrorIndex > i ? totalSize - mirrorIndex - 1 : null);
     }
   }
 

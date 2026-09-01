@@ -89,26 +89,19 @@ class ContentMatch {
 
   /// Try to match the given fragment, and if that fails, see if it can be made
   /// to match by inserting nodes in front of it.
-  Fragment? fillBefore(
-    Fragment after, [
-    bool toEnd = false,
-    int startIndex = 0,
-  ]) {
+  Fragment? fillBefore(Fragment after, [bool toEnd = false, int startIndex = 0]) {
     final seen = <ContentMatch>[this];
 
     Fragment? search(ContentMatch match, List<NodeType> types) {
       final finished = match.matchFragment(after, startIndex);
       if (finished != null && (!toEnd || finished.validEnd)) {
-        return Fragment.from(
-          types.map((type) => type.createAndFill()!).toList(),
-        );
+        return Fragment.from(types.map((type) => type.createAndFill()!).toList());
       }
 
       for (var index = 0; index < match.next.length; index++) {
         final type = match.next[index].type;
         final nextMatch = match.next[index].next;
-        if (!(type.isText || type.hasRequiredAttrs()) &&
-            !seen.contains(nextMatch)) {
+        if (!(type.isText || type.hasRequiredAttrs()) && !seen.contains(nextMatch)) {
           seen.add(nextMatch);
           final found = search(nextMatch, [...types, type]);
           if (found != null) {
@@ -145,11 +138,7 @@ class ContentMatch {
       final match = current.match;
       if (match.matchType(target) != null) {
         final result = <NodeType>[];
-        for (
-          _Active? step = current;
-          step != null && step.type != null;
-          step = step.via
-        ) {
+        for (_Active? step = current; step != null && step.type != null; step = step.via) {
           result.add(step.type!);
         }
         return result.reversed.toList();
@@ -266,12 +255,7 @@ List<String> _tokenize(String string) {
   return tokens;
 }
 
-bool _isWhitespace(int code) =>
-    code == 0x20 ||
-    code == 0x09 ||
-    code == 0x0A ||
-    code == 0x0D ||
-    code == 0x0C;
+bool _isWhitespace(int code) => code == 0x20 || code == 0x09 || code == 0x0A || code == 0x0D || code == 0x0C;
 
 bool _isWordChar(int code) =>
     (code >= 0x30 && code <= 0x39) || // 0-9
@@ -532,15 +516,9 @@ ContentMatch _dfa(List<List<_Edge>> nfa) {
     final state = ContentMatch(states.contains(nfa.length - 1));
     labeled[states.join(",")] = state;
     for (var index = 0; index < edgeGroups.length; index++) {
-      final childStates = (edgeGroups[index][1] as List<int>)
-        ..sort((a, b) => b - a);
+      final childStates = (edgeGroups[index][1] as List<int>)..sort((a, b) => b - a);
       final key = childStates.join(",");
-      state.next.add(
-        MatchEdge(
-          edgeGroups[index][0] as NodeType,
-          labeled[key] ?? explore(childStates),
-        ),
-      );
+      state.next.add(MatchEdge(edgeGroups[index][0] as NodeType, labeled[key] ?? explore(childStates)));
     }
     return state;
   }

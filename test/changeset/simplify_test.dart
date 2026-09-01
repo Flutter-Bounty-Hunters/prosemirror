@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("simplifyChanges >", () {
@@ -11,7 +11,7 @@ void main() {
           [1, 1, 1, 2],
           [2, 2, 3, 4],
         ],
-        doc(p("hello")),
+        document(p("hello")),
         [
           [1, 1, 1, 2],
           [2, 2, 3, 4],
@@ -25,7 +25,7 @@ void main() {
           [1, 2, 1, 1],
           [3, 4, 2, 2],
         ],
-        doc(p("hello")),
+        document(p("hello")),
         [
           [1, 2, 1, 1],
           [3, 4, 2, 2],
@@ -38,7 +38,7 @@ void main() {
         [
           [1, 2, 1, 2],
         ],
-        doc(p("hello")),
+        document(p("hello")),
         [
           [1, 2, 1, 2],
         ],
@@ -50,7 +50,7 @@ void main() {
         [
           [2, 4, 2, 4],
         ],
-        doc(p("hello")),
+        document(p("hello")),
         [
           [1, 6, 1, 6],
         ],
@@ -63,7 +63,7 @@ void main() {
           [1, 3, 1, 1],
           [5, 5, 3, 4],
         ],
-        doc(p("hello")),
+        document(p("hello")),
         [
           [1, 7, 1, 6],
         ],
@@ -75,7 +75,7 @@ void main() {
         [
           [7, 10],
         ],
-        doc(p("one two three four")),
+        document(p("one two three four")),
         [
           [5, 14],
         ],
@@ -87,7 +87,7 @@ void main() {
         [
           [7, 10],
         ],
-        doc(p("one two ----- four")),
+        document(p("one two ----- four")),
         [
           [5, 10],
         ],
@@ -99,7 +99,7 @@ void main() {
         [
           [7, 10],
         ],
-        doc(p("one two [SFX] four")),
+        document(p("one two [SFX] four")),
         [
           [5, 10],
         ],
@@ -112,7 +112,7 @@ void main() {
           [2, 3],
           [6, 7],
         ],
-        doc(p("one", img(), "two")),
+        document(p("one", img(), "two")),
         [
           [2, 3],
           [6, 7],
@@ -126,7 +126,7 @@ void main() {
           [2, 3],
           [7, 8],
         ],
-        doc(p("one"), p("two")),
+        document(p("one"), p("two")),
         [
           [2, 3],
           [7, 8],
@@ -142,7 +142,7 @@ void main() {
           [8, 10],
           [15, 16],
         ],
-        doc(p("foo bar baz bug ugh")),
+        document(p("foo bar baz bug ugh")),
         [
           [1, 12],
           [15, 16],
@@ -156,7 +156,7 @@ void main() {
           [8, 8, 8, 11],
           [10, 15, 13, 17],
         ],
-        doc(p("chonic condition")),
+        document(p("chonic condition")),
         [
           [8, 15, 8, 17],
         ],
@@ -168,11 +168,7 @@ void main() {
         [
           [63, 80, 63, 83],
         ],
-        doc(
-          p("one long paragraph -----"),
-          p("two long paragraphs ------"),
-          p("a vote against the government"),
-        ),
+        document(p("one long paragraph -----"), p("two long paragraphs ------"), p("a vote against the government")),
         [
           [62, 81, 62, 84],
         ],
@@ -186,7 +182,7 @@ void main() {
           [7, 13, 7, 9],
           [20, 21, 16, 16],
         ],
-        doc(p("and his co-star")),
+        document(p("and his co-star")),
         [
           [1, 13, 1, 9],
           [20, 21, 16, 16],
@@ -199,7 +195,7 @@ void main() {
         _range([2, 3], 0),
         _range([4, 6], 1),
         _range([8, 9, 8, 8], 2),
-      ], doc(p("1234567890")));
+      ], document(p("1234567890")));
       expect(simple.length, 1);
       expect(
         [
@@ -245,12 +241,5 @@ Change<int> _range(List<int> array, [int author = 0]) {
   final toA = array[1];
   final fromB = array.length > 2 ? array[2] : array[0];
   final toB = array.length > 2 ? array[3] : array[1];
-  return Change<int>(
-    fromA,
-    toA,
-    fromB,
-    toB,
-    [Span<int>(toA - fromA, author)],
-    [Span<int>(toB - fromB, author)],
-  );
+  return Change<int>(fromA, toA, fromB, toB, [Span<int>(toA - fromA, author)], [Span<int>(toB - fromB, author)]);
 }

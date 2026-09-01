@@ -1,15 +1,12 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import 'builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("Search query >", () {
     test("can match plain strings", () {
-      _testQuery(
-        SearchQuery(search: "abc"),
-        p("<s1>abc<e1> flakdj a<s2>abc<e2> aabbcc"),
-      );
+      _testQuery(SearchQuery(search: "abc"), p("<s1>abc<e1> flakdj a<s2>abc<e2> aabbcc"));
     });
 
     test("skips overlapping matches", () {
@@ -17,10 +14,7 @@ void main() {
     });
 
     test("goes through multiple textblocks", () {
-      _testQuery(
-        SearchQuery(search: "12"),
-        doc(p("a<s1>12<e1>b"), p("..."), p("and <s2>12<e2>")),
-      );
+      _testQuery(SearchQuery(search: "12"), document(p("a<s1>12<e1>b"), p("..."), p("and <s2>12<e2>")));
     });
 
     test("matches across mark boundaries", () {
@@ -28,17 +22,11 @@ void main() {
     });
 
     test("can match case-insensitive strings", () {
-      _testQuery(
-        SearchQuery(search: "abC", caseSensitive: false),
-        p("<s1>aBc<e1> flakdj a<s2>ABC<e2>"),
-      );
+      _testQuery(SearchQuery(search: "abC", caseSensitive: false), p("<s1>aBc<e1> flakdj a<s2>ABC<e2>"));
     });
 
     test("can match literally", () {
-      _testQuery(
-        SearchQuery(search: r"a\nb", literal: true),
-        p("a\nb <s1>a\\nb<e1>"),
-      );
+      _testQuery(SearchQuery(search: r"a\nb", literal: true), p("a\nb <s1>a\\nb<e1>"));
     });
 
     test("can match by word", () {
@@ -49,38 +37,23 @@ void main() {
     });
 
     test("doesn't match non-words by word", () {
-      _testQuery(
-        SearchQuery(search: "^_^", wholeWord: true),
-        p("x<s1>^_^<e1>y <s2>^_^<e2>"),
-      );
+      _testQuery(SearchQuery(search: "^_^", wholeWord: true), p("x<s1>^_^<e1>y <s2>^_^<e2>"));
     });
 
     test("can match regular expressions", () {
-      _testQuery(
-        SearchQuery(search: "a..b", regexp: true),
-        p("<s1>appb<e1> apb"),
-      );
+      _testQuery(SearchQuery(search: "a..b", regexp: true), p("<s1>appb<e1> apb"));
     });
 
     test("can match case-insensitive regular expressions", () {
-      _testQuery(
-        SearchQuery(search: "a..b", regexp: true, caseSensitive: false),
-        p("<s1>Appb<e1> Apb"),
-      );
+      _testQuery(SearchQuery(search: "a..b", regexp: true, caseSensitive: false), p("<s1>Appb<e1> Apb"));
     });
 
     test("can match regular expressions through multiple textblocks", () {
-      _testQuery(
-        SearchQuery(search: "12", regexp: true),
-        doc(p("a<s1>12<e1>b"), p("..."), p("and <s2>12<e2>")),
-      );
+      _testQuery(SearchQuery(search: "12", regexp: true), document(p("a<s1>12<e1>b"), p("..."), p("and <s2>12<e2>")));
     });
 
     test("can match regular expressions by word", () {
-      _testQuery(
-        SearchQuery(search: "a..", regexp: true, wholeWord: true),
-        p("<s1>aap<e1> baap aapje <s2>a--<e2>w"),
-      );
+      _testQuery(SearchQuery(search: "a..", regexp: true, wholeWord: true), p("<s1>aap<e1> baap aapje <s2>a--<e2>w"));
     });
   });
 }

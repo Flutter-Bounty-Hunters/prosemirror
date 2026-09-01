@@ -5,11 +5,7 @@ import 'package:prosemirror/src/model/node.dart' as prosemirror_model;
 import 'package:prosemirror/src/model/schema.dart';
 
 /// A function used to compute attributes for a parsed markdown token.
-typedef ParseAttrs = Attrs? Function(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-);
+typedef ParseAttrs = Attrs? Function(MarkdownToken token, List<MarkdownToken> tokenStream, int index);
 
 /// Object type used to specify how Markdown tokens should be parsed.
 class ParseSpec {
@@ -84,10 +80,7 @@ class MarkdownToken {
 class MarkdownTokenizer {
   /// Creates a CommonMark tokenizer.
   MarkdownTokenizer.commonMark({bool html = false})
-    : _document = markdown.Document(
-        extensionSet: markdown.ExtensionSet.commonMark,
-        encodeHtml: html,
-      );
+    : _document = markdown.Document(extensionSet: markdown.ExtensionSet.commonMark, encodeHtml: html);
 
   final markdown.Document _document;
 
@@ -104,8 +97,7 @@ class MarkdownTokenizer {
 /// A configuration of a Markdown parser.
 class MarkdownParser {
   /// Creates a parser with the given configuration.
-  MarkdownParser(this.schema, this.tokenizer, this.tokens)
-    : _tokenHandlersByType = _tokenHandlers(schema, tokens);
+  MarkdownParser(this.schema, this.tokenizer, this.tokens) : _tokenHandlersByType = _tokenHandlers(schema, tokens);
 
   /// The parser's document schema.
   final Schema schema;
@@ -146,11 +138,7 @@ final Map<String, ParseSpec> defaultMarkdownParseSpecs = {
   "ordered_list": ParseSpec(block: "ordered_list", getAttrs: _orderedListAttrs),
   "heading": ParseSpec(block: "heading", getAttrs: _headingAttrs),
   "code_block": const ParseSpec(block: "code_block", noCloseToken: true),
-  "fence": ParseSpec(
-    block: "code_block",
-    getAttrs: _fenceAttrs,
-    noCloseToken: true,
-  ),
+  "fence": ParseSpec(block: "code_block", getAttrs: _fenceAttrs, noCloseToken: true),
   "hr": const ParseSpec(node: "horizontal_rule"),
   "image": ParseSpec(node: "image", getAttrs: _imageAttrs),
   "hardbreak": const ParseSpec(node: "hard_break"),
@@ -160,46 +148,23 @@ final Map<String, ParseSpec> defaultMarkdownParseSpecs = {
   "code_inline": const ParseSpec(mark: "code", noCloseToken: true),
 };
 
-Attrs? _bulletListAttrs(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-) {
+Attrs? _bulletListAttrs(MarkdownToken token, List<MarkdownToken> tokenStream, int index) {
   return {"tight": token.attrs["tight"] == "true"};
 }
 
-Attrs? _orderedListAttrs(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-) {
-  return {
-    "order": int.tryParse(token.attrs["start"] ?? "") ?? 1,
-    "tight": token.attrs["tight"] == "true",
-  };
+Attrs? _orderedListAttrs(MarkdownToken token, List<MarkdownToken> tokenStream, int index) {
+  return {"order": int.tryParse(token.attrs["start"] ?? "") ?? 1, "tight": token.attrs["tight"] == "true"};
 }
 
-Attrs? _headingAttrs(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-) {
+Attrs? _headingAttrs(MarkdownToken token, List<MarkdownToken> tokenStream, int index) {
   return {"level": int.tryParse(token.tag.substring(1)) ?? 1};
 }
 
-Attrs? _fenceAttrs(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-) {
+Attrs? _fenceAttrs(MarkdownToken token, List<MarkdownToken> tokenStream, int index) {
   return {"params": token.info};
 }
 
-Attrs? _imageAttrs(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-) {
+Attrs? _imageAttrs(MarkdownToken token, List<MarkdownToken> tokenStream, int index) {
   return {
     "src": token.attrGet("src"),
     "title": _decodeAttribute(token.attrGet("title")),
@@ -207,15 +172,8 @@ Attrs? _imageAttrs(
   };
 }
 
-Attrs? _linkAttrs(
-  MarkdownToken token,
-  List<MarkdownToken> tokenStream,
-  int index,
-) {
-  return {
-    "href": token.attrGet("href"),
-    "title": _decodeAttribute(token.attrGet("title")),
-  };
+Attrs? _linkAttrs(MarkdownToken token, List<MarkdownToken> tokenStream, int index) {
+  return {"href": token.attrGet("href"), "title": _decodeAttribute(token.attrGet("title"))};
 }
 
 String? _decodeAttribute(String? value) {
@@ -234,11 +192,7 @@ String? _decodeAttribute(String? value) {
       .replaceAll("&amp;", "&");
 }
 
-void _pushNodeTokens(
-  List<MarkdownToken> tokens,
-  markdown.Node node, {
-  required String? parentTag,
-}) {
+void _pushNodeTokens(List<MarkdownToken> tokens, markdown.Node node, {required String? parentTag}) {
   if (node is markdown.Text) {
     _pushTextTokens(tokens, node.text);
     return;
@@ -273,9 +227,7 @@ void _pushNodeTokens(
   } else if (tag == "a") {
     _pushWrappingElementTokens(tokens, "link", element, tag);
   } else if (tag == "code" && parentTag != "pre") {
-    tokens.add(
-      MarkdownToken("code_inline", tag: "code", content: element.textContent),
-    );
+    tokens.add(MarkdownToken("code_inline", tag: "code", content: element.textContent));
   } else {
     for (final child in element.children ?? const <markdown.Node>[]) {
       _pushNodeTokens(tokens, child, parentTag: tag);
@@ -283,33 +235,17 @@ void _pushNodeTokens(
   }
 }
 
-void _pushWrappingElementTokens(
-  List<MarkdownToken> tokens,
-  String type,
-  markdown.Element element,
-  String tag,
-) {
-  tokens.add(
-    MarkdownToken("${type}_open", tag: tag, attrs: element.attributes),
-  );
+void _pushWrappingElementTokens(List<MarkdownToken> tokens, String type, markdown.Element element, String tag) {
+  tokens.add(MarkdownToken("${type}_open", tag: tag, attrs: element.attributes));
   for (final child in element.children ?? const <markdown.Node>[]) {
     _pushNodeTokens(tokens, child, parentTag: tag);
   }
-  tokens.add(
-    MarkdownToken("${type}_close", tag: tag, attrs: element.attributes),
-  );
+  tokens.add(MarkdownToken("${type}_close", tag: tag, attrs: element.attributes));
 }
 
-void _pushListTokens(
-  List<MarkdownToken> tokens,
-  markdown.Element element, {
-  required bool ordered,
-}) {
+void _pushListTokens(List<MarkdownToken> tokens, markdown.Element element, {required bool ordered}) {
   final type = ordered ? "ordered_list" : "bullet_list";
-  final attrs = <String, String>{
-    ...element.attributes,
-    "tight": _listIsTight(element) ? "true" : "false",
-  };
+  final attrs = <String, String>{...element.attributes, "tight": _listIsTight(element) ? "true" : "false"};
   tokens.add(MarkdownToken("${type}_open", tag: element.tag, attrs: attrs));
   for (final child in element.children ?? const <markdown.Node>[]) {
     _pushNodeTokens(tokens, child, parentTag: element.tag);
@@ -325,8 +261,7 @@ void _pushListItemTokens(List<MarkdownToken> tokens, markdown.Element element) {
     final child = children[index];
     if (_isInlineMarkdownNode(child)) {
       tokens.add(const MarkdownToken("paragraph_open", tag: "p"));
-      while (index < children.length &&
-          _isInlineMarkdownNode(children[index])) {
+      while (index < children.length && _isInlineMarkdownNode(children[index])) {
         _pushNodeTokens(tokens, children[index], parentTag: element.tag);
         index += 1;
       }
@@ -410,10 +345,7 @@ bool _isHeadingTag(String tag) {
   return tag.length == 2 && tag.startsWith("h") && "123456".contains(tag[1]);
 }
 
-Map<String, _TokenHandler> _tokenHandlers(
-  Schema schema,
-  Map<String, ParseSpec> tokens,
-) {
+Map<String, _TokenHandler> _tokenHandlers(Schema schema, Map<String, ParseSpec> tokens) {
   final handlers = <String, _TokenHandler>{};
   for (final entry in tokens.entries) {
     final type = entry.key;
@@ -457,18 +389,10 @@ Map<String, _TokenHandler> _tokenHandlers(
 }
 
 bool _noCloseToken(ParseSpec spec, String type) {
-  return spec.noCloseToken ||
-      type == "code_inline" ||
-      type == "code_block" ||
-      type == "fence";
+  return spec.noCloseToken || type == "code_inline" || type == "code_block" || type == "fence";
 }
 
-Attrs? _attrs(
-  ParseSpec spec,
-  MarkdownToken token,
-  List<MarkdownToken> tokens,
-  int index,
-) {
+Attrs? _attrs(ParseSpec spec, MarkdownToken token, List<MarkdownToken> tokens, int index) {
   final getAttrs = spec.getAttrs;
   if (getAttrs != null) {
     return getAttrs(token, tokens, index);
@@ -484,10 +408,7 @@ String _withoutTrailingNewline(String value) {
   return value.endsWith("\n") ? value.substring(0, value.length - 1) : value;
 }
 
-prosemirror_model.Node? _maybeMerge(
-  prosemirror_model.Node first,
-  prosemirror_model.Node second,
-) {
+prosemirror_model.Node? _maybeMerge(prosemirror_model.Node first, prosemirror_model.Node second) {
   if (first is prosemirror_model.TextNode &&
       second is prosemirror_model.TextNode &&
       prosemirror_model.Mark.sameSet(first.marks, second.marks)) {
@@ -548,24 +469,14 @@ class _MarkdownParseState {
       final token = tokens[index];
       final handler = tokenHandlers[token.type];
       if (handler == null) {
-        throw StateError(
-          "Token type `${token.type}` not supported by Markdown parser",
-        );
+        throw StateError("Token type `${token.type}` not supported by Markdown parser");
       }
       handler.handle(this, token, tokens, index);
     }
   }
 
-  prosemirror_model.Node? addNode(
-    NodeType type,
-    Attrs? attrs, [
-    List<prosemirror_model.Node>? content,
-  ]) {
-    final node = type.createAndFill(
-      attrs,
-      content,
-      stack.isNotEmpty ? top.marks : [],
-    );
+  prosemirror_model.Node? addNode(NodeType type, Attrs? attrs, [List<prosemirror_model.Node>? content]) {
+    final node = type.createAndFill(attrs, content, stack.isNotEmpty ? top.marks : []);
     if (node == null) {
       return null;
     }
@@ -575,12 +486,7 @@ class _MarkdownParseState {
 
   void openNode(NodeType type, Attrs? attrs) {
     stack.add(
-      _OpenNode(
-        type: type,
-        attrs: attrs,
-        content: <prosemirror_model.Node>[],
-        marks: prosemirror_model.Mark.none,
-      ),
+      _OpenNode(type: type, attrs: attrs, content: <prosemirror_model.Node>[], marks: prosemirror_model.Mark.none),
     );
   }
 
@@ -591,12 +497,7 @@ class _MarkdownParseState {
 }
 
 class _OpenNode {
-  _OpenNode({
-    required this.type,
-    required this.attrs,
-    required this.content,
-    required this.marks,
-  });
+  _OpenNode({required this.type, required this.attrs, required this.content, required this.marks});
 
   final NodeType type;
   final Attrs? attrs;
@@ -605,12 +506,7 @@ class _OpenNode {
 }
 
 abstract interface class _TokenHandler {
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  );
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index);
 }
 
 class _NoCloseBlockHandler implements _TokenHandler {
@@ -620,12 +516,7 @@ class _NoCloseBlockHandler implements _TokenHandler {
   final ParseSpec spec;
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.openNode(nodeType, _attrs(spec, token, tokens, index));
     state.addText(_withoutTrailingNewline(token.content));
     state.closeNode();
@@ -639,12 +530,7 @@ class _OpenBlockHandler implements _TokenHandler {
   final ParseSpec spec;
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.openNode(nodeType, _attrs(spec, token, tokens, index));
   }
 }
@@ -653,12 +539,7 @@ class _CloseBlockHandler implements _TokenHandler {
   const _CloseBlockHandler();
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.closeNode();
   }
 }
@@ -670,12 +551,7 @@ class _NodeHandler implements _TokenHandler {
   final ParseSpec spec;
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.addNode(nodeType, _attrs(spec, token, tokens, index));
   }
 }
@@ -687,12 +563,7 @@ class _NoCloseMarkHandler implements _TokenHandler {
   final ParseSpec spec;
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.openMark(markType.create(_attrs(spec, token, tokens, index)));
     state.addText(_withoutTrailingNewline(token.content));
     state.closeMark(markType);
@@ -706,12 +577,7 @@ class _OpenMarkHandler implements _TokenHandler {
   final ParseSpec spec;
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.openMark(markType.create(_attrs(spec, token, tokens, index)));
   }
 }
@@ -722,12 +588,7 @@ class _CloseMarkHandler implements _TokenHandler {
   final MarkType markType;
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.closeMark(markType);
   }
 }
@@ -736,24 +597,14 @@ class _NoOpHandler implements _TokenHandler {
   const _NoOpHandler();
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {}
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {}
 }
 
 class _TextHandler implements _TokenHandler {
   const _TextHandler();
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.addText(token.content);
   }
 }
@@ -762,12 +613,7 @@ class _InlineHandler implements _TokenHandler {
   const _InlineHandler();
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.parseTokens(token.children ?? const <MarkdownToken>[]);
   }
 }
@@ -776,12 +622,7 @@ class _SoftbreakHandler implements _TokenHandler {
   const _SoftbreakHandler();
 
   @override
-  void handle(
-    _MarkdownParseState state,
-    MarkdownToken token,
-    List<MarkdownToken> tokens,
-    int index,
-  ) {
+  void handle(_MarkdownParseState state, MarkdownToken token, List<MarkdownToken> tokens, int index) {
     state.addText(" ");
   }
 }

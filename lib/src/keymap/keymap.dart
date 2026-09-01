@@ -58,8 +58,7 @@ KeydownHandler keydownHandler(Map<String, Command> bindings) {
         // In case the name was already modified by shift, try looking it up
         // without its shift modifier.
         final noShift = map[_modifiers(name, event, false)];
-        if (noShift != null &&
-            noShift.execute(view.state, view.dispatch, view)) {
+        if (noShift != null && noShift.execute(view.state, view.dispatch, view)) {
           return true;
         }
       }
@@ -72,8 +71,7 @@ KeydownHandler keydownHandler(Map<String, Command> bindings) {
         final baseName = base[event.keyCode!];
         if (baseName != null && baseName != name) {
           final fromCode = map[_modifiers(baseName, event)];
-          if (fromCode != null &&
-              fromCode.execute(view.state, view.dispatch, view)) {
+          if (fromCode != null && fromCode.execute(view.state, view.dispatch, view)) {
             return true;
           }
         }
@@ -99,10 +97,7 @@ String _normalizeKeyName(String name) {
       meta = true;
     } else if (RegExp(r'^a(lt)?$', caseSensitive: false).hasMatch(modifier)) {
       alt = true;
-    } else if (RegExp(
-      r'^(c|ctrl|control)$',
-      caseSensitive: false,
-    ).hasMatch(modifier)) {
+    } else if (RegExp(r'^(c|ctrl|control)$', caseSensitive: false).hasMatch(modifier)) {
       ctrl = true;
     } else if (RegExp(r'^s(hift)?$', caseSensitive: false).hasMatch(modifier)) {
       shiftMod = true;
@@ -136,9 +131,7 @@ Map<String, Command> _normalize(Map<String, Command> map) {
   map.forEach((prop, command) {
     final normalized = _normalizeKeyName(prop);
     if (copy.containsKey(normalized)) {
-      throw ArgumentError(
-        "Multiple bindings for key $normalized in a single keymap",
-      );
+      throw ArgumentError("Multiple bindings for key $normalized in a single keymap");
     }
     copy[normalized] = command;
   });

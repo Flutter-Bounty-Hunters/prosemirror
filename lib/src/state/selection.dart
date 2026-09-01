@@ -9,8 +9,8 @@ import 'package:prosemirror/src/state/transaction.dart';
 
 /// Registry of selection classes by their JSON ID, used by
 /// [Selection.fromJSON] to disambiguate serialized selections.
-final Map<String, Selection Function(Node doc, Map<String, Object?> json)>
-_classesById = <String, Selection Function(Node, Map<String, Object?>)>{};
+final Map<String, Selection Function(Node doc, Map<String, Object?> json)> _classesById =
+    <String, Selection Function(Node, Map<String, Object?>)>{};
 
 /// Superclass for editor selections. Every selection type should extend
 /// this. Should not be instantiated directly.
@@ -19,11 +19,7 @@ abstract class Selection {
   /// ranges are given, constructs a single range across [$anchor] and
   /// [$head].
   Selection(this.$anchor, this.$head, [List<SelectionRange>? ranges])
-    : ranges =
-          ranges ??
-          <SelectionRange>[
-            SelectionRange($anchor.min($head), $anchor.max($head)),
-          ];
+    : ranges = ranges ?? <SelectionRange>[SelectionRange($anchor.min($head), $anchor.max($head))];
 
   /// The resolved anchor of the selection (the side that stays in place
   /// when the selection is modified).
@@ -97,20 +93,12 @@ abstract class Selection {
       final $from = ranges[index].$from;
       final $to = ranges[index].$to;
       final mapping = tr.mapping.slice(mapFrom);
-      tr.replaceRange(
-        mapping.map($from.pos),
-        mapping.map($to.pos),
-        index != 0 ? Slice.empty : content,
-      );
+      tr.replaceRange(mapping.map($from.pos), mapping.map($to.pos), index != 0 ? Slice.empty : content);
       if (index == 0) {
         _selectionToInsertionEnd(
           tr,
           mapFrom,
-          (lastNode != null
-                  ? lastNode.isInline
-                  : lastParent != null && lastParent.isTextblock)
-              ? -1
-              : 1,
+          (lastNode != null ? lastNode.isInline : lastParent != null && lastParent.isTextblock) ? -1 : 1,
         );
       }
     }
@@ -146,35 +134,17 @@ abstract class Selection {
   /// position and searching back if `dir` is negative, and forward if
   /// positive. When `textOnly` is true, only consider cursor selections.
   /// Will return null when no valid selection position is found.
-  static Selection? findFrom(
-    ResolvedPos $pos,
-    int dir, [
-    bool textOnly = false,
-  ]) {
+  static Selection? findFrom(ResolvedPos $pos, int dir, [bool textOnly = false]) {
     final inner = $pos.parent.inlineContent
         ? TextSelection($pos)
-        : _findSelectionIn(
-            $pos.node(0),
-            $pos.parent,
-            $pos.pos,
-            $pos.index(),
-            dir,
-            textOnly,
-          );
+        : _findSelectionIn($pos.node(0), $pos.parent, $pos.pos, $pos.index(), dir, textOnly);
     if (inner != null) {
       return inner;
     }
 
     for (var depth = $pos.depth - 1; depth >= 0; depth--) {
       final found = dir < 0
-          ? _findSelectionIn(
-              $pos.node(0),
-              $pos.node(depth),
-              $pos.before(depth + 1),
-              $pos.index(depth),
-              dir,
-              textOnly,
-            )
+          ? _findSelectionIn($pos.node(0), $pos.node(depth), $pos.before(depth + 1), $pos.index(depth), dir, textOnly)
           : _findSelectionIn(
               $pos.node(0),
               $pos.node(depth),
@@ -194,9 +164,7 @@ abstract class Selection {
   /// Searches forward first by default, but if `bias` is negative, it
   /// will search backwards first.
   static Selection near(ResolvedPos $pos, [int bias = 1]) {
-    return findFrom($pos, bias) ??
-        findFrom($pos, -bias) ??
-        AllSelection($pos.node(0));
+    return findFrom($pos, bias) ?? findFrom($pos, -bias) ?? AllSelection($pos.node(0));
   }
 
   /// Find the cursor or leaf node selection closest to the start of the
@@ -209,8 +177,7 @@ abstract class Selection {
   /// Find the cursor or leaf node selection closest to the end of the
   /// given document.
   static Selection atEnd(Node doc) {
-    return _findSelectionIn(doc, doc, doc.content.size, doc.childCount, -1) ??
-        AllSelection(doc);
+    return _findSelectionIn(doc, doc, doc.content.size, doc.childCount, -1) ?? AllSelection(doc);
   }
 
   /// Deserialize the JSON representation of a selection. Must be
@@ -230,10 +197,7 @@ abstract class Selection {
   /// To be able to deserialize selections from JSON, custom selection
   /// classes must register themselves with an ID string, so that they can
   /// be disambiguated.
-  static void jsonID(
-    String id,
-    Selection Function(Node doc, Map<String, Object?> json) fromJSON,
-  ) {
+  static void jsonID(String id, Selection Function(Node doc, Map<String, Object?> json) fromJSON) {
     if (_classesById.containsKey(id)) {
       throw RangeError("Duplicate use of selection JSON ID $id");
     }
@@ -281,9 +245,7 @@ void _checkTextSelection(ResolvedPos $pos) {
   if (!_warnedAboutTextSelection && !$pos.parent.inlineContent) {
     _warnedAboutTextSelection = true;
     // ignore: avoid_print
-    print(
-      "TextSelection endpoint not pointing into a node with inline content (${$pos.parent.type.name})",
-    );
+    print("TextSelection endpoint not pointing into a node with inline content (${$pos.parent.type.name})");
   }
 }
 
@@ -292,8 +254,7 @@ void _checkTextSelection(ResolvedPos $pos) {
 /// textblock nodes. It can be empty (a regular cursor position).
 class TextSelection extends Selection {
   /// Construct a text selection between the given points.
-  TextSelection(ResolvedPos $anchor, [ResolvedPos? $head])
-    : super($anchor, _checkedHead($anchor, $head));
+  TextSelection(ResolvedPos $anchor, [ResolvedPos? $head]) : super($anchor, _checkedHead($anchor, $head));
 
   static ResolvedPos _checkedHead(ResolvedPos $anchor, ResolvedPos? $head) {
     final resolvedHead = $head ?? $anchor;
@@ -330,9 +291,7 @@ class TextSelection extends Selection {
 
   @override
   bool eq(Selection other) {
-    return other is TextSelection &&
-        other.anchor == anchor &&
-        other.head == head;
+    return other is TextSelection && other.anchor == anchor && other.head == head;
   }
 
   @override
@@ -350,40 +309,28 @@ class TextSelection extends Selection {
     if (json["anchor"] is! int || json["head"] is! int) {
       throw RangeError("Invalid input for TextSelection.fromJSON");
     }
-    return TextSelection(
-      doc.resolve(json["anchor"] as int),
-      doc.resolve(json["head"] as int),
-    );
+    return TextSelection(doc.resolve(json["anchor"] as int), doc.resolve(json["head"] as int));
   }
 
   /// Create a text selection from non-resolved positions.
   static TextSelection create(Node doc, int anchor, [int? head]) {
     final resolvedHead = head ?? anchor;
     final $anchor = doc.resolve(anchor);
-    return TextSelection(
-      $anchor,
-      resolvedHead == anchor ? $anchor : doc.resolve(resolvedHead),
-    );
+    return TextSelection($anchor, resolvedHead == anchor ? $anchor : doc.resolve(resolvedHead));
   }
 
   /// Return a text selection that spans the given positions or, if they
   /// aren't text positions, find a text selection near them. `bias`
   /// determines whether the method searches forward (default) or
   /// backwards (negative number) first.
-  static Selection between(
-    ResolvedPos $anchor,
-    ResolvedPos $head, [
-    int? bias,
-  ]) {
+  static Selection between(ResolvedPos $anchor, ResolvedPos $head, [int? bias]) {
     final dPos = $anchor.pos - $head.pos;
     var resolvedBias = bias;
     if (resolvedBias == null || resolvedBias == 0 || dPos != 0) {
       resolvedBias = dPos >= 0 ? 1 : -1;
     }
     if (!$head.parent.inlineContent) {
-      final found =
-          Selection.findFrom($head, resolvedBias, true) ??
-          Selection.findFrom($head, -resolvedBias, true);
+      final found = Selection.findFrom($head, resolvedBias, true) ?? Selection.findFrom($head, -resolvedBias, true);
       if (found != null) {
         $head = found.$head;
       } else {
@@ -394,10 +341,8 @@ class TextSelection extends Selection {
       if (dPos == 0) {
         $anchor = $head;
       } else {
-        $anchor =
-            (Selection.findFrom($anchor, -resolvedBias, true) ??
-                    Selection.findFrom($anchor, resolvedBias, true))!
-                .$anchor;
+        $anchor = (Selection.findFrom($anchor, -resolvedBias, true) ?? Selection.findFrom($anchor, resolvedBias, true))!
+            .$anchor;
         if (($anchor.pos < $head.pos) != (dPos < 0)) {
           $anchor = $head;
         }
@@ -497,9 +442,7 @@ class _NodeBookmark implements SelectionBookmark {
   @override
   SelectionBookmark map(Mappable mapping) {
     final result = mapping.mapResult(anchor);
-    return result.deleted
-        ? _TextBookmark(result.pos, result.pos)
-        : _NodeBookmark(result.pos);
+    return result.deleted ? _TextBookmark(result.pos, result.pos) : _NodeBookmark(result.pos);
   }
 
   @override
@@ -538,8 +481,7 @@ class AllSelection extends Selection {
   Object toJSON() => <String, Object?>{"type": "all"};
 
   /// @internal
-  static AllSelection fromJSON(Node doc, Map<String, Object?> json) =>
-      AllSelection(doc);
+  static AllSelection fromJSON(Node doc, Map<String, Object?> json) => AllSelection(doc);
 
   @override
   Selection map(Node doc, Mappable mapping) => AllSelection(doc);
@@ -580,14 +522,7 @@ void _ensureBuiltInSelectionsRegistered() {
 // Try to find a selection inside the given node. `pos` points at the
 // position where the search starts. When `text` is true, only return text
 // selections.
-Selection? _findSelectionIn(
-  Node doc,
-  Node node,
-  int pos,
-  int index,
-  int dir, [
-  bool text = false,
-]) {
+Selection? _findSelectionIn(Node doc, Node node, int pos, int index, int dir, [bool text = false]) {
   if (node.inlineContent) {
     return TextSelection.create(doc, pos);
   }
@@ -598,14 +533,7 @@ Selection? _findSelectionIn(
   ) {
     final child = node.child(currentIndex);
     if (!child.isAtom) {
-      final inner = _findSelectionIn(
-        doc,
-        child,
-        pos + dir,
-        dir < 0 ? child.childCount : 0,
-        dir,
-        text,
-      );
+      final inner = _findSelectionIn(doc, child, pos + dir, dir < 0 ? child.childCount : 0, dir, text);
       if (inner != null) {
         return inner;
       }

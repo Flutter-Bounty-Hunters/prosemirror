@@ -24,13 +24,7 @@ final Map<String, NodeSpec> basicSchemaNodes = {
   ),
 
   // A code listing. Disallows marks or non-text inline nodes.
-  "code_block": NodeSpec(
-    content: "text*",
-    marks: "",
-    group: "block",
-    code: true,
-    defining: true,
-  ),
+  "code_block": NodeSpec(content: "text*", marks: "", group: "block", code: true, defining: true),
 
   // The text node.
   "text": NodeSpec(group: "inline"),
@@ -74,6 +68,4 @@ final Map<String, MarkSpec> basicSchemaMarks = {
 
 /// The basic schema, roughly corresponding to the document schema used by
 /// CommonMark, minus the list elements.
-final Schema basicSchema = Schema(
-  SchemaSpec(nodes: basicSchemaNodes, marks: basicSchemaMarks),
-);
+final Schema basicSchema = Schema(SchemaSpec(nodes: basicSchemaNodes, marks: basicSchemaMarks));

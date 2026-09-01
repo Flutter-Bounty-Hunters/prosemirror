@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart' as builders;
+import 'package:prosemirror/test_builder.dart' as builders;
 
 void main() {
   group("canSplit >", () {
@@ -338,9 +338,7 @@ void _canSplitNo(int pos, [int? depth, String? after]) {
 }
 
 bool _canSplitAt(int pos, int? depth, String? after) {
-  final typesAfter = after == null
-      ? null
-      : [(type: _structureSchema.nodes[after]!, attrs: null)];
+  final typesAfter = after == null ? null : [(type: _structureSchema.nodes[after]!, attrs: null)];
   return canSplit(_structureDoc, pos, depth ?? 1, typesAfter);
 }
 
@@ -358,40 +356,22 @@ void _liftTargetNo(int pos) {
 
 void _findWrappingYes(int pos, int end, String type) {
   final range = _range(pos, end);
-  expect(
-    range != null && findWrapping(range, _structureSchema.nodes[type]!) != null,
-    isTrue,
-  );
+  expect(range != null && findWrapping(range, _structureSchema.nodes[type]!) != null, isTrue);
 }
 
 void _findWrappingNo(int pos, int end, String type) {
   final range = _range(pos, end);
-  expect(
-    range == null || findWrapping(range, _structureSchema.nodes[type]!) == null,
-    isTrue,
-  );
+  expect(range == null || findWrapping(range, _structureSchema.nodes[type]!) == null, isTrue);
 }
 
-void _repl(
-  Node document,
-  int from,
-  int to,
-  Node? content,
-  int openStart,
-  int openEnd,
-  Node result,
-) {
-  final slice = content != null
-      ? Slice(content.content, openStart, openEnd)
-      : Slice.empty;
+void _repl(Node document, int from, int to, Node? content, int openStart, int openEnd, Node result) {
+  final slice = content != null ? Slice(content.content, openStart, openEnd) : Slice.empty;
   final tr = Transform(document).replace(from, to, slice);
   expect(builders.eq(tr.doc, result), isTrue);
 }
 
 NodeRange? _range(int pos, [int? end]) {
-  return _structureDoc
-      .resolve(pos)
-      .blockRange(end == null ? null : _structureDoc.resolve(end));
+  return _structureDoc.resolve(pos).blockRange(end == null ? null : _structureDoc.resolve(end));
 }
 
 Node _n(String name, [List<Node> content = const []]) {
@@ -399,10 +379,7 @@ Node _n(String name, [List<Node> content = const []]) {
 }
 
 Node _t(String string, [bool em = false]) {
-  return _structureSchema.text(
-    string,
-    em ? [_structureSchema.mark("em")] : null,
-  );
+  return _structureSchema.text(string, em ? [_structureSchema.mark("em")] : null);
 }
 
 final Node _structureDoc = _n("doc", [

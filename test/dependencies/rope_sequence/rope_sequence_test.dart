@@ -121,22 +121,11 @@ void _check(RopeSequence<int> rope, int size, String name, [int offset = 0]) {
     final start = (_random.nextDouble() * size).floor();
     final end = start + (_random.nextDouble() * (size - start)).ceil();
     _checkForEach(rope, "$name-$start-$end", start, end, offset);
-    _check(
-      rope.slice(start, end),
-      end - start,
-      "$name-sliced-$start-$end",
-      offset + start,
-    );
+    _check(rope.slice(start, end), end - start, "$name-sliced-$start-$end", offset + start);
   }
 }
 
-void _checkForEach(
-  RopeSequence<int> rope,
-  String name,
-  int start,
-  int end,
-  int offset,
-) {
+void _checkForEach(RopeSequence<int> rope, String name, int start, int end, int offset) {
   var current = start;
   rope.forEach(
     (element, index) {

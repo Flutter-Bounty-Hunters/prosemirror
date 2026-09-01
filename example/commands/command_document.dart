@@ -6,16 +6,11 @@ void main() {
   // document is a single empty paragraph.
   final draft = _CommandDraft(
     EditorState.create(
-      EditorStateConfig(
-        doc: schema.node("doc", null, [schema.node("paragraph")]),
-      ),
+      EditorStateConfig(doc: schema.node("doc", null, [schema.node("paragraph")])), //
     ),
   );
 
-  final wrapParagraphInBulletList = autoJoin(
-    wrapIn(schema.nodes["bullet_list"]!),
-    ["bullet_list"],
-  );
+  final wrapParagraphInBulletList = autoJoin(wrapIn(schema.nodes["bullet_list"]!), ["bullet_list"]);
 
   _printDocument("1. New document (one empty paragraph)", draft.document);
 
@@ -30,12 +25,9 @@ void main() {
   // inline image node into that paragraph.
   _expectCommand("splitBlock", splitBlock.execute(draft.state, draft.dispatch));
   draft.insertNode(
-    schema.node("image", {"src": "sunset.png", "alt": "A sunset over the sea"}),
+    schema.node("image", {"src": "sunset.png", "alt": "A sunset over the sea"}), //
   );
-  _printDocument(
-    "3. Inserted an image (wrapped in a paragraph)",
-    draft.document,
-  );
+  _printDocument("3. Inserted an image (wrapped in a paragraph)", draft.document);
 
   // Step 4 - Insert three bullet points.
   // Draft each bullet as a normal paragraph, use `wrapIn` to turn it into a
@@ -43,36 +35,21 @@ void main() {
   _expectCommand("splitBlock", splitBlock.execute(draft.state, draft.dispatch));
   draft.insertText("First bullet point");
   draft.selectCurrentTextblock();
-  _expectCommand(
-    "autoJoin(wrapIn(bullet_list))",
-    wrapParagraphInBulletList.execute(draft.state, draft.dispatch),
-  );
+  _expectCommand("autoJoin(wrapIn(bullet_list))", wrapParagraphInBulletList.execute(draft.state, draft.dispatch));
 
   draft.select(Selection.atEnd(draft.document));
   _expectCommand("splitBlock", splitBlock.execute(draft.state, draft.dispatch));
-  _expectCommand(
-    "liftEmptyBlock",
-    liftEmptyBlock.execute(draft.state, draft.dispatch),
-  );
+  _expectCommand("liftEmptyBlock", liftEmptyBlock.execute(draft.state, draft.dispatch));
   draft.insertText("Second bullet point");
   draft.selectCurrentTextblock();
-  _expectCommand(
-    "autoJoin(wrapIn(bullet_list))",
-    wrapParagraphInBulletList.execute(draft.state, draft.dispatch),
-  );
+  _expectCommand("autoJoin(wrapIn(bullet_list))", wrapParagraphInBulletList.execute(draft.state, draft.dispatch));
 
   draft.select(Selection.atEnd(draft.document));
   _expectCommand("splitBlock", splitBlock.execute(draft.state, draft.dispatch));
-  _expectCommand(
-    "liftEmptyBlock",
-    liftEmptyBlock.execute(draft.state, draft.dispatch),
-  );
+  _expectCommand("liftEmptyBlock", liftEmptyBlock.execute(draft.state, draft.dispatch));
   draft.insertText("Third bullet point");
   draft.selectCurrentTextblock();
-  _expectCommand(
-    "autoJoin(wrapIn(bullet_list))",
-    wrapParagraphInBulletList.execute(draft.state, draft.dispatch),
-  );
+  _expectCommand("autoJoin(wrapIn(bullet_list))", wrapParagraphInBulletList.execute(draft.state, draft.dispatch));
   _printDocument("4. Inserted three bullet points", draft.document);
 
   // Step 5 - Insert a final paragraph.
@@ -80,10 +57,7 @@ void main() {
   // `liftEmptyBlock` from that empty item lifts it out to a regular paragraph.
   draft.select(Selection.atEnd(draft.document));
   _expectCommand("splitBlock", splitBlock.execute(draft.state, draft.dispatch));
-  _expectCommand(
-    "liftEmptyBlock",
-    liftEmptyBlock.execute(draft.state, draft.dispatch),
-  );
+  _expectCommand("liftEmptyBlock", liftEmptyBlock.execute(draft.state, draft.dispatch));
   draft.insertText("This is the final paragraph.");
   _printDocument("5. Inserted a final paragraph", draft.document);
 
@@ -150,10 +124,7 @@ final Schema schema = Schema(
       "image": NodeSpec(
         group: "inline",
         inline: true,
-        attrs: <String, AttributeSpec>{
-          "src": AttributeSpec(),
-          "alt": AttributeSpec(defaultValue: null),
-        },
+        attrs: <String, AttributeSpec>{"src": AttributeSpec(), "alt": AttributeSpec(defaultValue: null)},
       ),
       "text": NodeSpec(group: "inline"),
     },

@@ -9,10 +9,7 @@ import 'package:prosemirror/src/state/state.dart';
 import 'package:prosemirror/src/state/transaction.dart';
 
 /// A predicate that can ignore individual search results.
-typedef SearchResultFilter = bool Function(
-  EditorState state,
-  SearchResult result,
-);
+typedef SearchResultFilter = bool Function(EditorState state, SearchResult result);
 
 /// The range searched by the search plugin and commands.
 class SearchRange {
@@ -29,12 +26,7 @@ class SearchRange {
 /// A matched instance of a search query.
 class SearchResult {
   /// Creates a search result.
-  SearchResult({
-    required this.from,
-    required this.to,
-    required this.match,
-    required this.matchStart,
-  });
+  SearchResult({required this.from, required this.to, required this.match, required this.matchStart});
 
   /// The match start in the document.
   final int from;
@@ -134,13 +126,9 @@ class SearchQuery {
   }
 
   /// Get the document replacements for [result].
-  List<SearchReplacement> getReplacements(
-    EditorState state,
-    SearchResult result,
-  ) {
+  List<SearchReplacement> getReplacements(EditorState state, SearchResult result) {
     final $from = state.doc.resolve(result.from);
-    final marks =
-        $from.marksAcross(state.doc.resolve(result.to)) ?? $from.marks();
+    final marks = $from.marksAcross(state.doc.resolve(result.to)) ?? $from.marks();
     final ranges = <SearchReplacement>[];
     var fragment = Fragment.empty;
     var position = result.from;
@@ -155,9 +143,7 @@ class SearchQuery {
           fragment = fragment.addToEnd(state.schema.text(part.text, marks));
         }
       } else if (part is _ReplacementGroup) {
-        final groupSpan = part.group < groups.length
-            ? groups[part.group]
-            : null;
+        final groupSpan = part.group < groups.length ? groups[part.group] : null;
         if (groupSpan == null) {
           continue;
         }
@@ -167,13 +153,7 @@ class SearchQuery {
           fragment = fragment.append(state.doc.slice(from, to).content);
         } else {
           if (!identical(fragment, Fragment.empty) || from > position) {
-            ranges.add(
-              SearchReplacement(
-                from: position,
-                to: from,
-                insert: Slice(fragment, 0, 0),
-              ),
-            );
+            ranges.add(SearchReplacement(from: position, to: from, insert: Slice(fragment, 0, 0)));
             fragment = Fragment.empty;
           }
           position = to;
@@ -182,21 +162,13 @@ class SearchQuery {
     }
 
     if (!identical(fragment, Fragment.empty) || position < result.to) {
-      ranges.add(
-        SearchReplacement(
-          from: position,
-          to: result.to,
-          insert: Slice(fragment, 0, 0),
-        ),
-      );
+      ranges.add(SearchReplacement(from: position, to: result.to, insert: Slice(fragment, 0, 0)));
     }
     return ranges;
   }
 
   bool _checkResult(EditorState state, SearchResult result) {
-    return (!wholeWord ||
-            (_checkWordBoundary(state, result.from) &&
-                _checkWordBoundary(state, result.to))) &&
+    return (!wholeWord || (_checkWordBoundary(state, result.from) && _checkWordBoundary(state, result.to))) &&
         (filter == null || filter!(state, result));
   }
 }
@@ -204,11 +176,7 @@ class SearchQuery {
 /// A single replacement range for a search result.
 class SearchReplacement {
   /// Creates a search replacement.
-  SearchReplacement({
-    required this.from,
-    required this.to,
-    required this.insert,
-  });
+  SearchReplacement({required this.from, required this.to, required this.insert});
 
   /// The replaced range start.
   final int from;
@@ -223,11 +191,7 @@ class SearchReplacement {
 /// The public search plugin state.
 class SearchState {
   /// Creates search plugin state.
-  SearchState({
-    required this.query,
-    required this.range,
-    required this.highlights,
-  });
+  SearchState({required this.query, required this.range, required this.highlights});
 
   /// The active search query.
   final SearchQuery query;
@@ -257,11 +221,7 @@ class SearchHighlights {
 /// A highlighted search result range.
 class SearchHighlight {
   /// Creates a search highlight.
-  const SearchHighlight({
-    required this.from,
-    required this.to,
-    required this.active,
-  });
+  const SearchHighlight({required this.from, required this.to, required this.active});
 
   /// The highlight start.
   final int from;
@@ -273,8 +233,7 @@ class SearchHighlight {
   final bool active;
 
   /// The class name used by upstream styling.
-  String get className =>
-      active ? "ProseMirror-active-search-match" : "ProseMirror-search-match";
+  String get className => active ? "ProseMirror-active-search-match" : "ProseMirror-search-match";
 }
 
 /// Returns a plugin that stores the current search query and range.
@@ -283,10 +242,7 @@ Plugin search({SearchQuery? initialQuery, SearchRange? initialRange}) {
     PluginSpec(
       key: _searchKey,
       state: StateField(init: _initSearchState, apply: _applySearchState),
-      extra: <String, Object?>{
-        "initialQuery": initialQuery,
-        "initialRange": initialRange,
-      },
+      extra: <String, Object?>{"initialQuery": initialQuery, "initialRange": initialRange},
     ),
   );
 }
@@ -303,49 +259,27 @@ SearchHighlights getMatchHighlights(EditorState state) {
 }
 
 /// Add metadata to [transaction] that updates active search state.
-Transaction setSearchState(
-  Transaction transaction,
-  SearchQuery query, [
-  SearchRange? range,
-]) {
-  return transaction.setMeta(
-    _searchKey,
-    _SearchStateMeta(query: query, range: range),
-  );
+Transaction setSearchState(Transaction transaction, SearchQuery query, [SearchRange? range]) {
+  return transaction.setMeta(_searchKey, _SearchStateMeta(query: query, range: range));
 }
 
 /// Find the next instance of the search query.
-final Command findNext = _FindCommand(
-  wrap: true,
-  direction: _SearchDirection.next,
-);
+final Command findNext = _FindCommand(wrap: true, direction: _SearchDirection.next);
 
 /// Find the next instance without wrapping.
-final Command findNextNoWrap = _FindCommand(
-  wrap: false,
-  direction: _SearchDirection.next,
-);
+final Command findNextNoWrap = _FindCommand(wrap: false, direction: _SearchDirection.next);
 
 /// Find the previous instance of the search query.
-final Command findPrev = _FindCommand(
-  wrap: true,
-  direction: _SearchDirection.previous,
-);
+final Command findPrev = _FindCommand(wrap: true, direction: _SearchDirection.previous);
 
 /// Find the previous instance without wrapping.
-final Command findPrevNoWrap = _FindCommand(
-  wrap: false,
-  direction: _SearchDirection.previous,
-);
+final Command findPrevNoWrap = _FindCommand(wrap: false, direction: _SearchDirection.previous);
 
 /// Replace the selected instance, or select the next one.
 final Command replaceNext = _ReplaceCommand(wrap: true, moveForward: true);
 
 /// Replace the next instance without wrapping.
-final Command replaceNextNoWrap = _ReplaceCommand(
-  wrap: false,
-  moveForward: true,
-);
+final Command replaceNextNoWrap = _ReplaceCommand(wrap: false, moveForward: true);
 
 /// Replace the selected instance and keep the replacement selected.
 final Command replaceCurrent = _ReplaceCommand(wrap: false, moveForward: false);
@@ -367,12 +301,7 @@ Object? _initSearchState(EditorStateConfig config, EditorState instance) {
   );
 }
 
-Object? _applySearchState(
-  Transaction transaction,
-  Object? value,
-  EditorState oldState,
-  EditorState newState,
-) {
+Object? _applySearchState(Transaction transaction, Object? value, EditorState oldState, EditorState newState) {
   final meta = transaction.getMeta(_searchKey);
   if (meta is _SearchStateMeta) {
     return SearchState(
@@ -394,11 +323,7 @@ Object? _applySearchState(
   return searchState;
 }
 
-SearchHighlights _buildMatchHighlights(
-  EditorState state,
-  SearchQuery query,
-  SearchRange? range,
-) {
+SearchHighlights _buildMatchHighlights(EditorState state, SearchQuery query, SearchRange? range) {
   if (!query.valid) {
     return SearchHighlights.empty;
   }
@@ -413,11 +338,7 @@ SearchHighlights _buildMatchHighlights(
       break;
     }
     highlights.add(
-      SearchHighlight(
-        from: next.from,
-        to: next.to,
-        active: next.from == selection.from && next.to == selection.to,
-      ),
+      SearchHighlight(from: next.from, to: next.to, active: next.from == selection.from && next.to == selection.to),
     );
     position = _max(next.to, position + 1);
   }
@@ -433,67 +354,32 @@ SearchRange? _mapSearchRange(SearchRange? range, Transaction transaction) {
   return from < to ? SearchRange(from: from, to: to) : null;
 }
 
-SearchResult? _nextMatch(
-  SearchState searchState,
-  EditorState state,
-  bool wrap,
-  int currentFrom,
-  int currentTo,
-) {
-  final range =
-      searchState.range ?? SearchRange(from: 0, to: state.doc.content.size);
-  var next = searchState.query.findNext(
-    state,
-    _max(currentTo, range.from),
-    range.to,
-  );
+SearchResult? _nextMatch(SearchState searchState, EditorState state, bool wrap, int currentFrom, int currentTo) {
+  final range = searchState.range ?? SearchRange(from: 0, to: state.doc.content.size);
+  var next = searchState.query.findNext(state, _max(currentTo, range.from), range.to);
   if (next == null && wrap) {
-    next = searchState.query.findNext(
-      state,
-      range.from,
-      _min(currentFrom, range.to),
-    );
+    next = searchState.query.findNext(state, range.from, _min(currentFrom, range.to));
   }
   return next;
 }
 
-SearchResult? _prevMatch(
-  SearchState searchState,
-  EditorState state,
-  bool wrap,
-  int currentFrom,
-  int currentTo,
-) {
-  final range =
-      searchState.range ?? SearchRange(from: 0, to: state.doc.content.size);
-  var previous = searchState.query.findPrev(
-    state,
-    _min(currentFrom, range.to),
-    range.from,
-  );
+SearchResult? _prevMatch(SearchState searchState, EditorState state, bool wrap, int currentFrom, int currentTo) {
+  final range = searchState.range ?? SearchRange(from: 0, to: state.doc.content.size);
+  var previous = searchState.query.findPrev(state, _min(currentFrom, range.to), range.from);
   if (previous == null && wrap) {
-    previous = searchState.query.findPrev(
-      state,
-      range.to,
-      _max(currentTo, range.from),
-    );
+    previous = searchState.query.findPrev(state, range.to, _max(currentTo, range.from));
   }
   return previous;
 }
 
-bool _replaceAll(
-  EditorState state, [
-  void Function(Transaction transaction)? dispatch,
-  Object? view,
-]) {
+bool _replaceAll(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
   final searchState = getSearchState(state);
   if (searchState == null) {
     return false;
   }
 
   final matches = <SearchResult>[];
-  final range =
-      searchState.range ?? SearchRange(from: 0, to: state.doc.content.size);
+  final range = searchState.range ?? SearchRange(from: 0, to: state.doc.content.size);
   for (var position = range.from; ;) {
     final next = searchState.query.findNext(state, position, range.to);
     if (next == null) {
@@ -508,21 +394,10 @@ bool _replaceAll(
   if (dispatch != null) {
     final transaction = state.tr;
     for (var matchIndex = matches.length - 1; matchIndex >= 0; matchIndex--) {
-      final replacements = searchState.query.getReplacements(
-        state,
-        matches[matchIndex],
-      );
-      for (
-        var replacementIndex = replacements.length - 1;
-        replacementIndex >= 0;
-        replacementIndex--
-      ) {
+      final replacements = searchState.query.getReplacements(state, matches[matchIndex]);
+      for (var replacementIndex = replacements.length - 1; replacementIndex >= 0; replacementIndex--) {
         final replacement = replacements[replacementIndex];
-        transaction.replace(
-          replacement.from,
-          replacement.to,
-          replacement.insert,
-        );
+        transaction.replace(replacement.from, replacement.to, replacement.insert);
       }
     }
     dispatch(transaction);
@@ -560,18 +435,12 @@ class _StringQuery implements _QueryImplementation {
   SearchResult? findNext(EditorState state, int from, int to) {
     return _scanTextblocks(state.doc, from, to, (node, start) {
       final offset = _max(from, start);
-      final content = _textContent(node)
-          .substring(offset - start, _min(node.content.size, to - start));
+      final content = _textContent(node).substring(offset - start, _min(node.content.size, to - start));
       final searched = caseSensitive ? content : content.toLowerCase();
       final index = searched.indexOf(string);
       return index < 0
           ? null
-          : SearchResult(
-              from: offset + index,
-              to: offset + index + string.length,
-              match: null,
-              matchStart: start,
-            );
+          : SearchResult(from: offset + index, to: offset + index + string.length, match: null, matchStart: start);
     });
   }
 
@@ -579,20 +448,14 @@ class _StringQuery implements _QueryImplementation {
   SearchResult? findPrev(EditorState state, int from, int to) {
     return _scanTextblocks(state.doc, from, to, (node, start) {
       final offset = _max(start, to);
-      var content = _textContent(node)
-          .substring(offset - start, _min(node.content.size, from - start));
+      var content = _textContent(node).substring(offset - start, _min(node.content.size, from - start));
       if (!caseSensitive) {
         content = content.toLowerCase();
       }
       final index = content.lastIndexOf(string);
       return index < 0
           ? null
-          : SearchResult(
-              from: offset + index,
-              to: offset + index + string.length,
-              match: null,
-              matchStart: start,
-            );
+          : SearchResult(from: offset + index, to: offset + index + string.length, match: null, matchStart: start);
     });
   }
 }
@@ -607,12 +470,9 @@ class _RegExpQuery implements _QueryImplementation {
   SearchResult? findNext(EditorState state, int from, int to) {
     return _scanTextblocks(state.doc, from, to, (node, start) {
       final searchStart = _max(0, from - start);
-      final content = _textContent(node)
-          .substring(0, _min(node.content.size, to - start));
-      final match =
-          expression.matchAsPrefix(content, searchStart) as RegExpMatch?;
-      final next =
-          match ?? _firstRegExpMatchAtOrAfter(expression, content, searchStart);
+      final content = _textContent(node).substring(0, _min(node.content.size, to - start));
+      final match = expression.matchAsPrefix(content, searchStart) as RegExpMatch?;
+      final next = match ?? _firstRegExpMatchAtOrAfter(expression, content, searchStart);
       if (next == null) {
         return null;
       }
@@ -628,8 +488,7 @@ class _RegExpQuery implements _QueryImplementation {
   @override
   SearchResult? findPrev(EditorState state, int from, int to) {
     return _scanTextblocks(state.doc, from, to, (node, start) {
-      final content = _textContent(node)
-          .substring(0, _min(node.content.size, from - start));
+      final content = _textContent(node).substring(0, _min(node.content.size, from - start));
       RegExpMatch? match;
       for (var offset = 0; offset <= content.length;) {
         final next = _firstRegExpMatchAtOrAfter(expression, content, offset);
@@ -653,13 +512,7 @@ class _RegExpQuery implements _QueryImplementation {
 
 typedef _TextblockScanner<T> = T? Function(Node node, int startPosition);
 
-T? _scanTextblocks<T>(
-  Node node,
-  int from,
-  int to,
-  _TextblockScanner<T> scanner, [
-  int nodeStart = 0,
-]) {
+T? _scanTextblocks<T>(Node node, int from, int to, _TextblockScanner<T> scanner, [int nodeStart = 0]) {
   if (node.inlineContent) {
     return scanner(node, nodeStart);
   } else if (!node.isLeaf) {
@@ -671,18 +524,8 @@ T? _scanTextblocks<T>(
   return null;
 }
 
-T? _scanTextblocksForward<T>(
-  Node node,
-  int from,
-  int to,
-  _TextblockScanner<T> scanner,
-  int nodeStart,
-) {
-  for (
-    var index = 0, position = nodeStart;
-    index < node.childCount && position < to;
-    index++
-  ) {
+T? _scanTextblocksForward<T>(Node node, int from, int to, _TextblockScanner<T> scanner, int nodeStart) {
+  for (var index = 0, position = nodeStart; index < node.childCount && position < to; index++) {
     final child = node.child(index);
     final start = position;
     position += child.nodeSize;
@@ -696,13 +539,7 @@ T? _scanTextblocksForward<T>(
   return null;
 }
 
-T? _scanTextblocksBackward<T>(
-  Node node,
-  int from,
-  int to,
-  _TextblockScanner<T> scanner,
-  int nodeStart,
-) {
+T? _scanTextblocksBackward<T>(Node node, int from, int to, _TextblockScanner<T> scanner, int nodeStart) {
   for (
     var index = node.childCount - 1, position = nodeStart + node.content.size;
     index >= 0 && position > to;
@@ -720,11 +557,7 @@ T? _scanTextblocksBackward<T>(
   return null;
 }
 
-RegExpMatch? _firstRegExpMatchAtOrAfter(
-  RegExp expression,
-  String content,
-  int start,
-) {
+RegExpMatch? _firstRegExpMatchAtOrAfter(RegExp expression, String content, int start) {
   for (var offset = start; offset <= content.length; offset++) {
     final match = expression.matchAsPrefix(content, offset);
     if (match != null) {
@@ -779,9 +612,7 @@ bool _startsWithLetter(String text) {
 }
 
 bool _isLetter(int rune) {
-  return (rune >= 0x41 && rune <= 0x5a) ||
-      (rune >= 0x61 && rune <= 0x7a) ||
-      (rune >= 0xc0 && rune <= 0x2af);
+  return (rune >= 0x41 && rune <= 0x5a) || (rune >= 0x61 && rune <= 0x7a) || (rune >= 0xc0 && rune <= 0x2af);
 }
 
 bool _validRegExp(String source) {
@@ -904,11 +735,7 @@ class _FindCommand implements Command {
   final _SearchDirection direction;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction transaction)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
     final searchState = getSearchState(state);
     if (searchState == null || !searchState.query.valid) {
       return false;
@@ -920,11 +747,7 @@ class _FindCommand implements Command {
     if (next == null) {
       return false;
     }
-    dispatch?.call(
-      state.tr
-          .setSelection(TextSelection.create(state.doc, next.from, next.to))
-          .scrollIntoView(),
-    );
+    dispatch?.call(state.tr.setSelection(TextSelection.create(state.doc, next.from, next.to)).scrollIntoView());
     return true;
   }
 }
@@ -936,23 +759,13 @@ class _ReplaceCommand implements Command {
   final bool moveForward;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction transaction)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
     final searchState = getSearchState(state);
     if (searchState == null || !searchState.query.valid) {
       return false;
     }
     final selection = state.selection;
-    final next = _nextMatch(
-      searchState,
-      state,
-      wrap,
-      selection.from,
-      selection.from,
-    );
+    final next = _nextMatch(searchState, state, wrap, selection.from, selection.from);
     if (next == null) {
       return false;
     }
@@ -965,11 +778,7 @@ class _ReplaceCommand implements Command {
     } else if (!moveForward) {
       return false;
     } else {
-      dispatch(
-        state.tr
-            .setSelection(TextSelection.create(state.doc, next.from, next.to))
-            .scrollIntoView(),
-      );
+      dispatch(state.tr.setSelection(TextSelection.create(state.doc, next.from, next.to)).scrollIntoView());
     }
     return true;
   }
@@ -982,18 +791,12 @@ class _ReplaceCommand implements Command {
   ) {
     final transaction = state.tr;
     final replacements = searchState.query.getReplacements(state, next);
-    for (
-      var replacementIndex = replacements.length - 1;
-      replacementIndex >= 0;
-      replacementIndex--
-    ) {
+    for (var replacementIndex = replacements.length - 1; replacementIndex >= 0; replacementIndex--) {
       final replacement = replacements[replacementIndex];
       transaction.replace(replacement.from, replacement.to, replacement.insert);
     }
 
-    final after = moveForward
-        ? _nextMatch(searchState, state, wrap, next.from, next.to)
-        : null;
+    final after = moveForward ? _nextMatch(searchState, state, wrap, next.from, next.to) : null;
     if (after != null) {
       transaction.setSelection(
         TextSelection.create(
@@ -1003,13 +806,7 @@ class _ReplaceCommand implements Command {
         ),
       );
     } else {
-      transaction.setSelection(
-        TextSelection.create(
-          transaction.doc,
-          next.from,
-          transaction.mapping.map(next.to, 1),
-        ),
-      );
+      transaction.setSelection(TextSelection.create(transaction.doc, next.from, transaction.mapping.map(next.to, 1)));
     }
     dispatch(transaction.scrollIntoView());
   }

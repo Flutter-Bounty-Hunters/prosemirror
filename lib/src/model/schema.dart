@@ -83,8 +83,7 @@ class NodeType {
   /// Indicates whether this node allows some of the same content as the given
   /// node type.
   bool compatibleContent(NodeType other) {
-    return identical(this, other) ||
-        contentMatch.compatible(other.contentMatch);
+    return identical(this, other) || contentMatch.compatible(other.contentMatch);
   }
 
   /// @internal
@@ -102,12 +101,7 @@ class NodeType {
     if (isText) {
       throw StateError("NodeType.create can't construct text nodes");
     }
-    return Node(
-      this,
-      computeAttrs(attrs),
-      Fragment.from(content),
-      Mark.setFrom(marks),
-    );
+    return Node(this, computeAttrs(attrs), Fragment.from(content), Mark.setFrom(marks));
   }
 
   /// Like [create], but check the given content against the node type's content
@@ -135,12 +129,7 @@ class NodeType {
     if (after == null) {
       return null;
     }
-    return Node(
-      this,
-      computedAttrs,
-      fragment.append(after),
-      Mark.setFrom(marks),
-    );
+    return Node(this, computedAttrs, fragment.append(after), Mark.setFrom(marks));
   }
 
   /// Returns true if the given fragment is valid content for this node type.
@@ -162,9 +151,7 @@ class NodeType {
   void checkContent(Fragment content) {
     if (!validContent(content)) {
       final rendered = content.toString();
-      final truncated = rendered.length > 50
-          ? rendered.substring(0, 50)
-          : rendered;
+      final truncated = rendered.length > 50 ? rendered.substring(0, 50) : rendered;
       throw RangeError("Invalid content for node $name: $truncated");
     }
   }
@@ -212,10 +199,7 @@ class NodeType {
   }
 
   /// @internal
-  static Map<String, NodeType> compile(
-    OrderedMap<NodeSpec> nodes,
-    Schema schema,
-  ) {
+  static Map<String, NodeType> compile(OrderedMap<NodeSpec> nodes, Schema schema) {
     final result = <String, NodeType>{};
     nodes.forEach((name, spec) => result[name] = NodeType(name, schema, spec));
 
@@ -234,11 +218,7 @@ class NodeType {
   }
 }
 
-void Function(Object?) _validateType(
-  String typeName,
-  String attrName,
-  String type,
-) {
+void Function(Object?) _validateType(String typeName, String attrName, String type) {
   final types = type.split("|");
   return (Object? value) {
     final name = value == null
@@ -315,10 +295,7 @@ class MarkType {
   }
 
   /// @internal
-  static Map<String, MarkType> compile(
-    OrderedMap<MarkSpec> marks,
-    Schema schema,
-  ) {
+  static Map<String, MarkType> compile(OrderedMap<MarkSpec> marks, Schema schema) {
     final result = <String, MarkType>{};
     var rank = 0;
     marks.forEach((name, spec) {
@@ -417,14 +394,7 @@ class NodeSpec {
 
 /// Used to define marks when creating a schema.
 class MarkSpec {
-  MarkSpec({
-    this.attrs,
-    this.inclusive,
-    this.excludes,
-    this.group,
-    this.spanning,
-    this.code = false,
-  });
+  MarkSpec({this.attrs, this.inclusive, this.excludes, this.group, this.spanning, this.code = false});
 
   final Map<String, AttributeSpec>? attrs;
   final bool? inclusive;
@@ -478,19 +448,14 @@ class Schema {
       final type = entry.value;
       final contentExpr = type.spec.content ?? "";
       final markExpr = type.spec.marks;
-      type.contentMatch = contentExprCache[contentExpr] ??= ContentMatch.parse(
-        contentExpr,
-        nodes,
-      );
+      type.contentMatch = contentExprCache[contentExpr] ??= ContentMatch.parse(contentExpr, nodes);
       type.inlineContent = type.contentMatch.inlineContent;
       if (type.spec.linebreakReplacement) {
         if (linebreakReplacement != null) {
           throw RangeError("Multiple linebreak nodes defined");
         }
         if (!type.isInline || !type.isLeaf) {
-          throw RangeError(
-            "Linebreak replacement nodes must be inline leaf nodes",
-          );
+          throw RangeError("Linebreak replacement nodes must be inline leaf nodes");
         }
         linebreakReplacement = type;
       }
@@ -549,12 +514,7 @@ class Schema {
   /// Create a text node in the schema. Empty text nodes are not allowed.
   Node text(String text, [List<Mark>? marks]) {
     final type = nodes["text"]!;
-    return TextNode(
-      type,
-      type.defaultAttrs ?? const {},
-      text,
-      Mark.setFrom(marks),
-    );
+    return TextNode(type, type.defaultAttrs ?? const {}, text, Mark.setFrom(marks));
   }
 
   /// Create a mark with the given type and attributes.
@@ -603,9 +563,7 @@ List<MarkType> _gatherMarks(Schema schema, List<String> marks) {
     } else {
       for (final entry in schema.marks.entries) {
         final candidate = entry.value;
-        if (name == "_" ||
-            (candidate.spec.group != null &&
-                candidate.spec.group!.split(" ").contains(name))) {
+        if (name == "_" || (candidate.spec.group != null && candidate.spec.group!.split(" ").contains(name))) {
           found.add(candidate);
           ok = true;
         }
@@ -618,10 +576,7 @@ List<MarkType> _gatherMarks(Schema schema, List<String> marks) {
   return found;
 }
 
-Map<String, Attribute> _initAttrs(
-  String typeName,
-  Map<String, AttributeSpec>? attrs,
-) {
+Map<String, Attribute> _initAttrs(String typeName, Map<String, AttributeSpec>? attrs) {
   final result = <String, Attribute>{};
   if (attrs != null) {
     attrs.forEach((name, spec) {
@@ -662,17 +617,10 @@ Attrs _computeAttrs(Map<String, Attribute> attrs, Attrs? value) {
   return built;
 }
 
-void _checkAttrs(
-  Map<String, Attribute> attrs,
-  Attrs values,
-  String type,
-  String name,
-) {
+void _checkAttrs(Map<String, Attribute> attrs, Attrs values, String type, String name) {
   for (final valueName in values.keys) {
     if (!attrs.containsKey(valueName)) {
-      throw RangeError(
-        "Unsupported attribute $valueName for $type of type $valueName",
-      );
+      throw RangeError("Unsupported attribute $valueName for $type of type $valueName");
     }
   }
   for (final entry in attrs.entries) {

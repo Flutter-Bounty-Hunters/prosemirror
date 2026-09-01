@@ -16,8 +16,7 @@ const Attrs _emptyAttrs = <String, Object?>{};
 /// new ones with the content you want.
 class Node {
   /// @internal
-  Node(this.type, this.attrs, [Fragment? content, this.marks = Mark.none])
-    : content = content ?? Fragment.empty;
+  Node(this.type, this.attrs, [Fragment? content, this.marks = Mark.none]) : content = content ?? Fragment.empty;
 
   /// The type of node that this is.
   final NodeType type;
@@ -50,17 +49,11 @@ class Node {
   Node? maybeChild(int index) => content.maybeChild(index);
 
   /// Call [callback] for every child node.
-  void forEach(void Function(Node node, int offset, int index) callback) =>
-      content.forEach(callback);
+  void forEach(void Function(Node node, int offset, int index) callback) => content.forEach(callback);
 
   /// Invoke a callback for all descendant nodes recursively overlapping the
   /// given two positions that are relative to start of this node's content.
-  void nodesBetween(
-    int from,
-    int to,
-    NodesBetweenCallback callback, [
-    int startPos = 0,
-  ]) {
+  void nodesBetween(int from, int to, NodesBetweenCallback callback, [int startPos = 0]) {
     content.nodesBetween(from, to, callback, startPos, this);
   }
 
@@ -71,18 +64,11 @@ class Node {
 
   /// Concatenates all the text nodes found in this fragment and its children.
   String get textContent {
-    return (isLeaf && type.spec.leafText != null)
-        ? type.spec.leafText!(this)
-        : textBetween(0, content.size, "");
+    return (isLeaf && type.spec.leafText != null) ? type.spec.leafText!(this) : textBetween(0, content.size, "");
   }
 
   /// Get all text between positions [from] and [to].
-  String textBetween(
-    int from,
-    int to, [
-    String? blockSeparator,
-    Object? leafText,
-  ]) {
+  String textBetween(int from, int to, [String? blockSeparator, Object? leafText]) {
     return content.textBetween(from, to, blockSeparator, leafText);
   }
 
@@ -94,8 +80,7 @@ class Node {
 
   /// Test whether two nodes represent the same piece of document.
   bool eq(Node other) {
-    return identical(this, other) ||
-        (sameMarkup(other) && content.eq(other.content));
+    return identical(this, other) || (sameMarkup(other) && content.eq(other.content));
   }
 
   /// Compare the markup (type, attributes, and marks) of this node to those of
@@ -125,9 +110,7 @@ class Node {
   /// Create a copy of this node, with the given set of marks instead of the
   /// node's own marks.
   Node mark(List<Mark> marks) {
-    return identical(marks, this.marks)
-        ? this
-        : Node(type, attrs, content, marks);
+    return identical(marks, this.marks) ? this : Node(type, attrs, content, marks);
   }
 
   /// Create a copy of this node with only the content between the given
@@ -153,15 +136,8 @@ class Node {
     final depth = includeParents ? 0 : resolvedFrom.sharedDepth(toPos);
     final start = resolvedFrom.start(depth);
     final node = resolvedFrom.node(depth);
-    final sliceContent = node.content.cut(
-      resolvedFrom.pos - start,
-      resolvedTo.pos - start,
-    );
-    return Slice(
-      sliceContent,
-      resolvedFrom.depth - depth,
-      resolvedTo.depth - depth,
-    );
+    final sliceContent = node.content.cut(resolvedFrom.pos - start, resolvedTo.pos - start);
+    return Slice(sliceContent, resolvedFrom.depth - depth, resolvedTo.depth - depth);
   }
 
   /// Replace the part of the document between the given positions with the
@@ -189,11 +165,7 @@ class Node {
   /// Find the (direct) child node after the given offset, if any.
   ({Node? node, int index, int offset}) childAfter(int pos) {
     final found = content.findIndex(pos);
-    return (
-      node: content.maybeChild(found.index),
-      index: found.index,
-      offset: found.offset,
-    );
+    return (node: content.maybeChild(found.index), index: found.index, offset: found.offset);
   }
 
   /// Find the (direct) child node before the given offset, if any.
@@ -203,18 +175,10 @@ class Node {
     }
     final found = content.findIndex(pos);
     if (found.offset < pos) {
-      return (
-        node: content.child(found.index),
-        index: found.index,
-        offset: found.offset,
-      );
+      return (node: content.child(found.index), index: found.index, offset: found.offset);
     }
     final node = content.child(found.index - 1);
-    return (
-      node: node,
-      index: found.index - 1,
-      offset: found.offset - node.nodeSize,
-    );
+    return (node: node, index: found.index - 1, offset: found.offset - node.nodeSize);
   }
 
   /// Resolve the given position in the document.
@@ -283,13 +247,7 @@ class Node {
 
   /// Test whether replacing the range between [from] and [to] (by child index)
   /// with the given replacement fragment would leave the node's content valid.
-  bool canReplace(
-    int from,
-    int to, [
-    Fragment? replacement,
-    int start = 0,
-    int? end,
-  ]) {
+  bool canReplace(int from, int to, [Fragment? replacement, int start = 0, int? end]) {
     replacement ??= Fragment.empty;
     end ??= replacement.childCount;
     final one = contentMatchAt(from).matchFragment(replacement, start, end);
@@ -381,9 +339,7 @@ class Node {
       return schema.text(textValue, marks);
     }
     final content = Fragment.fromJSON(schema, map["content"]);
-    final node = schema
-        .nodeType(map["type"] as String)
-        .create(map["attrs"] as Attrs?, content, marks);
+    final node = schema.nodeType(map["type"] as String).create(map["attrs"] as Attrs?, content, marks);
     node.type.checkAttrs(node.attrs);
     return node;
   }
@@ -399,13 +355,9 @@ bool _isInSet(Object type, List<Mark> marks) {
 /// A text node in the document.
 class TextNode extends Node {
   /// @internal
-  TextNode(
-    NodeType type,
-    Attrs attrs,
-    String content, [
-    List<Mark> marks = Mark.none,
-  ]) : _text = content,
-       super(type, attrs, null, marks) {
+  TextNode(NodeType type, Attrs attrs, String content, [List<Mark> marks = Mark.none])
+    : _text = content,
+      super(type, attrs, null, marks) {
     if (content.isEmpty) {
       throw RangeError("Empty text nodes are not allowed");
     }
@@ -428,12 +380,7 @@ class TextNode extends Node {
   String get textContent => _text;
 
   @override
-  String textBetween(
-    int from,
-    int to, [
-    String? blockSeparator,
-    Object? leafText,
-  ]) {
+  String textBetween(int from, int to, [String? blockSeparator, Object? leafText]) {
     return _text.substring(from, to);
   }
 
@@ -442,9 +389,7 @@ class TextNode extends Node {
 
   @override
   Node mark(List<Mark> marks) {
-    return identical(marks, this.marks)
-        ? this
-        : TextNode(type, attrs, _text, marks);
+    return identical(marks, this.marks) ? this : TextNode(type, attrs, _text, marks);
   }
 
   /// Return a copy of this text node with different text.

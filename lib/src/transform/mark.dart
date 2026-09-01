@@ -28,9 +28,7 @@ void addMark(Transform tr, int from, int to, Mark mark) {
 
       for (var i = 0; i < marks.length; i++) {
         if (!marks[i].isInSet(newSet)) {
-          if (removing != null &&
-              removing!.to == start &&
-              removing!.mark.eq(marks[i])) {
+          if (removing != null && removing!.to == start && removing!.mark.eq(marks[i])) {
             removing = RemoveMarkStep(removing!.from, end, removing!.mark);
             removed[removed.length - 1] = removing!;
           } else {
@@ -60,12 +58,7 @@ void addMark(Transform tr, int from, int to, Mark mark) {
 }
 
 class _Matched {
-  _Matched({
-    required this.style,
-    required this.from,
-    required this.to,
-    required this.step,
-  });
+  _Matched({required this.style, required this.from, required this.to, required this.step});
 
   final Mark style;
   final int from;
@@ -111,14 +104,7 @@ void removeMark(Transform tr, int from, int to, [Object? mark]) {
           found.to = end;
           found.step = step;
         } else {
-          matched.add(
-            _Matched(
-              style: style,
-              from: math.max(pos, from),
-              to: end,
-              step: step,
-            ),
-          );
+          matched.add(_Matched(style: style, from: math.max(pos, from), to: end, step: step));
         }
       }
     }
@@ -129,13 +115,7 @@ void removeMark(Transform tr, int from, int to, [Object? mark]) {
   }
 }
 
-void clearIncompatible(
-  Transform tr,
-  int pos,
-  NodeType parentType, [
-  ContentMatch? match,
-  bool clearNewlines = true,
-]) {
+void clearIncompatible(Transform tr, int pos, NodeType parentType, [ContentMatch? match, bool clearNewlines = true]) {
   match ??= parentType.contentMatch;
   final node = tr.doc.nodeAt(pos)!;
   final replSteps = <Step>[];
@@ -158,20 +138,8 @@ void clearIncompatible(
         final newline = RegExp(r'\r?\n|\r');
         Slice? slice;
         for (final match in newline.allMatches(child.text!)) {
-          slice ??= Slice(
-            Fragment.from(
-              parentType.schema.text(" ", parentType.allowedMarks(child.marks)),
-            ),
-            0,
-            0,
-          );
-          replSteps.add(
-            ReplaceStep(
-              current + match.start,
-              current + match.start + match[0]!.length,
-              slice,
-            ),
-          );
+          slice ??= Slice(Fragment.from(parentType.schema.text(" ", parentType.allowedMarks(child.marks))), 0, 0);
+          replSteps.add(ReplaceStep(current + match.start, current + match.start + match[0]!.length, slice));
         }
       }
     }

@@ -36,11 +36,7 @@ class PluginSpec {
 
   /// Allows the plugin to append another transaction to be applied after
   /// the given array of transactions.
-  final Transaction? Function(
-    List<Transaction> transactions,
-    EditorState oldState,
-    EditorState newState,
-  )?
+  final Transaction? Function(List<Transaction> transactions, EditorState oldState, EditorState newState)?
   appendTransaction;
 
   /// Additional properties allowed on plugin specs, reachable via
@@ -61,11 +57,7 @@ class PluginView {
   final void Function()? destroy;
 }
 
-Map<String, Object?> _bindProps(
-  Map<String, Object?> obj,
-  Plugin self,
-  Map<String, Object?> target,
-) {
+Map<String, Object?> _bindProps(Map<String, Object?> obj, Plugin self, Map<String, Object?> target) {
   obj.forEach((prop, value) {
     if (value is Function) {
       target[prop] = () => (value as dynamic)(self);
@@ -106,12 +98,7 @@ class Plugin {
 /// property) of this type, which describes the state it wants to keep.
 class StateField {
   /// Create a state field.
-  StateField({
-    required this.init,
-    required this.apply,
-    this.toJSON,
-    this.fromJSON,
-  });
+  StateField({required this.init, required this.apply, this.toJSON, this.fromJSON});
 
   /// Initialize the value of the field. `config` will be the object passed
   /// to [EditorState.create]. Note that `instance` is a half-initialized
@@ -121,25 +108,14 @@ class StateField {
 
   /// Apply the given transaction to this state field, producing a new field
   /// value.
-  final Object? Function(
-    Transaction tr,
-    Object? value,
-    EditorState oldState,
-    EditorState newState,
-  )
-  apply;
+  final Object? Function(Transaction tr, Object? value, EditorState oldState, EditorState newState) apply;
 
   /// Convert this field to JSON. Optional, can be left off to disable JSON
   /// serialization for the field.
   final Object? Function(Object? value)? toJSON;
 
   /// Deserialize the JSON representation of this field.
-  final Object? Function(
-    EditorStateConfig config,
-    Object? value,
-    EditorState state,
-  )?
-  fromJSON;
+  final Object? Function(EditorStateConfig config, Object? value, EditorState state)? fromJSON;
 }
 
 final Map<String, int> _keys = <String, int>{};

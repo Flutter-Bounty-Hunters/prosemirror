@@ -5,12 +5,7 @@ import 'package:prosemirror/src/model/schema.dart';
 /// Callback signature used by [Fragment.nodesBetween] and [Node.nodesBetween].
 ///
 /// Returning `false` prevents descending into the visited node's children.
-typedef NodesBetweenCallback = bool? Function(
-  Node node,
-  int start,
-  Node? parent,
-  int index,
-);
+typedef NodesBetweenCallback = bool? Function(Node node, int start, Node? parent, int index);
 
 /// A fragment represents a node's collection of child nodes.
 ///
@@ -39,20 +34,12 @@ class Fragment {
   /// Invoke a callback for all descendant nodes between the given two positions
   /// (relative to start of this fragment). Doesn't descend into a node when the
   /// callback returns `false`.
-  void nodesBetween(
-    int from,
-    int to,
-    NodesBetweenCallback callback, [
-    int nodeStart = 0,
-    Node? parent,
-  ]) {
+  void nodesBetween(int from, int to, NodesBetweenCallback callback, [int nodeStart = 0, Node? parent]) {
     var pos = 0;
     for (var index = 0; pos < to; index++) {
       final child = content[index];
       final end = pos + child.nodeSize;
-      if (end > from &&
-          callback(child, nodeStart + pos, parent, index) != false &&
-          child.content.size != 0) {
+      if (end > from && callback(child, nodeStart + pos, parent, index) != false && child.content.size != 0) {
         final start = pos + 1;
         child.content.nodesBetween(
           (from - start) > 0 ? from - start : 0,
@@ -72,12 +59,7 @@ class Fragment {
   }
 
   /// Extract the text between [from] and [to].
-  String textBetween(
-    int from,
-    int to, [
-    String? blockSeparator,
-    Object? leafText,
-  ]) {
+  String textBetween(int from, int to, [String? blockSeparator, Object? leafText]) {
     final text = StringBuffer();
     var first = true;
     nodesBetween(from, to, (node, pos, parent, index) {
@@ -93,17 +75,13 @@ class Fragment {
       } else if (!node.isLeaf) {
         nodeText = "";
       } else if (leafText != null) {
-        nodeText = leafText is String Function(Node)
-            ? leafText(node)
-            : leafText as String;
+        nodeText = leafText is String Function(Node) ? leafText(node) : leafText as String;
       } else if (node.type.spec.leafText != null) {
         nodeText = node.type.spec.leafText!(node);
       } else {
         nodeText = "";
       }
-      if (node.isBlock &&
-          ((node.isLeaf && nodeText.isNotEmpty) || node.isTextblock) &&
-          blockSeparator != null) {
+      if (node.isBlock && ((node.isLeaf && nodeText.isNotEmpty) || node.isTextblock) && blockSeparator != null) {
         if (first) {
           first = false;
         } else {
@@ -131,9 +109,7 @@ class Fragment {
     var index = 0;
     if (last.isText && last.sameMarkup(first)) {
       final lastText = last as TextNode;
-      combined[combined.length - 1] = lastText.withText(
-        lastText.text + first.text!,
-      );
+      combined[combined.length - 1] = lastText.withText(lastText.text + first.text!);
       index = 1;
     }
     for (; index < other.content.length; index++) {
@@ -165,9 +141,7 @@ class Fragment {
             } else {
               child = child.cut(
                 (from - pos - 1) > 0 ? from - pos - 1 : 0,
-                (to - pos - 1) < child.content.size
-                    ? to - pos - 1
-                    : child.content.size,
+                (to - pos - 1) < child.content.size ? to - pos - 1 : child.content.size,
               );
             }
           }
@@ -231,8 +205,7 @@ class Fragment {
   Node? get firstChild => content.isNotEmpty ? content[0] : null;
 
   /// The last child of the fragment, or `null` if it is empty.
-  Node? get lastChild =>
-      content.isNotEmpty ? content[content.length - 1] : null;
+  Node? get lastChild => content.isNotEmpty ? content[content.length - 1] : null;
 
   /// The number of child nodes in this fragment.
   int get childCount => content.length;
@@ -309,9 +282,7 @@ class Fragment {
 
   /// Create a JSON-serializeable representation of this fragment.
   Object? toJSON() {
-    return content.isNotEmpty
-        ? content.map((node) => node.toJSON()).toList()
-        : null;
+    return content.isNotEmpty ? content.map((node) => node.toJSON()).toList() : null;
   }
 
   /// Deserialize a fragment from its JSON representation.
@@ -339,9 +310,7 @@ class Fragment {
       if (index != 0 && node.isText && array[index - 1].sameMarkup(node)) {
         joined ??= array.sublist(0, index);
         final previous = joined[joined.length - 1] as TextNode;
-        joined[joined.length - 1] = (node as TextNode).withText(
-          previous.text + node.text,
-        );
+        joined[joined.length - 1] = (node as TextNode).withText(previous.text + node.text);
       } else if (joined != null) {
         joined.add(node);
       }

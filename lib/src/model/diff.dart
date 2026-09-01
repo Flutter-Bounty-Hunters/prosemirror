@@ -23,9 +23,7 @@ int? findDiffStart(Fragment a, Fragment b, int pos) {
       final textA = childA.text!;
       final textB = childB.text!;
       var offset = 0;
-      while (offset < textA.length &&
-          offset < textB.length &&
-          textA[offset] == textB[offset]) {
+      while (offset < textA.length && offset < textB.length && textA[offset] == textB[offset]) {
         offset++;
         pos++;
       }
@@ -70,8 +68,7 @@ int? findDiffStart(Fragment a, Fragment b, int pos) {
       final textB = childB.text!;
       var same = 0;
       final minSize = textA.length < textB.length ? textA.length : textB.length;
-      while (same < minSize &&
-          textA[textA.length - same - 1] == textB[textB.length - same - 1]) {
+      while (same < minSize && textA[textA.length - same - 1] == textB[textB.length - same - 1]) {
         same++;
         posA--;
         posB--;
@@ -79,12 +76,7 @@ int? findDiffStart(Fragment a, Fragment b, int pos) {
       return (a: posA, b: posB);
     }
     if (childA.content.size != 0 || childB.content.size != 0) {
-      final inner = findDiffEnd(
-        childA.content,
-        childB.content,
-        posA - 1,
-        posB - 1,
-      );
+      final inner = findDiffEnd(childA.content, childB.content, posA - 1, posB - 1);
       if (inner != null) {
         return inner;
       }

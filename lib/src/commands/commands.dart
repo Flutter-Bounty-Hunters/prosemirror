@@ -21,11 +21,7 @@ final _leadingWhitespaceRegExp = RegExp(r'^\s*');
 final _trailingWhitespaceRegExp = RegExp(r'\s*$');
 
 /// Create a custom split-block command result.
-typedef SplitBlockFunction = SplitBlockType? Function(
-  Node node,
-  bool atEnd,
-  ResolvedPos position,
-);
+typedef SplitBlockFunction = SplitBlockType? Function(Node node, bool atEnd, ResolvedPos position);
 
 /// Describes the node type to use after splitting a block.
 class SplitBlockType {
@@ -44,11 +40,7 @@ class SplitBlockType {
 /// Options for [toggleMark].
 class ToggleMarkOptions {
   /// Creates toggle-mark options.
-  const ToggleMarkOptions({
-    this.removeWhenPresent,
-    this.enterInlineAtoms,
-    this.includeWhitespace,
-  });
+  const ToggleMarkOptions({this.removeWhenPresent, this.enterInlineAtoms, this.includeWhitespace});
 
   /// Whether to remove a mark when any part of the selection already has it.
   final bool? removeWhenPresent;
@@ -111,11 +103,7 @@ final Command selectParentNode = FunctionCommand(_selectParentNode);
 /// Select the whole document.
 final Command selectAll = FunctionCommand(_selectAll);
 
-bool _deleteSelection(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _deleteSelection(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   if (state.selection.empty) {
     return false;
   }
@@ -123,11 +111,7 @@ bool _deleteSelection(
   return true;
 }
 
-bool _joinBackward(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _joinBackward(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final cursor = _atBlockStart(state, view);
   if (cursor == null) {
     return false;
@@ -149,26 +133,15 @@ bool _joinBackward(
     return true;
   }
 
-  if (cursor.parent.content.size == 0 &&
-      (_textblockAt(before, _BlockSide.end) ||
-          NodeSelection.isSelectable(before))) {
+  if (cursor.parent.content.size == 0 && (_textblockAt(before, _BlockSide.end) || NodeSelection.isSelectable(before))) {
     for (var depth = cursor.depth; ; depth--) {
-      final deleteStep = replaceStep(
-        state.doc,
-        cursor.before(depth),
-        cursor.after(depth),
-        Slice.empty,
-      );
-      if (deleteStep is ReplaceStep &&
-          deleteStep.slice.size < deleteStep.to - deleteStep.from) {
+      final deleteStep = replaceStep(state.doc, cursor.before(depth), cursor.after(depth), Slice.empty);
+      if (deleteStep is ReplaceStep && deleteStep.slice.size < deleteStep.to - deleteStep.from) {
         if (dispatch != null) {
           final tr = state.tr.step(deleteStep) as Transaction;
           tr.setSelection(
             _textblockAt(before, _BlockSide.end)
-                ? Selection.findFrom(
-                    tr.doc.resolve(tr.mapping.map(cut.pos, -1)),
-                    -1,
-                  )!
+                ? Selection.findFrom(tr.doc.resolve(tr.mapping.map(cut.pos, -1)), -1)!
                 : NodeSelection.create(tr.doc, cut.pos - before.nodeSize),
           );
           dispatch(tr.scrollIntoView());
@@ -182,20 +155,14 @@ bool _joinBackward(
   }
 
   if (before.isAtom && cut.depth == cursor.depth - 1) {
-    dispatch?.call(
-      (state.tr..delete(cut.pos - before.nodeSize, cut.pos)).scrollIntoView(),
-    );
+    dispatch?.call((state.tr..delete(cut.pos - before.nodeSize, cut.pos)).scrollIntoView());
     return true;
   }
 
   return false;
 }
 
-bool _joinTextblockBackward(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _joinTextblockBackward(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final cursor = _atBlockStart(state, view);
   if (cursor == null) {
     return false;
@@ -204,11 +171,7 @@ bool _joinTextblockBackward(
   return cut != null ? _joinTextblocksAround(state, cut, dispatch) : false;
 }
 
-bool _joinTextblockForward(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _joinTextblockForward(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final cursor = _atBlockEnd(state, view);
   if (cursor == null) {
     return false;
@@ -217,11 +180,7 @@ bool _joinTextblockForward(
   return cut != null ? _joinTextblocksAround(state, cut, dispatch) : false;
 }
 
-bool _selectNodeBackward(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _selectNodeBackward(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final selection = state.selection;
   ResolvedPos? cut = selection.$head;
   if (!selection.empty) {
@@ -229,8 +188,7 @@ bool _selectNodeBackward(
   }
 
   if (selection.$head.parent.isTextblock) {
-    if (!_viewAtTextblock(view, state, "backward") &&
-        selection.$head.parentOffset > 0) {
+    if (!_viewAtTextblock(view, state, "backward") && selection.$head.parentOffset > 0) {
       return false;
     }
     cut = _findCutBefore(selection.$head);
@@ -243,19 +201,11 @@ bool _selectNodeBackward(
   if (node == null || !NodeSelection.isSelectable(node)) {
     return false;
   }
-  dispatch?.call(
-    state.tr
-        .setSelection(NodeSelection.create(state.doc, cut.pos - node.nodeSize))
-        .scrollIntoView(),
-  );
+  dispatch?.call(state.tr.setSelection(NodeSelection.create(state.doc, cut.pos - node.nodeSize)).scrollIntoView());
   return true;
 }
 
-bool _joinForward(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _joinForward(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final cursor = _atBlockEnd(state, view);
   if (cursor == null) {
     return false;
@@ -271,17 +221,9 @@ bool _joinForward(
     return true;
   }
 
-  if (cursor.parent.content.size == 0 &&
-      (_textblockAt(after, _BlockSide.start) ||
-          NodeSelection.isSelectable(after))) {
-    final deleteStep = replaceStep(
-      state.doc,
-      cursor.before(),
-      cursor.after(),
-      Slice.empty,
-    );
-    if (deleteStep is ReplaceStep &&
-        deleteStep.slice.size < deleteStep.to - deleteStep.from) {
+  if (cursor.parent.content.size == 0 && (_textblockAt(after, _BlockSide.start) || NodeSelection.isSelectable(after))) {
+    final deleteStep = replaceStep(state.doc, cursor.before(), cursor.after(), Slice.empty);
+    if (deleteStep is ReplaceStep && deleteStep.slice.size < deleteStep.to - deleteStep.from) {
       if (dispatch != null) {
         final tr = state.tr.step(deleteStep) as Transaction;
         tr.setSelection(
@@ -296,20 +238,14 @@ bool _joinForward(
   }
 
   if (after.isAtom && cut.depth == cursor.depth - 1) {
-    dispatch?.call(
-      (state.tr..delete(cut.pos, cut.pos + after.nodeSize)).scrollIntoView(),
-    );
+    dispatch?.call((state.tr..delete(cut.pos, cut.pos + after.nodeSize)).scrollIntoView());
     return true;
   }
 
   return false;
 }
 
-bool _selectNodeForward(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _selectNodeForward(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final selection = state.selection;
   ResolvedPos? cut = selection.$head;
   if (!selection.empty) {
@@ -329,19 +265,11 @@ bool _selectNodeForward(
   if (node == null || !NodeSelection.isSelectable(node)) {
     return false;
   }
-  dispatch?.call(
-    state.tr
-        .setSelection(NodeSelection.create(state.doc, cut.pos))
-        .scrollIntoView(),
-  );
+  dispatch?.call(state.tr.setSelection(NodeSelection.create(state.doc, cut.pos)).scrollIntoView());
   return true;
 }
 
-bool _joinUp(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _joinUp(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final selection = state.selection;
   final nodeSelection = selection is NodeSelection;
   int? point;
@@ -359,23 +287,14 @@ bool _joinUp(
   if (dispatch != null) {
     final tr = state.tr.join(point) as Transaction;
     if (nodeSelection) {
-      tr.setSelection(
-        NodeSelection.create(
-          tr.doc,
-          point - state.doc.resolve(point).nodeBefore!.nodeSize,
-        ),
-      );
+      tr.setSelection(NodeSelection.create(tr.doc, point - state.doc.resolve(point).nodeBefore!.nodeSize));
     }
     dispatch(tr.scrollIntoView());
   }
   return true;
 }
 
-bool _joinDown(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _joinDown(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final selection = state.selection;
   int? point;
   if (selection is NodeSelection) {
@@ -393,11 +312,7 @@ bool _joinDown(
   return true;
 }
 
-bool _lift(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _lift(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final range = state.selection.$from.blockRange(state.selection.$to);
   final target = range != null ? liftTarget(range) : null;
   if (target == null) {
@@ -407,11 +322,7 @@ bool _lift(
   return true;
 }
 
-bool _newlineInCode(
-  EditorState state, [
-  void Function(Transaction transaction)? dispatch,
-  Object? view,
-]) {
+bool _newlineInCode(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
   final head = state.selection.$head;
   final anchor = state.selection.$anchor;
   if (!head.parent.type.spec.code || !head.sameParent(anchor)) {
@@ -421,11 +332,7 @@ bool _newlineInCode(
   return true;
 }
 
-bool _exitCode(
-  EditorState state, [
-  void Function(Transaction transaction)? dispatch,
-  Object? view,
-]) {
+bool _exitCode(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
   final head = state.selection.$head;
   final anchor = state.selection.$anchor;
   if (!head.parent.type.spec.code || !head.sameParent(anchor)) {
@@ -447,17 +354,11 @@ bool _exitCode(
   return true;
 }
 
-bool _createParagraphNear(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _createParagraphNear(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final selection = state.selection;
   final from = selection.$from;
   final to = selection.$to;
-  if (selection is AllSelection ||
-      from.parent.inlineContent ||
-      to.parent.inlineContent) {
+  if (selection is AllSelection || from.parent.inlineContent || to.parent.inlineContent) {
     return false;
   }
   final type = _defaultBlockAt(to.parent.contentMatchAt(to.indexAfter()));
@@ -465,9 +366,7 @@ bool _createParagraphNear(
     return false;
   }
   if (dispatch != null) {
-    final side = from.parentOffset == 0 && to.index() < to.parent.childCount
-        ? from.pos
-        : to.pos;
+    final side = from.parentOffset == 0 && to.index() < to.parent.childCount ? from.pos : to.pos;
     final tr = state.tr.insert(side, type.createAndFill()!) as Transaction;
     tr.setSelection(TextSelection.create(tr.doc, side + 1));
     dispatch(tr.scrollIntoView());
@@ -475,11 +374,7 @@ bool _createParagraphNear(
   return true;
 }
 
-bool _liftEmptyBlock(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _liftEmptyBlock(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final selection = state.selection;
   final cursor = selection is TextSelection ? selection.$cursor : null;
   if (cursor == null || cursor.parent.content.size != 0) {
@@ -512,11 +407,7 @@ class _SplitBlockCommand implements Command {
   final SplitBlockFunction? splitNode;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     final stateSelection = state.selection;
     if (stateSelection is NodeSelection && stateSelection.node.isBlock) {
       final from = stateSelection.$from;
@@ -532,8 +423,7 @@ class _SplitBlockCommand implements Command {
     }
 
     final tr = state.tr;
-    if (!state.selection.empty &&
-        (state.selection is TextSelection || state.selection is AllSelection)) {
+    if (!state.selection.empty && (state.selection is TextSelection || state.selection is AllSelection)) {
       tr.deleteSelection();
     }
 
@@ -549,17 +439,9 @@ class _SplitBlockCommand implements Command {
       if (node.isBlock) {
         atEnd = from.end(depth) == from.pos + (from.depth - depth);
         atStart = from.start(depth) == from.pos - (from.depth - depth);
-        defaultType = _defaultBlockAt(
-          from.node(depth - 1).contentMatchAt(from.indexAfter(depth - 1)),
-        );
+        defaultType = _defaultBlockAt(from.node(depth - 1).contentMatchAt(from.indexAfter(depth - 1)));
         final splitType = splitNode?.call(from.parent, atEnd, from);
-        types.insert(
-          0,
-          splitType?._record ??
-              (atEnd && defaultType != null
-                  ? (type: defaultType, attrs: null)
-                  : null),
-        );
+        types.insert(0, splitType?._record ?? (atEnd && defaultType != null ? (type: defaultType, attrs: null) : null));
         splitDepth = depth;
         break;
       }
@@ -579,20 +461,12 @@ class _SplitBlockCommand implements Command {
       return false;
     }
     tr.split(splitPos, types.length, types);
-    if (!atEnd &&
-        atStart &&
-        !identical(from.node(splitDepth).type, defaultType)) {
+    if (!atEnd && atStart && !identical(from.node(splitDepth).type, defaultType)) {
       final mapping = tr.mapping.slice(mapFrom);
       final first = mapping.map(from.before(splitDepth));
       final firstResolved = tr.doc.resolve(first);
       if (defaultType != null &&
-          from
-              .node(splitDepth - 1)
-              .canReplaceWith(
-                firstResolved.index(),
-                firstResolved.index() + 1,
-                defaultType,
-              )) {
+          from.node(splitDepth - 1).canReplaceWith(firstResolved.index(), firstResolved.index() + 1, defaultType)) {
         tr.setNodeMarkup(mapping.map(from.before(splitDepth)), defaultType);
       }
     }
@@ -604,14 +478,8 @@ class _SplitBlockCommand implements Command {
 /// Split the parent block of the selection.
 final Command splitBlock = splitBlockAs();
 
-bool _splitBlockKeepMarks(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
-  final keepMarksDispatch = dispatch != null
-      ? _KeepMarksDispatch(state, dispatch).dispatch
-      : null;
+bool _splitBlockKeepMarks(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
+  final keepMarksDispatch = dispatch != null ? _KeepMarksDispatch(state, dispatch).dispatch : null;
   return splitBlock.execute(state, keepMarksDispatch, view);
 }
 
@@ -622,11 +490,7 @@ class _KeepMarksDispatch {
   final void Function(Transaction tr) dispatchTransaction;
 
   void dispatch(Transaction tr) {
-    final marks =
-        state.storedMarks ??
-        (state.selection.$to.parentOffset != 0
-            ? state.selection.$from.marks()
-            : null);
+    final marks = state.storedMarks ?? (state.selection.$to.parentOffset != 0 ? state.selection.$from.marks() : null);
     if (marks != null) {
       tr.ensureMarks(marks);
     }
@@ -634,11 +498,7 @@ class _KeepMarksDispatch {
   }
 }
 
-bool _selectParentNode(
-  EditorState state, [
-  void Function(Transaction tr)? dispatch,
-  Object? view,
-]) {
+bool _selectParentNode(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
   final from = state.selection.$from;
   final same = from.sharedDepth(state.selection.to);
   if (same == 0) {
@@ -649,11 +509,7 @@ bool _selectParentNode(
   return true;
 }
 
-bool _selectAll(
-  EditorState state, [
-  void Function(Transaction transaction)? dispatch,
-  Object? view,
-]) {
+bool _selectAll(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
   dispatch?.call(state.tr.setSelection(AllSelection(state.doc)));
   return true;
 }
@@ -676,15 +532,9 @@ class _WrapInCommand implements Command {
   final Attrs? attrs;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     final range = state.selection.$from.blockRange(state.selection.$to);
-    final wrapping = range != null
-        ? findWrapping(range, nodeType, attrs)
-        : null;
+    final wrapping = range != null ? findWrapping(range, nodeType, attrs) : null;
     if (wrapping == null) {
       return false;
     }
@@ -705,17 +555,9 @@ class _SetBlockTypeCommand implements Command {
   final Attrs? attrs;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     var applicable = false;
-    for (
-      var index = 0;
-      index < state.selection.ranges.length && !applicable;
-      index++
-    ) {
+    for (var index = 0; index < state.selection.ranges.length && !applicable; index++) {
       final from = state.selection.ranges[index].$from.pos;
       final to = state.selection.ranges[index].$to.pos;
       state.doc.nodesBetween(from, to, (node, pos, parent, nodeIndex) {
@@ -730,11 +572,7 @@ class _SetBlockTypeCommand implements Command {
         } else {
           final resolved = state.doc.resolve(pos);
           final index = resolved.index();
-          applicable = resolved.parent.canReplaceWith(
-            index,
-            index + 1,
-            nodeType,
-          );
+          applicable = resolved.parent.canReplaceWith(index, index + 1, nodeType);
         }
         return null;
       });
@@ -756,11 +594,7 @@ class _SetBlockTypeCommand implements Command {
 }
 
 /// Toggle the given mark over the current selection.
-Command toggleMark([
-  MarkType? markType,
-  Attrs? attrs,
-  ToggleMarkOptions? options,
-]) {
+Command toggleMark([MarkType? markType, Attrs? attrs, ToggleMarkOptions? options]) {
   return _ToggleMarkCommand(markType, attrs, options);
 }
 
@@ -772,11 +606,7 @@ class _ToggleMarkCommand implements Command {
   final ToggleMarkOptions? options;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     final type = markType;
     if (type == null) {
       return false;
@@ -788,8 +618,7 @@ class _ToggleMarkCommand implements Command {
     final enterAtoms = options?.enterInlineAtoms != false;
     final dropSpace = options?.includeWhitespace != true;
 
-    if ((selection.empty && cursor == null) ||
-        !_markApplies(state.doc, ranges, type, enterAtoms)) {
+    if ((selection.empty && cursor == null) || !_markApplies(state.doc, ranges, type, enterAtoms)) {
       return false;
     }
     if (dispatch == null) {
@@ -821,12 +650,7 @@ class _ToggleMarkCommand implements Command {
       var everyCovered = true;
       for (final range in ranges) {
         var missing = false;
-        tr.doc.nodesBetween(range.$from.pos, range.$to.pos, (
-          node,
-          pos,
-          parent,
-          nodeIndex,
-        ) {
+        tr.doc.nodesBetween(range.$from.pos, range.$to.pos, (node, pos, parent, nodeIndex) {
           if (missing) {
             return false;
           }
@@ -836,8 +660,7 @@ class _ToggleMarkCommand implements Command {
               type.isInSet(node.marks) == null &&
               parent != null &&
               parent.type.allowsMarkType(type) &&
-              !(node.isText &&
-                  _whitespaceOnly.hasMatch(node.textBetween(from, to)));
+              !(node.isText && _whitespaceOnly.hasMatch(node.textBetween(from, to)));
           return null;
         });
         if (missing) {
@@ -858,12 +681,8 @@ class _ToggleMarkCommand implements Command {
         var markTo = to;
         final start = range.$from.nodeAfter;
         final end = range.$to.nodeBefore;
-        final spaceStart = dropSpace && start != null && start.isText
-            ? _leadingWhitespace(start.text!)
-            : 0;
-        final spaceEnd = dropSpace && end != null && end.isText
-            ? _trailingWhitespace(end.text!)
-            : 0;
+        final spaceStart = dropSpace && start != null && start.isText ? _leadingWhitespace(start.text!) : 0;
+        final spaceEnd = dropSpace && end != null && end.isText ? _trailingWhitespace(end.text!) : 0;
         if (markFrom + spaceStart < markTo) {
           markFrom += spaceStart;
           markTo -= spaceEnd;
@@ -892,11 +711,7 @@ class _ChainCommand implements Command {
   final List<Command> commands;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction transaction)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction transaction)? dispatch, Object? view]) {
     for (final command in commands) {
       if (command.execute(state, dispatch, view)) {
         return true;
@@ -906,26 +721,13 @@ class _ChainCommand implements Command {
   }
 }
 
-final Command _backspaceCommand = chainCommands([
-  deleteSelection,
-  joinBackward,
-  selectNodeBackward,
-]);
+final Command _backspaceCommand = chainCommands([deleteSelection, joinBackward, selectNodeBackward]);
 
-final Command _deleteCommand = chainCommands([
-  deleteSelection,
-  joinForward,
-  selectNodeForward,
-]);
+final Command _deleteCommand = chainCommands([deleteSelection, joinForward, selectNodeForward]);
 
 /// Basic command bindings that are not specific to any schema.
 final Map<String, Command> pcBaseKeymap = {
-  "Enter": chainCommands([
-    newlineInCode,
-    createParagraphNear,
-    liftEmptyBlock,
-    splitBlock,
-  ]),
+  "Enter": chainCommands([newlineInCode, createParagraphNear, liftEmptyBlock, splitBlock]),
   "Mod-Enter": exitCode,
   "Backspace": _backspaceCommand,
   "Mod-Backspace": _backspaceCommand,
@@ -949,17 +751,13 @@ final Map<String, Command> macBaseKeymap = {
 };
 
 /// Default command bindings for the current platform.
-final Map<String, Command> baseKeymap = isMacPlatform
-    ? macBaseKeymap
-    : pcBaseKeymap;
+final Map<String, Command> baseKeymap = isMacPlatform ? macBaseKeymap : pcBaseKeymap;
 
 _AutoJoinPredicate _autoJoinPredicate(Object isJoinable) {
   if (isJoinable is List<String>) {
     return _AutoJoinNodeNames(isJoinable);
   }
-  return _AutoJoinFunction(
-    isJoinable as bool Function(Node before, Node after),
-  );
+  return _AutoJoinFunction(isJoinable as bool Function(Node before, Node after));
 }
 
 abstract interface class _AutoJoinPredicate {
@@ -995,14 +793,8 @@ class _AutoJoinCommand implements Command {
   final _AutoJoinPredicate isJoinable;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
-    final joinDispatch = dispatch != null
-        ? _JoinDispatch(dispatch, isJoinable).dispatch
-        : null;
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
+    final joinDispatch = dispatch != null ? _JoinDispatch(dispatch, isJoinable).dispatch : null;
     return command.execute(state, joinDispatch, view);
   }
 }
@@ -1010,8 +802,7 @@ class _AutoJoinCommand implements Command {
 ResolvedPos? _atBlockStart(EditorState state, Object? view) {
   final selection = state.selection;
   final cursor = selection is TextSelection ? selection.$cursor : null;
-  if (cursor == null ||
-      (!_viewAtTextblock(view, state, "backward") && cursor.parentOffset > 0)) {
+  if (cursor == null || (!_viewAtTextblock(view, state, "backward") && cursor.parentOffset > 0)) {
     return null;
   }
   return cursor;
@@ -1021,8 +812,7 @@ ResolvedPos? _atBlockEnd(EditorState state, Object? view) {
   final selection = state.selection;
   final cursor = selection is TextSelection ? selection.$cursor : null;
   if (cursor == null ||
-      (!_viewAtTextblock(view, state, "forward") &&
-          cursor.parentOffset < cursor.parent.content.size)) {
+      (!_viewAtTextblock(view, state, "forward") && cursor.parentOffset < cursor.parent.content.size)) {
     return null;
   }
   return cursor;
@@ -1040,11 +830,7 @@ bool _viewAtTextblock(Object? view, EditorState state, String direction) {
   }
 }
 
-bool _joinTextblocksAround(
-  EditorState state,
-  ResolvedPos cut,
-  void Function(Transaction tr)? dispatch,
-) {
+bool _joinTextblocksAround(EditorState state, ResolvedPos cut, void Function(Transaction tr)? dispatch) {
   var beforeText = cut.nodeBefore!;
   var beforePos = cut.pos - 1;
   for (; !beforeText.isTextblock; beforePos--) {
@@ -1145,41 +931,25 @@ NodeType? _defaultBlockAt(ContentMatch match) {
   return null;
 }
 
-bool _joinMaybeClear(
-  EditorState state,
-  ResolvedPos position,
-  void Function(Transaction tr)? dispatch,
-) {
+bool _joinMaybeClear(EditorState state, ResolvedPos position, void Function(Transaction tr)? dispatch) {
   final before = position.nodeBefore;
   final after = position.nodeAfter;
   final index = position.index();
-  if (before == null ||
-      after == null ||
-      !before.type.compatibleContent(after.type)) {
+  if (before == null || after == null || !before.type.compatibleContent(after.type)) {
     return false;
   }
-  if (before.content.size == 0 &&
-      position.parent.canReplace(index - 1, index)) {
-    dispatch?.call(
-      (state.tr..delete(position.pos - before.nodeSize, position.pos))
-          .scrollIntoView(),
-    );
+  if (before.content.size == 0 && position.parent.canReplace(index - 1, index)) {
+    dispatch?.call((state.tr..delete(position.pos - before.nodeSize, position.pos)).scrollIntoView());
     return true;
   }
-  if (!position.parent.canReplace(index, index + 1) ||
-      !(after.isTextblock || canJoin(state.doc, position.pos))) {
+  if (!position.parent.canReplace(index, index + 1) || !(after.isTextblock || canJoin(state.doc, position.pos))) {
     return false;
   }
   dispatch?.call((state.tr..join(position.pos)).scrollIntoView());
   return true;
 }
 
-bool _deleteBarrier(
-  EditorState state,
-  ResolvedPos cut,
-  void Function(Transaction tr)? dispatch,
-  int direction,
-) {
+bool _deleteBarrier(EditorState state, ResolvedPos cut, void Function(Transaction tr)? dispatch, int direction) {
   final before = cut.nodeBefore!;
   final after = cut.nodeAfter!;
   final isolated = before.type.spec.isolating || after.type.spec.isolating;
@@ -1187,16 +957,11 @@ bool _deleteBarrier(
     return true;
   }
 
-  final canDeleteAfter =
-      !isolated && cut.parent.canReplace(cut.index(), cut.index() + 1);
+  final canDeleteAfter = !isolated && cut.parent.canReplace(cut.index(), cut.index() + 1);
   final match = before.contentMatchAt(before.childCount);
   final connection = canDeleteAfter ? match.findWrapping(after.type) : null;
-  final connectionType = connection != null && connection.isNotEmpty
-      ? connection[0]
-      : after.type;
-  if (canDeleteAfter &&
-      connection != null &&
-      match.matchType(connectionType)!.validEnd) {
+  final connectionType = connection != null && connection.isNotEmpty ? connection[0] : after.type;
+  if (canDeleteAfter && connection != null && match.matchType(connectionType)!.validEnd) {
     if (dispatch != null) {
       final end = cut.pos + after.nodeSize;
       var wrap = Fragment.empty;
@@ -1205,20 +970,10 @@ bool _deleteBarrier(
       }
       wrap = Fragment.from(before.copy(wrap));
       final tr = state.tr.step(
-        ReplaceAroundStep(
-          cut.pos - 1,
-          end,
-          cut.pos,
-          end,
-          Slice(wrap, 1, 0),
-          connection.length,
-          true,
-        ),
+        ReplaceAroundStep(cut.pos - 1, end, cut.pos, end, Slice(wrap, 1, 0), connection.length, true),
       ) as Transaction;
       final joinAt = tr.doc.resolve(end + 2 * connection.length);
-      if (joinAt.nodeAfter != null &&
-          identical(joinAt.nodeAfter!.type, before.type) &&
-          canJoin(tr.doc, joinAt.pos)) {
+      if (joinAt.nodeAfter != null && identical(joinAt.nodeAfter!.type, before.type) && canJoin(tr.doc, joinAt.pos)) {
         tr.join(joinAt.pos);
       }
       dispatch(tr.scrollIntoView());
@@ -1226,10 +981,7 @@ bool _deleteBarrier(
     return true;
   }
 
-  final selectionAfter =
-      after.type.spec.isolating || (direction > 0 && isolated)
-      ? null
-      : Selection.findFrom(cut, 1);
+  final selectionAfter = after.type.spec.isolating || (direction > 0 && isolated) ? null : Selection.findFrom(cut, 1);
   final range = selectionAfter?.$from.blockRange(selectionAfter.$to);
   final target = range != null ? liftTarget(range) : null;
   if (target != null && target >= cut.depth) {
@@ -1237,9 +989,7 @@ bool _deleteBarrier(
     return true;
   }
 
-  if (canDeleteAfter &&
-      _textblockAt(after, _BlockSide.start, true) &&
-      _textblockAt(before, _BlockSide.end)) {
+  if (canDeleteAfter && _textblockAt(after, _BlockSide.start, true) && _textblockAt(before, _BlockSide.end)) {
     var at = before;
     final wrap = <Node>[];
     for (;;) {
@@ -1290,11 +1040,7 @@ class _SelectTextblockSideCommand implements Command {
   final int side;
 
   @override
-  bool execute(
-    EditorState state, [
-    void Function(Transaction tr)? dispatch,
-    Object? view,
-  ]) {
+  bool execute(EditorState state, [void Function(Transaction tr)? dispatch, Object? view]) {
     final selection = state.selection;
     final position = side < 0 ? selection.$from : selection.$to;
     var depth = position.depth;
@@ -1308,34 +1054,16 @@ class _SelectTextblockSideCommand implements Command {
       return false;
     }
     dispatch?.call(
-      state.tr.setSelection(
-        TextSelection.create(
-          state.doc,
-          side < 0 ? position.start(depth) : position.end(depth),
-        ),
-      ),
+      state.tr.setSelection(TextSelection.create(state.doc, side < 0 ? position.start(depth) : position.end(depth))),
     );
     return true;
   }
 }
 
-bool _markApplies(
-  Node doc,
-  List<SelectionRange> ranges,
-  MarkType type,
-  bool enterAtoms,
-) {
+bool _markApplies(Node doc, List<SelectionRange> ranges, MarkType type, bool enterAtoms) {
   for (final range in ranges) {
-    var can =
-        range.$from.depth == 0 &&
-        doc.inlineContent &&
-        doc.type.allowsMarkType(type);
-    doc.nodesBetween(range.$from.pos, range.$to.pos, (
-      node,
-      pos,
-      parent,
-      index,
-    ) {
+    var can = range.$from.depth == 0 && doc.inlineContent && doc.type.allowsMarkType(type);
+    doc.nodesBetween(range.$from.pos, range.$to.pos, (node, pos, parent, index) {
       if (can ||
           (!enterAtoms &&
               node.isAtom &&
@@ -1360,11 +1088,7 @@ List<SelectionRange> _removeInlineAtoms(List<SelectionRange> ranges) {
     var from = range.$from;
     final to = range.$to;
     from.doc.nodesBetween(from.pos, to.pos, (node, pos, parent, index) {
-      if (node.isAtom &&
-          node.content.size != 0 &&
-          node.isInline &&
-          pos >= from.pos &&
-          pos + node.nodeSize <= to.pos) {
+      if (node.isAtom && node.content.size != 0 && node.isInline && pos >= from.pos && pos + node.nodeSize <= to.pos) {
         if (pos + 1 > from.pos) {
           result.add(SelectionRange(from, from.doc.resolve(pos + 1)));
         }
@@ -1419,8 +1143,7 @@ class _JoinDispatch {
         }
         if (index != 0 && !joinable.contains(pos)) {
           final before = parent.child(index - 1);
-          if (identical(before.type, after.type) &&
-              isJoinable.matches(before, after)) {
+          if (identical(before.type, after.type) && isJoinable.matches(before, after)) {
             joinable.add(pos);
           }
         }
@@ -1439,12 +1162,7 @@ class _JoinDispatch {
   }
 }
 
-bool _canSplitNullable(
-  Node doc,
-  int pos,
-  int depth,
-  List<NodeTypeWithAttributes?> types,
-) {
+bool _canSplitNullable(Node doc, int pos, int depth, List<NodeTypeWithAttributes?> types) {
   return canSplit(doc, pos, depth, types);
 }
 

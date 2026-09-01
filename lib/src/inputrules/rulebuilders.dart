@@ -24,12 +24,7 @@ InputRule wrappingInputRule(
   Object? getAttrs,
   bool Function(RegExpMatch match, Node node)? joinPredicate,
 ]) {
-  return InputRule(regexp, (
-    EditorState state,
-    RegExpMatch match,
-    int start,
-    int end,
-  ) {
+  return InputRule(regexp, (EditorState state, RegExpMatch match, int start, int end) {
     final Attrs? attrs;
     if (getAttrs is Attrs? Function(RegExpMatch)) {
       attrs = getAttrs(match);
@@ -40,9 +35,7 @@ InputRule wrappingInputRule(
     tr.delete(start, end);
     final $start = tr.doc.resolve(start);
     final range = $start.blockRange();
-    final wrapping = range != null
-        ? findWrapping(range, nodeType, attrs)
-        : null;
+    final wrapping = range != null ? findWrapping(range, nodeType, attrs) : null;
     if (wrapping == null) {
       return null;
     }
@@ -63,17 +56,8 @@ InputRule wrappingInputRule(
 /// that it is only matched at the start of a textblock. The optional
 /// [getAttrs] parameter can be used to compute the new node's attributes, and
 /// works the same as in the [wrappingInputRule] function.
-InputRule textblockTypeInputRule(
-  RegExp regexp,
-  NodeType nodeType, [
-  Object? getAttrs,
-]) {
-  return InputRule(regexp, (
-    EditorState state,
-    RegExpMatch match,
-    int start,
-    int end,
-  ) {
+InputRule textblockTypeInputRule(RegExp regexp, NodeType nodeType, [Object? getAttrs]) {
+  return InputRule(regexp, (EditorState state, RegExpMatch match, int start, int end) {
     final $start = state.doc.resolve(start);
     final Attrs? attrs;
     if (getAttrs is Attrs? Function(RegExpMatch)) {
@@ -81,9 +65,7 @@ InputRule textblockTypeInputRule(
     } else {
       attrs = getAttrs as Attrs?;
     }
-    if (!$start
-        .node(-1)
-        .canReplaceWith($start.index(-1), $start.indexAfter(-1), nodeType)) {
+    if (!$start.node(-1).canReplaceWith($start.index(-1), $start.indexAfter(-1), nodeType)) {
       return null;
     }
     final tr = state.tr;

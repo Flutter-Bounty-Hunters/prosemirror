@@ -1,7 +1,7 @@
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 void main() {
   group("history >", () {
@@ -9,9 +9,9 @@ void main() {
       var state = _mkState();
       state = _type(state, "a");
       state = _type(state, "b");
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
     });
 
     test("enables redo", () {
@@ -19,9 +19,9 @@ void main() {
       state = _type(state, "a");
       state = _type(state, "b");
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
     });
 
     test("tracks multiple levels of history", () {
@@ -29,17 +29,17 @@ void main() {
       state = _type(state, "a");
       state = _type(state, "b");
       state = state.apply(state.tr.insertText("c", 1));
-      expect(state.doc.eq(doc(p("cab"))), isTrue);
+      expect(state.doc.eq(document(p("cab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("cab"))), isTrue);
+      expect(state.doc.eq(document(p("cab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
     });
 
     test("starts a new event when newGroupDelay elapses", () {
@@ -55,7 +55,7 @@ void main() {
     });
 
     test("starts a new event for non-adjacent changes", () {
-      var state = _mkState(doc(p("abc")), _Config(newGroupDelay: 1000));
+      var state = _mkState(document(p("abc")), _Config(newGroupDelay: 1000));
       state = state.apply(state.tr.insertText("x", 1));
       state = state.apply(state.tr.insertText("y", 5));
       expect(undoDepth(state), 2);
@@ -63,43 +63,30 @@ void main() {
 
     test("doesn't get confused by non-replacement steps when checking "
         "adjacency", () {
-      var state = _mkState(doc(p()), _Config(newGroupDelay: 1000));
-      state = state.apply(
-        state.tr.insertText("x", 1).addMark(1, 2, schema.marks["em"]!.create())
-            as Transaction,
-      );
-      state = state.apply(
-        state.tr.insertText("y", 2).addMark(2, 3, schema.marks["em"]!.create())
-            as Transaction,
-      );
+      var state = _mkState(document(p()), _Config(newGroupDelay: 1000));
+      state = state.apply(state.tr.insertText("x", 1).addMark(1, 2, schema.marks["em"]!.create()) as Transaction);
+      state = state.apply(state.tr.insertText("y", 2).addMark(2, 3, schema.marks["em"]!.create()) as Transaction);
       expect(undoDepth(state), 1);
     });
 
     test("allows changes that aren't part of the history", () {
       var state = _mkState();
       state = _type(state, "hello");
-      state = state.apply(
-        state.tr.insertText("oops", 1).setMeta("addToHistory", false),
-      );
-      state = state.apply(
-        state.tr.insertText("!", 10).setMeta("addToHistory", false),
-      );
+      state = state.apply(state.tr.insertText("oops", 1).setMeta("addToHistory", false));
+      state = state.apply(state.tr.insertText("!", 10).setMeta("addToHistory", false));
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("oops!"))), isTrue);
+      expect(state.doc.eq(document(p("oops!"))), isTrue);
     });
 
     test("doesn't get confused by an undo not adding any redo item", () {
       var state = _mkState();
       state = state.apply(state.tr.insertText("foo"));
       state = state.apply(
-        (state.tr.replaceWith(1, 4, schema.text("bar")) as Transaction).setMeta(
-          "addToHistory",
-          false,
-        ),
+        (state.tr.replaceWith(1, 4, schema.text("bar")) as Transaction).setMeta("addToHistory", false),
       );
       state = _command(state, undo);
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("bar"))), isTrue);
+      expect(state.doc.eq(document(p("bar"))), isTrue);
     });
 
     test("can handle complex editing sequences", () {
@@ -115,26 +102,24 @@ void main() {
       state = _type(state, "hello");
       state = state.apply(closeHistory(state.tr));
       state = state.apply(state.tr.delete(1, 6) as Transaction);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("hello"))), isTrue);
+      expect(state.doc.eq(document(p("hello"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
     });
 
     test("supports overlapping edits that aren't collapsed", () {
       var state = _mkState();
-      state = state.apply(
-        state.tr.insertText("h", 1).setMeta("addToHistory", false),
-      );
+      state = state.apply(state.tr.insertText("h", 1).setMeta("addToHistory", false));
       state = _type(state, "ello");
       state = state.apply(closeHistory(state.tr));
       state = state.apply(state.tr.delete(1, 6) as Transaction);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("hello"))), isTrue);
+      expect(state.doc.eq(document(p("hello"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("h"))), isTrue);
+      expect(state.doc.eq(document(p("h"))), isTrue);
     });
 
     test("supports overlapping unsynced deletes", () {
@@ -142,12 +127,10 @@ void main() {
       state = _type(state, "hi");
       state = state.apply(closeHistory(state.tr));
       state = _type(state, "hello");
-      state = state.apply(
-        (state.tr.delete(1, 8) as Transaction).setMeta("addToHistory", false),
-      );
-      expect(state.doc.eq(doc(p())), isTrue);
+      state = state.apply((state.tr.delete(1, 8) as Transaction).setMeta("addToHistory", false));
+      expect(state.doc.eq(document(p())), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
     });
 
     test("can go back and forth through history multiple times", () {
@@ -159,21 +142,14 @@ void main() {
       state = state.apply(state.tr.insertText("zero ", 1));
       state = state.apply(closeHistory(state.tr));
       state = state.apply(state.tr.split(1) as Transaction);
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 1)),
-      );
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 1)));
       state = _type(state, "top");
       for (var i = 0; i < 6; i++) {
         final redoTurn = i % 2 == 1;
         for (var j = 0; j < 4; j++) {
           state = _command(state, redoTurn ? redo : undo);
         }
-        expect(
-          state.doc.eq(
-            redoTurn ? doc(p("top"), p("zero one two three")) : doc(p()),
-          ),
-          isTrue,
-        );
+        expect(state.doc.eq(redoTurn ? document(p("top"), p("zero one two three")) : document(p())), isTrue);
       }
     });
 
@@ -181,11 +157,9 @@ void main() {
       var state = _mkState();
       state = _type(state, "o");
       state = state.apply(state.tr.split(1) as Transaction);
-      state = state.apply(
-        state.tr.insertText("zzz", 4).setMeta("addToHistory", false),
-      );
+      state = state.apply(state.tr.insertText("zzz", 4).setMeta("addToHistory", false));
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("zzz"))), isTrue);
+      expect(state.doc.eq(document(p("zzz"))), isTrue);
     });
 
     test("can go back and forth through history when preserving items", () {
@@ -193,22 +167,14 @@ void main() {
       state = _type(state, "one");
       state = _type(state, " two");
       state = state.apply(closeHistory(state.tr));
-      state = state.apply(
-        state.tr
-            .insertText("xxx", state.selection.head)
-            .setMeta("addToHistory", false),
-      );
+      state = state.apply(state.tr.insertText("xxx", state.selection.head).setMeta("addToHistory", false));
       state = _type(state, " three");
       state = state.apply(state.tr.insertText("zero ", 1));
       state = state.apply(closeHistory(state.tr));
       state = state.apply(state.tr.split(1) as Transaction);
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 1)),
-      );
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 1)));
       state = _type(state, "top");
-      state = state.apply(
-        state.tr.insertText("yyy", 1).setMeta("addToHistory", false),
-      );
+      state = state.apply(state.tr.insertText("yyy", 1).setMeta("addToHistory", false));
       for (var i = 0; i < 3; i++) {
         if (i == 2) {
           _compress(state);
@@ -216,14 +182,11 @@ void main() {
         for (var j = 0; j < 4; j++) {
           state = _command(state, undo);
         }
-        expect(state.doc.eq(doc(p("yyyxxx"))), isTrue);
+        expect(state.doc.eq(document(p("yyyxxx"))), isTrue);
         for (var j = 0; j < 4; j++) {
           state = _command(state, redo);
         }
-        expect(
-          state.doc.eq(doc(p("yyytop"), p("zero one twoxxx three"))),
-          isTrue,
-        );
+        expect(state.doc.eq(document(p("yyytop"), p("zero one twoxxx three"))), isTrue);
       }
     });
 
@@ -231,14 +194,9 @@ void main() {
       var state = _mkState();
       state = _type(state, "hi");
       state = state.apply(closeHistory(state.tr));
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 1, 3)),
-      );
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 1, 3)));
       final selection = state.selection;
-      state = state.apply(
-        state.tr.replaceWith(selection.from, selection.to, schema.text("hello"))
-            as Transaction,
-      );
+      state = state.apply(state.tr.replaceWith(selection.from, selection.to, schema.text("hello")) as Transaction);
       final selection2 = state.selection;
       state = _command(state, undo);
       expect(state.selection.eq(selection), isTrue);
@@ -250,18 +208,9 @@ void main() {
       var state = _mkState();
       state = _type(state, "hi");
       state = state.apply(closeHistory(state.tr));
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 1, 3)),
-      );
-      state = state.apply(
-        state.tr.insert(1, schema.text("hello")) as Transaction,
-      );
-      state = state.apply(
-        (state.tr.insert(1, schema.text("---")) as Transaction).setMeta(
-          "addToHistory",
-          false,
-        ),
-      );
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 1, 3)));
+      state = state.apply(state.tr.insert(1, schema.text("hello")) as Transaction);
+      state = state.apply((state.tr.insert(1, schema.text("---")) as Transaction).setMeta("addToHistory", false));
       state = _command(state, undo);
       expect(state.selection.head, 6);
     });
@@ -271,13 +220,11 @@ void main() {
       state = _type(state, "a");
       state = _type(state, "b");
       state = state.apply(closeHistory(state.tr));
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 1, 3)),
-      );
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 1, 3)));
       state = _type(state, "c");
       state = _command(state, undo);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
     });
 
     test("supports querying for the undo and redo depth", () {
@@ -285,9 +232,7 @@ void main() {
       state = _type(state, "a");
       expect(undoDepth(state), 1);
       expect(redoDepth(state), 0);
-      state = state.apply(
-        state.tr.insertText("b", 1).setMeta("addToHistory", false),
-      );
+      state = state.apply(state.tr.insertText("b", 1).setMeta("addToHistory", false));
       expect(undoDepth(state), 1);
       expect(redoDepth(state), 0);
       state = _command(state, undo);
@@ -320,31 +265,30 @@ void main() {
       var state = _mkState();
       state = state.apply(state.tr.insertText("a").insertText("b"));
       state = state.apply(state.tr.insertText("c", 1));
-      expect(state.doc.eq(doc(p("cab"))), isTrue);
+      expect(state.doc.eq(document(p("cab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p())), isTrue);
+      expect(state.doc.eq(document(p())), isTrue);
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("cab"))), isTrue);
+      expect(state.doc.eq(document(p("cab"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("ab"))), isTrue);
+      expect(state.doc.eq(document(p("ab"))), isTrue);
     });
 
     test("combines appended transactions in the event started by the base "
         "transaction", () {
       var state = _mkState(
-        doc(p("x")),
+        document(p("x")),
         _Config(
           plugins: [
             Plugin(
               PluginSpec(
                 appendTransaction: (transactions, oldState, newState) {
                   if (newState.doc.content.size == 4) {
-                    return newState.tr.insert(1, schema.text("A"))
-                        as Transaction;
+                    return newState.tr.insert(1, schema.text("A")) as Transaction;
                   }
                   return null;
                 },
@@ -354,15 +298,15 @@ void main() {
         ),
       );
       state = state.apply(state.tr.insert(2, schema.text("I")) as Transaction);
-      expect(state.doc.eq(doc(p("AxI"))), isTrue);
+      expect(state.doc.eq(document(p("AxI"))), isTrue);
       expect(undoDepth(state), 1);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("x"))), isTrue);
+      expect(state.doc.eq(document(p("x"))), isTrue);
     });
 
     test("includes transactions appended to undo in the redo history", () {
       var state = _mkState(
-        doc(p("x")),
+        document(p("x")),
         _Config(
           plugins: [
             Plugin(
@@ -370,8 +314,7 @@ void main() {
                 appendTransaction: (transactions, oldState, newState) {
                   final add = transactions[0].getMeta("add");
                   if (add != null) {
-                    return newState.tr.insert(1, schema.text(add as String))
-                        as Transaction;
+                    return newState.tr.insert(1, schema.text(add as String)) as Transaction;
                   }
                   return null;
                 },
@@ -380,24 +323,19 @@ void main() {
           ],
         ),
       );
-      state = state.apply(
-        (state.tr.insert(2, schema.text("I")) as Transaction).setMeta(
-          "add",
-          "A",
-        ),
-      );
-      expect(state.doc.eq(doc(p("AxI"))), isTrue);
+      state = state.apply((state.tr.insert(2, schema.text("I")) as Transaction).setMeta("add", "A"));
+      expect(state.doc.eq(document(p("AxI"))), isTrue);
       undo.execute(state, (tr) => state = state.apply(tr.setMeta("add", "B")));
-      expect(state.doc.eq(doc(p("Bx"))), isTrue);
+      expect(state.doc.eq(document(p("Bx"))), isTrue);
       redo.execute(state, (tr) => state = state.apply(tr.setMeta("add", "C")));
-      expect(state.doc.eq(doc(p("CAxI"))), isTrue);
+      expect(state.doc.eq(document(p("CAxI"))), isTrue);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("Bx"))), isTrue);
+      expect(state.doc.eq(document(p("Bx"))), isTrue);
     });
 
     test("doesn't close the history on appended transactions", () {
       var state = _mkState(
-        doc(p("x")),
+        document(p("x")),
         _Config(
           plugins: [
             Plugin(
@@ -405,8 +343,7 @@ void main() {
                 appendTransaction: (transactions, oldState, newState) {
                   final add = transactions[0].getMeta("add");
                   if (add != null) {
-                    return newState.tr.insert(1, schema.text(add as String))
-                        as Transaction;
+                    return newState.tr.insert(1, schema.text(add as String)) as Transaction;
                   }
                   return null;
                 },
@@ -415,15 +352,10 @@ void main() {
           ],
         ),
       );
-      state = state.apply(
-        (state.tr.insert(2, schema.text("R")) as Transaction).setMeta(
-          "add",
-          "A",
-        ),
-      );
+      state = state.apply((state.tr.insert(2, schema.text("R")) as Transaction).setMeta("add", "A"));
       state = state.apply(state.tr.insert(3, schema.text("M")) as Transaction);
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("x"))), isTrue);
+      expect(state.doc.eq(document(p("x"))), isTrue);
     });
 
     test("supports rebasing", () {
@@ -444,19 +376,11 @@ void main() {
       // base -
       //       \
       //        - right
-      final rightStep = ReplaceStep(
-        5,
-        5,
-        Slice(Fragment.from(schema.text(" right")), 0, 0),
-      );
+      final rightStep = ReplaceStep(5, 5, Slice(Fragment.from(schema.text(" right")), 0, 0));
       state = state.apply(state.tr.step(rightStep) as Transaction);
-      expect(state.doc.eq(doc(p("base right"))), isTrue);
+      expect(state.doc.eq(document(p("base right"))), isTrue);
       expect(undoDepth(state), 2);
-      final leftStep = ReplaceStep(
-        1,
-        1,
-        Slice(Fragment.from(schema.text("left ")), 0, 0),
-      );
+      final leftStep = ReplaceStep(1, 1, Slice(Fragment.from(schema.text("left ")), 0, 0));
 
       // Receive remote step and rebase local unconfirmed step
       //
@@ -469,34 +393,28 @@ void main() {
       tr.setMeta("addToHistory", false);
       tr.setMeta("rebased", 1);
       state = state.apply(tr);
-      expect(state.doc.eq(doc(p("left base right"))), isTrue);
+      expect(state.doc.eq(document(p("left base right"))), isTrue);
       expect(undoDepth(state), 2);
 
       // Undo local unconfirmed step
       //
       // base --> left
       state = _command(state, undo);
-      expect(state.doc.eq(doc(p("left base"))), isTrue);
+      expect(state.doc.eq(document(p("left base"))), isTrue);
 
       // Redo local unconfirmed step
       //
       // base --> left --> right'
       state = _command(state, redo);
-      expect(state.doc.eq(doc(p("left base right"))), isTrue);
+      expect(state.doc.eq(document(p("left base right"))), isTrue);
     });
 
     test("properly maps selection when rebasing", () {
-      var state = _mkState(doc(p("123456789ABCD")));
-      state = state.apply(
-        state.tr.setSelection(TextSelection.create(state.doc, 6, 13)),
-      );
+      var state = _mkState(document(p("123456789ABCD")));
+      state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 6, 13)));
       state = state.apply(state.tr.delete(6, 13) as Transaction);
       final rebase =
-          (state.tr
-                      .insert(6, schema.text("6789ABC"))
-                      .insert(14, schema.text("E"))
-                      .delete(6, 13)
-                  as Transaction)
+          (state.tr.insert(6, schema.text("6789ABC")).insert(14, schema.text("E")).delete(6, 13) as Transaction)
               .setMeta("rebased", 1)
               .setMeta("addToHistory", false);
       rebase.mapping.setMirror(0, 2);
@@ -508,34 +426,18 @@ void main() {
 
 EditorState _mkState([Node? document, _Config? config]) {
   final plugins = <Plugin>[
-    config != null
-        ? history(
-            HistoryOptions(
-              depth: config.depth,
-              newGroupDelay: config.newGroupDelay,
-            ),
-          )
-        : _plugin,
+    config != null ? history(HistoryOptions(depth: config.depth, newGroupDelay: config.newGroupDelay)) : _plugin,
   ];
   if (config != null && config.preserveItems) {
     plugins.add(Plugin(PluginSpec(extra: {"historyPreserveItems": true})));
   }
   return EditorState.create(
-    EditorStateConfig(
-      schema: schema,
-      doc: document,
-      plugins: [...plugins, ...?config?.plugins],
-    ),
+    EditorStateConfig(schema: schema, doc: document, plugins: [...plugins, ...?config?.plugins]),
   );
 }
 
 class _Config {
-  _Config({
-    this.newGroupDelay,
-    this.depth,
-    this.preserveItems = false,
-    this.plugins,
-  });
+  _Config({this.newGroupDelay, this.depth, this.preserveItems = false, this.plugins});
 
   final int? newGroupDelay;
   final int? depth;
@@ -558,27 +460,22 @@ void _unsyncedComplex(EditorState state, bool doCompress) {
   state = _type(state, "hello");
   state = state.apply(closeHistory(state.tr));
   state = _type(state, "!");
-  state = state.apply(
-    state.tr.insertText("....", 1).setMeta("addToHistory", false),
-  );
+  state = state.apply(state.tr.insertText("....", 1).setMeta("addToHistory", false));
   state = state.apply(state.tr.split(3) as Transaction);
-  expect(state.doc.eq(doc(p(".."), p("..hello!"))), isTrue);
-  state = state.apply(
-    (state.tr.split(2) as Transaction).setMeta("addToHistory", false),
-  );
+  expect(state.doc.eq(document(p(".."), p("..hello!"))), isTrue);
+  state = state.apply((state.tr.split(2) as Transaction).setMeta("addToHistory", false));
   if (doCompress) {
     _compress(state);
   }
   state = _command(state, undo);
   state = _command(state, undo);
-  expect(state.doc.eq(doc(p("."), p("...hello"))), isTrue);
+  expect(state.doc.eq(document(p("."), p("...hello"))), isTrue);
   state = _command(state, undo);
-  expect(state.doc.eq(doc(p("."), p("..."))), isTrue);
+  expect(state.doc.eq(document(p("."), p("..."))), isTrue);
 }
 
 void _compress(EditorState state) {
   // NOTE: This is mutating stuff that shouldn't be mutated. Not safe to do
   // outside of these tests.
-  (_plugin.getState(state) as HistoryState).done =
-      (_plugin.getState(state) as HistoryState).done.compress();
+  (_plugin.getState(state) as HistoryState).done = (_plugin.getState(state) as HistoryState).done.compress();
 }

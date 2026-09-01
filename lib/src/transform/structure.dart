@@ -15,8 +15,7 @@ import 'package:prosemirror/src/transform/mark.dart';
 typedef NodeTypeWithAttributes = ({NodeType type, Attrs? attrs});
 
 bool _canCut(Node node, int start, int end) {
-  return (start == 0 || node.canReplace(start, node.childCount)) &&
-      (end == node.childCount || node.canReplace(0, end));
+  return (start == 0 || node.canReplace(start, node.childCount)) && (end == node.childCount || node.canReplace(0, end));
 }
 
 /// Try to find a target depth to which the content in the given range
@@ -25,20 +24,14 @@ bool _canCut(Node node, int start, int end) {
 int? liftTarget(NodeRange range) {
   final parent = range.parent;
   final content = parent.content.cutByIndex(range.startIndex, range.endIndex);
-  for (
-    var depth = range.depth, contentBefore = 0, contentAfter = 0;
-    ;
-    --depth
-  ) {
+  for (var depth = range.depth, contentBefore = 0, contentAfter = 0; ; --depth) {
     final node = range.$from.node(depth);
     final index = range.$from.index(depth) + contentBefore;
     final endIndex = range.$to.indexAfter(depth) - contentAfter;
     if (depth < range.depth && node.canReplace(index, endIndex, content)) {
       return depth;
     }
-    if (depth == 0 ||
-        node.type.spec.isolating ||
-        !_canCut(node, index, endIndex)) {
+    if (depth == 0 || node.type.spec.isolating || !_canCut(node, index, endIndex)) {
       break;
     }
     if (index != 0) {
@@ -103,25 +96,14 @@ void lift(Transform tr, NodeRange range, int target) {
 /// could be found. When `innerRange` is given, that range's content is
 /// used as the content to fit into the wrapping, instead of the
 /// content of `range`.
-List<NodeTypeWithAttributes>? findWrapping(
-  NodeRange range,
-  NodeType nodeType, [
-  Attrs? attrs,
-  NodeRange? innerRange,
-]) {
+List<NodeTypeWithAttributes>? findWrapping(NodeRange range, NodeType nodeType, [Attrs? attrs, NodeRange? innerRange]) {
   innerRange ??= range;
   final around = _findWrappingOutside(range, nodeType);
-  final inner = around != null
-      ? _findWrappingInside(innerRange, nodeType)
-      : null;
+  final inner = around != null ? _findWrappingInside(innerRange, nodeType) : null;
   if (inner == null) {
     return null;
   }
-  return <NodeTypeWithAttributes>[
-    ...around!.map(_withAttrs),
-    (type: nodeType, attrs: attrs),
-    ...inner.map(_withAttrs),
-  ];
+  return <NodeTypeWithAttributes>[...around!.map(_withAttrs), (type: nodeType, attrs: attrs), ...inner.map(_withAttrs)];
 }
 
 NodeTypeWithAttributes _withAttrs(NodeType type) => (type: type, attrs: null);
@@ -158,65 +140,37 @@ List<NodeType>? _findWrappingInside(NodeRange range, NodeType type) {
   return inside;
 }
 
-void wrap(
-  Transform tr,
-  NodeRange range,
-  List<NodeTypeWithAttributes> wrappers,
-) {
+void wrap(Transform tr, NodeRange range, List<NodeTypeWithAttributes> wrappers) {
   var content = Fragment.empty;
   for (var i = wrappers.length - 1; i >= 0; i--) {
     if (content.size != 0) {
       final match = wrappers[i].type.contentMatch.matchFragment(content);
       if (match == null || !match.validEnd) {
-        throw RangeError(
-          "Wrapper type given to Transform.wrap does not form valid content of its parent wrapper",
-        );
+        throw RangeError("Wrapper type given to Transform.wrap does not form valid content of its parent wrapper");
       }
     }
-    content = Fragment.from(
-      wrappers[i].type.create(wrappers[i].attrs, content),
-    );
+    content = Fragment.from(wrappers[i].type.create(wrappers[i].attrs, content));
   }
 
   final start = range.start;
   final end = range.end;
-  tr.step(
-    ReplaceAroundStep(
-      start,
-      end,
-      start,
-      end,
-      Slice(content, 0, 0),
-      wrappers.length,
-      true,
-    ),
-  );
+  tr.step(ReplaceAroundStep(start, end, start, end, Slice(content, 0, 0), wrappers.length, true));
 }
 
-void setBlockType(
-  Transform tr,
-  int from,
-  int to,
-  NodeType type,
-  Object? attrs,
-) {
+void setBlockType(Transform tr, int from, int to, NodeType type, Object? attrs) {
   if (!type.isTextblock) {
     throw RangeError("Type given to setBlockType should be a textblock");
   }
   final mapFrom = tr.steps.length;
   tr.doc.nodesBetween(from, to, (node, pos, parent, index) {
-    final attrsHere = attrs is Attrs Function(Node)
-        ? attrs(node)
-        : attrs as Attrs?;
+    final attrsHere = attrs is Attrs Function(Node) ? attrs(node) : attrs as Attrs?;
     if (node.isTextblock &&
         !node.hasMarkup(type, attrsHere) &&
         _canChangeType(tr.doc, tr.mapping.slice(mapFrom).map(pos), type)) {
       bool? convertNewlines;
       if (type.schema.linebreakReplacement != null) {
         final pre = type.whitespace == "pre";
-        final supportLinebreak =
-            type.contentMatch.matchType(type.schema.linebreakReplacement!) !=
-            null;
+        final supportLinebreak = type.contentMatch.matchType(type.schema.linebreakReplacement!) != null;
         if (pre && !supportLinebreak) {
           convertNewlines = false;
         } else if (!pre && supportLinebreak) {
@@ -228,13 +182,7 @@ void setBlockType(
       if (convertNewlines == false) {
         _replaceLinebreaks(tr, node, pos, mapFrom);
       }
-      clearIncompatible(
-        tr,
-        tr.mapping.slice(mapFrom).map(pos, 1),
-        type,
-        null,
-        convertNewlines == null,
-      );
+      clearIncompatible(tr, tr.mapping.slice(mapFrom).map(pos, 1), type, null, convertNewlines == null);
       final mapping = tr.mapping.slice(mapFrom);
       final startM = mapping.map(pos, 1);
       final endM = mapping.map(pos + node.nodeSize, 1);
@@ -263,14 +211,8 @@ void _replaceNewlines(Transform tr, Node node, int pos, int mapFrom) {
     if (child.isText) {
       final newline = RegExp(r'\r?\n|\r');
       for (final match in newline.allMatches(child.text!)) {
-        final start = tr.mapping
-            .slice(mapFrom)
-            .map(pos + 1 + offset + match.start);
-        tr.replaceWith(
-          start,
-          start + 1,
-          node.type.schema.linebreakReplacement!.create(),
-        );
+        final start = tr.mapping.slice(mapFrom).map(pos + 1 + offset + match.start);
+        tr.replaceWith(start, start + 1, node.type.schema.linebreakReplacement!.create());
       }
     }
   });
@@ -293,13 +235,7 @@ bool _canChangeType(Node doc, int pos, NodeType type) {
 
 /// Change the type, attributes, and/or marks of the node at `pos`.
 /// When `type` isn't given, the existing node type is preserved.
-void setNodeMarkup(
-  Transform tr,
-  int pos,
-  NodeType? type,
-  Attrs? attrs,
-  List<Mark>? marks,
-) {
+void setNodeMarkup(Transform tr, int pos, NodeType? type, Attrs? attrs, List<Mark>? marks) {
   final node = tr.doc.nodeAt(pos);
   if (node == null) {
     throw RangeError("No node at given position");
@@ -329,26 +265,16 @@ void setNodeMarkup(
 }
 
 /// Check whether splitting at the given position is allowed.
-bool canSplit(
-  Node doc,
-  int pos, [
-  int depth = 1,
-  List<NodeTypeWithAttributes?>? typesAfter,
-]) {
+bool canSplit(Node doc, int pos, [int depth = 1, List<NodeTypeWithAttributes?>? typesAfter]) {
   final $pos = doc.resolve(pos);
   final base = $pos.depth - depth;
-  final innerType =
-      (typesAfter != null &&
-          typesAfter.isNotEmpty &&
-          typesAfter[typesAfter.length - 1] != null)
+  final innerType = (typesAfter != null && typesAfter.isNotEmpty && typesAfter[typesAfter.length - 1] != null)
       ? typesAfter[typesAfter.length - 1]!.type
       : $pos.parent.type;
   if (base < 0 ||
       $pos.parent.type.spec.isolating ||
       !$pos.parent.canReplace($pos.index(), $pos.parent.childCount) ||
-      !innerType.validContent(
-        $pos.parent.content.cutByIndex($pos.index(), $pos.parent.childCount),
-      )) {
+      !innerType.validContent($pos.parent.content.cutByIndex($pos.index(), $pos.parent.childCount))) {
     return false;
   }
   for (var d = $pos.depth - 1, i = depth - 2; d > base; d--, i--) {
@@ -360,64 +286,36 @@ bool canSplit(
     var rest = node.content.cutByIndex(index, node.childCount);
     final overrideChild = _typeAt(typesAfter, i + 1);
     if (overrideChild != null) {
-      rest = rest.replaceChild(
-        0,
-        overrideChild.type.create(overrideChild.attrs),
-      );
+      rest = rest.replaceChild(0, overrideChild.type.create(overrideChild.attrs));
     }
     final after = _typeAt(typesAfter, i);
     final afterType = after != null ? after.type : node.type;
-    if (!node.canReplace(index + 1, node.childCount) ||
-        !afterType.validContent(rest)) {
+    if (!node.canReplace(index + 1, node.childCount) || !afterType.validContent(rest)) {
       return false;
     }
   }
   final index = $pos.indexAfter(base);
   final baseType = _typeAt(typesAfter, 0);
-  return $pos
-      .node(base)
-      .canReplaceWith(
-        index,
-        index,
-        baseType != null ? baseType.type : $pos.node(base + 1).type,
-      );
+  return $pos.node(base).canReplaceWith(index, index, baseType != null ? baseType.type : $pos.node(base + 1).type);
 }
 
-NodeTypeWithAttributes? _typeAt(
-  List<NodeTypeWithAttributes?>? typesAfter,
-  int index,
-) {
+NodeTypeWithAttributes? _typeAt(List<NodeTypeWithAttributes?>? typesAfter, int index) {
   if (typesAfter == null || index < 0 || index >= typesAfter.length) {
     return null;
   }
   return typesAfter[index];
 }
 
-void split(
-  Transform tr,
-  int pos, [
-  int depth = 1,
-  List<NodeTypeWithAttributes?>? typesAfter,
-]) {
+void split(Transform tr, int pos, [int depth = 1, List<NodeTypeWithAttributes?>? typesAfter]) {
   final $pos = tr.doc.resolve(pos);
   var before = Fragment.empty;
   var after = Fragment.empty;
-  for (
-    var d = $pos.depth, e = $pos.depth - depth, i = depth - 1;
-    d > e;
-    d--, i--
-  ) {
+  for (var d = $pos.depth, e = $pos.depth - depth, i = depth - 1; d > e; d--, i--) {
     before = Fragment.from($pos.node(d).copy(before));
     final typeAfter = _typeAt(typesAfter, i);
-    after = Fragment.from(
-      typeAfter != null
-          ? typeAfter.type.create(typeAfter.attrs, after)
-          : $pos.node(d).copy(after),
-    );
+    after = Fragment.from(typeAfter != null ? typeAfter.type.create(typeAfter.attrs, after) : $pos.node(d).copy(after));
   }
-  tr.step(
-    ReplaceStep(pos, pos, Slice(before.append(after), depth, depth), true),
-  );
+  tr.step(ReplaceStep(pos, pos, Slice(before.append(after), depth, depth), true));
 }
 
 /// Test whether the blocks before and after a given position can be
@@ -425,8 +323,7 @@ void split(
 bool canJoin(Node doc, int pos) {
   final $pos = doc.resolve(pos);
   final index = $pos.index();
-  return _joinable($pos.nodeBefore, $pos.nodeAfter) &&
-      $pos.parent.canReplace(index, index + 1);
+  return _joinable($pos.nodeBefore, $pos.nodeAfter) && $pos.parent.canReplace(index, index + 1);
 }
 
 bool _canAppendWithSubstitutedLinebreaks(Node a, Node b) {
@@ -437,9 +334,7 @@ bool _canAppendWithSubstitutedLinebreaks(Node a, Node b) {
   final linebreakReplacement = a.type.schema.linebreakReplacement;
   for (var i = 0; i < b.childCount; i++) {
     final child = b.child(i);
-    final type = child.type == linebreakReplacement
-        ? a.type.schema.nodes["text"]!
-        : child.type;
+    final type = child.type == linebreakReplacement ? a.type.schema.nodes["text"]! : child.type;
     match = match!.matchType(type);
     if (match == null) {
       return false;
@@ -452,10 +347,7 @@ bool _canAppendWithSubstitutedLinebreaks(Node a, Node b) {
 }
 
 bool _joinable(Node? a, Node? b) {
-  return a != null &&
-      b != null &&
-      !a.isLeaf &&
-      _canAppendWithSubstitutedLinebreaks(a, b);
+  return a != null && b != null && !a.isLeaf && _canAppendWithSubstitutedLinebreaks(a, b);
 }
 
 /// Find an ancestor of the given position that can be joined to the
@@ -499,8 +391,7 @@ void join(Transform tr, int pos, int depth) {
   final beforeType = $before.node().type;
   if (linebreakReplacement != null && beforeType.inlineContent) {
     final pre = beforeType.whitespace == "pre";
-    final supportLinebreak =
-        beforeType.contentMatch.matchType(linebreakReplacement) != null;
+    final supportLinebreak = beforeType.contentMatch.matchType(linebreakReplacement) != null;
     if (pre && !supportLinebreak) {
       convertNewlines = false;
     } else if (!pre && supportLinebreak) {
@@ -592,12 +483,8 @@ int? dropPoint(Node doc, int pos, Slice slice) {
       if (pass == 1) {
         fits = parent.canReplace(insertPos, insertPos, content);
       } else {
-        final wrapping = parent
-            .contentMatchAt(insertPos)
-            .findWrapping(content.firstChild!.type);
-        fits =
-            wrapping != null &&
-            parent.canReplaceWith(insertPos, insertPos, wrapping[0]);
+        final wrapping = parent.contentMatchAt(insertPos).findWrapping(content.firstChild!.type);
+        fits = wrapping != null && parent.canReplaceWith(insertPos, insertPos, wrapping[0]);
       }
       if (fits) {
         return bias == 0

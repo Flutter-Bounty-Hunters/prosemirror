@@ -8,7 +8,7 @@ library;
 import 'package:prosemirror/prosemirror.dart';
 import 'package:test/test.dart';
 
-import '../../model/support/builders.dart';
+import 'package:prosemirror/test_builder.dart';
 
 /// Verifies that applying [tr] yields [expect], that the transform is
 /// invertible, that every step round-trips through JSON, and that each position
@@ -37,11 +37,7 @@ void _testMapping(Mapping mapping, int pos, int newPos) {
   expect(mapped, newPos);
 
   final remap = Mapping(mapping.maps.map((map) => map.invert()).toList());
-  for (
-    var index = mapping.maps.length - 1, mapFrom = mapping.maps.length;
-    index >= 0;
-    index--
-  ) {
+  for (var index = mapping.maps.length - 1, mapFrom = mapping.maps.length; index >= 0; index--) {
     remap.appendMap(mapping.maps[index], --mapFrom);
   }
   expect(remap.map(pos, 1), pos);
