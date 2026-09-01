@@ -1,13 +1,13 @@
 name: prosemirror
 description: A Dart port of Prosemirror from Typescript.
 version: 0.1.0
+repository: https://github.com/Flutter-Bounty-Hunters/prosemirror
 
 environment:
   sdk: ^3.13.1
 
 dependencies:
   markdown: ^7.3.1
-  # path: ^1.9.0
 
 dev_dependencies:
   lints: ^6.0.0
